@@ -1,28 +1,41 @@
-import { Suspense } from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { Box, ChakraProvider, ColorModeScript } from '@chakra-ui/react';
+import { ChakraProvider, ColorModeScript, Stack } from '@chakra-ui/react';
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import theme from "./theme";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Loading from "./components/Loading.js";
-import Home from "./pages/Home.js";
+import Main from "./pages/Main.js";
 import Navbar from "./components/Navbar.js";
 import './index.css';
+import { StorageProvider } from "./components/StorageProvider";
+import Footer from "./components/Footer";
+
+const App = () => {
+    return (
+        <ChakraProvider theme={theme}>
+            <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+            <MemoryRouter>
+                <Stack
+                    direction="column"
+                    gap={0}
+                    display={"flex"}
+                    flexDir={"column"}
+                    h="100vh"
+                >
+                    <Navbar />
+                    <Routes>
+                        <Route path="/" element={<Main />} />
+                    </Routes>
+                    <Footer />
+                </Stack>
+            </MemoryRouter>
+        </ChakraProvider>
+    );
+}
 
 createRoot(document.querySelector("#entry")!).render(
     <StrictMode>
-        <ChakraProvider theme={theme}>
-            <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-            <BrowserRouter>
-                <div id="background">
-                    <Navbar />
-                    <Suspense fallback={<Loading text={"Loading..."} />}>
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                        </Routes>
-                    </Suspense>
-                </div>
-            </BrowserRouter>
-        </ChakraProvider>
+        <StorageProvider>
+            <App />
+        </StorageProvider>
     </StrictMode>
 );

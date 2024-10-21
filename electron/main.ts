@@ -1,9 +1,8 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-
-console.log('Operating System: ', process.platform);
-console.log('Electron Version: ', process.versions.electron);
+import Store from 'electron-store';
+import { readFile } from "fs/promises";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -20,33 +19,61 @@ if (!app.requestSingleInstanceLock()) {
 
 let win: BrowserWindow | null;
 
+app.whenReady().then(() => {
+    win = new BrowserWindow({
+        width: 1200,
+        height: 800,
+        minWidth: 600,
+        minHeight: 400,
+        titleBarStyle: 'hidden',
+        titleBarOverlay: {
+            color: '#1d2528',
+            symbolColor: '#545f62',
+            height: 49
+        },
+        backgroundColor: '#1d2528',
+        webPreferences: {
+            contextIsolation: true,
+            preload: join(__dirname, 'preload.mjs')
+        },
+    });
+    
+    if (process.env.FARM_DEV_SERVER_URL) {
+        win.loadURL(process.env.FARM_DEV_SERVER_URL);
+        win.webContents.openDevTools();
+    } else {
+        win.loadFile(join(process.env.DIST as string, 'index.html'));
+    }
+});
+
 app.on('window-all-closed', () => {
     app.quit();
     win = null;
 });
 
-app.whenReady().then(() => {
-    win = new BrowserWindow({
-        width: 1200,
-        height: 800,
-        // resizable: false,
-        // thickFrame: false,
-        titleBarStyle: 'hidden',
-        titleBarOverlay: true,
-        // backgroundColor: '#000000',
-        // webPreferences: {
-        //     nodeIntegration: true
-        // }
+const store = new Store();
+
+ipcMain.handle('get-store', async (event, val) => {
+    return store.get(val);
+});
+
+ipcMain.handle('set-store', async (event, key, value) => {
+    store.set(key, value);
+});
+
+ipcMain.handle('set-theme', (event, newOverlay) => {
+    win?.setTitleBarOverlay(newOverlay);
+});
+
+ipcMain.handle('dialog:openFile', async () => {
+    const result = await dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: [{ name: 'Market Files', extensions: ['csv'] }]
     });
 
-    win.setTitleBarOverlay({
-        color: '#161b1e'
-    });
-    
-    if (process.env.FARM_DEV_SERVER_URL) {
-        win.loadURL(process.env.FARM_DEV_SERVER_URL);
-        // win.webContents.openDevTools();
-    } else {
-        win.loadFile(join(process.env.DIST as string, 'index.html'));
-    }
+    return result.canceled ? null : result.filePaths[0];
+});
+
+ipcMain.handle('file:read', async (event, path) => {
+    return await readFile(path, 'utf-8').catch(() => null);
 });

@@ -7,13 +7,16 @@ export default defineConfig({
             index: './src/index.html',
         },
         output: {
-            path: './dist',
+            path: './dist'
         }
     },
     plugins: [
         electron({
             main: {
-                input: './electron/main.ts',
+                input: './electron/main.ts'
+            },
+            preload: {
+                input: './electron/preload.ts'
             }
         }),
         '@farmfe/plugin-react'

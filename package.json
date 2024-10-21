@@ -1,15 +1,14 @@
 {
 	"name": "marketmaker",
-	"description": "An electron app for analyzing markets.",
 	"private": true,
+	"type": "module",
 	"version": "0.0.0",
 	"main": "dist-electron/main.js",
 	"build": {
 		"appId": "com.marketmaker.app"
 	},
 	"scripts": {
-		"package": "farm build && electron-builder --dir",
-		"build": "farm build && electron-builder",
+		"build": "farm build",
 		"start": "farm build && electron .",
 		"watch": "farm start"
 	},
@@ -22,7 +21,6 @@
 		"@types/react": "^18.3.11",
 		"@types/react-dom": "^18.3.1",
 		"electron": "^33.0.1",
-		"electron-builder": "^25.1.8",
 		"react-refresh": "^0.14.2",
 		"typescript": "^5.6.3"
 	},
@@ -32,6 +30,7 @@
 		"@emotion/react": "^11.13.3",
 		"@emotion/styled": "^11.13.0",
 		"@farmfe/js-plugin-electron": "^1.0.1",
+		"electron-store": "^10.0.0",
 		"framer-motion": "^11.11.9",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
