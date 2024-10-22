@@ -34,6 +34,7 @@ app.whenReady().then(() => {
         backgroundColor: '#1d2528',
         webPreferences: {
             contextIsolation: true,
+            nodeIntegration: false,
             preload: join(__dirname, 'preload.mjs')
         },
     });

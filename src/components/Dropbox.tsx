@@ -1,55 +1,55 @@
 import { Box, Link, Text, useColorModeValue } from "@chakra-ui/react";
-import { DragEvent, ReactNode, useEffect, useState } from "react";
+import { DragEvent, useState } from "react";
 
-function Dropbox() {
+export type FileData = {
+    name: string;
+    path: string;
+    content: string;
+}
+
+function Dropbox({ onAddFile }: { onAddFile: (file: FileData) => void }) {
     const [isDragging, setIsDragging] = useState(false);
-    const [fileContent, setFileContent] = useState<string | null>(null);
 
+    const handleFileUploadClick = async () => {
+        const filePath = await window.electron.selectFile();
+        if (filePath && filePath.endsWith(".csv")) {
+            const content = await window.electron.readFile(filePath);
+            if (content) onAddFile({
+                name: filePath.split(/[\\/]/).pop()!,
+                path: filePath,
+                content
+            });
+        }
+    }
+    
     const handleDragOver = (event: DragEvent) => {
         event.preventDefault();
         setIsDragging(true);
-    }
-
-    const handleDrop = async (event: DragEvent) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setIsDragging(false);
-
-        if (event.dataTransfer && event.dataTransfer.files.length > 0) {
-            const file = event.dataTransfer.files[0];
-            console.log(file)
-            const filePath = file.path;
-
-            if (filePath.endsWith(".csv")) {
-                const content = await window.electron.readFile(filePath);
-                console.log(content); 
-                if (content) setFileContent(content);
-            }
-            else {
-                alert("Invalid file type. Only .csv files are supported.");
-            }
-
-            event.dataTransfer.clearData();
-        }
     }
 
     const handleDragLeave = (event: DragEvent) => {
         setIsDragging(false);
     }
 
-    const handleFileUploadClick = async () => {
-        const filePath = await window.electron.selectFile();
-        if (filePath && filePath.endsWith(".csv")) {
-            const content = await window.electron.readFile(filePath);
-            if (content) setFileContent(content);
-        }
-    }
+    const handleDrop = (event: DragEvent) => {
+        event.preventDefault();
+        setIsDragging(false);
+        const file = event.dataTransfer.files[0];
 
-    useEffect(() => {
-        if (fileContent) {
-            console.log(fileContent);
+        if (!file.name.endsWith(".csv")) {
+            console.log("Invalid file format. Please upload a CSV file.");
+            return;
         }
-    }, [fileContent]);
+
+        window.electron.getFilePath(file, async (path: string) => {
+            const content = await window.electron.readFile(path);
+            if (content) onAddFile({
+                name: file.name,
+                path,
+                content
+            });
+        });
+    }
 
     return (
         <Box
@@ -64,6 +64,8 @@ function Dropbox() {
             alignContent={"center"}
             justifyContent={"center"}
             px={10}
+            mx={10}
+            my={10}
         >
             <Text color={useColorModeValue('black', '#808b8d')} textAlign={"left"} className="nonselectable">
                 {isDragging ? 'Drop the market file here.' : 'Drag and drop a market file here or '}

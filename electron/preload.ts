@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 
 const electronHandler = {
     store: {
@@ -15,6 +15,7 @@ const electronHandler = {
         }
     },
     selectFile: () => ipcRenderer.invoke('dialog:openFile'),
+    getFilePath: (file: File, callback: (path: string) => void) => callback(webUtils.getPathForFile(file)),
     readFile: (path: string) => ipcRenderer.invoke('file:read', path),
 }
 
