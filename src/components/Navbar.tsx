@@ -1,11 +1,16 @@
 import { Box, IconButton, Image, Stack, useColorMode, useColorModeValue } from "@chakra-ui/react";
 import logo from '../assets/logo.png';
-import NavigationButton from "./NavigationButton";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import FileDropdown from "./FileDropdown";
 
-function Navbar() {
+function Navbar({ triggerFileUploadDialog, triggerCloseActiveFile }: { triggerFileUploadDialog: () => void, triggerCloseActiveFile: () => void }) {
     const { colorMode, toggleColorMode } = useColorMode();
+
+    const bgColor = useColorModeValue("white", "#1d2528");
+    const borderColor = useColorModeValue("1px solid #e1e1e1", "1px solid #161b1e");
+    const themeButtonBgColor = useColorModeValue("#000000", "#303739");
+    const themeButtonTextColor = useColorModeValue("#ffffff", "#f2fffc");
 
     const sendTheme = () => {
         window.electron.theme.send({
@@ -27,11 +32,11 @@ function Navbar() {
         <Box
             as="nav"
             className="draggable"
-            bg={useColorModeValue("white", "#1d2528")}
+            bg={bgColor}
             height="50px"
             minH="50px"
             width="100vw"
-            border={useColorModeValue("1px solid #e1e1e1", "1px solid #161b1e")}
+            border={borderColor}
             pl="9px"
             verticalAlign={"middle"}
             display={"flex"}
@@ -45,11 +50,7 @@ function Navbar() {
                         height="30px"
                         mx="2px"
                     />
-                    <NavigationButton text="File" />
-                    <NavigationButton text="Edit" />
-                    <NavigationButton text="Selection" />
-                    <NavigationButton text="View" />
-                    <NavigationButton text="Go" />
+                    <FileDropdown triggerFileUploadDialog={triggerFileUploadDialog} triggerCloseActiveFile={triggerCloseActiveFile} />
                 </Stack>
                 <IconButton
                     height="30px"
@@ -60,8 +61,8 @@ function Navbar() {
                     width={"30px"}
                     sx={{
                         '&:hover': {
-                            backgroundColor: useColorModeValue("#000000", "#303739"),
-                            color: useColorModeValue("#ffffff", "#f2fffc")
+                            backgroundColor: themeButtonBgColor,
+                            color: themeButtonTextColor,
                         },
                     }}
                     onClick={toggleColorMode}

@@ -34,6 +34,7 @@ declare global {
             selectFile: () => Promise<string | null>;
             getFilePath: (file: File, callback: (path: string) => void) => void;
             readFile: (path: string) => Promise<string | null>;
+            quit: () => void;
         }
     }
 }

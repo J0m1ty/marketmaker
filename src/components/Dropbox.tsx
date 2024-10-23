@@ -1,26 +1,9 @@
 import { Box, Link, Text, useColorModeValue } from "@chakra-ui/react";
 import { DragEvent, useState } from "react";
+import { FileData } from "../types";
 
-export type FileData = {
-    name: string;
-    path: string;
-    content: string;
-}
-
-function Dropbox({ onAddFile }: { onAddFile: (file: FileData) => void }) {
+function Dropbox({ triggerFileUploadDialog, hoistFileData }: { triggerFileUploadDialog: () => void, hoistFileData: (file: FileData) => void }) {
     const [isDragging, setIsDragging] = useState(false);
-
-    const handleFileUploadClick = async () => {
-        const filePath = await window.electron.selectFile();
-        if (filePath && filePath.endsWith(".csv")) {
-            const content = await window.electron.readFile(filePath);
-            if (content) onAddFile({
-                name: filePath.split(/[\\/]/).pop()!,
-                path: filePath,
-                content
-            });
-        }
-    }
     
     const handleDragOver = (event: DragEvent) => {
         event.preventDefault();
@@ -43,7 +26,7 @@ function Dropbox({ onAddFile }: { onAddFile: (file: FileData) => void }) {
 
         window.electron.getFilePath(file, async (path: string) => {
             const content = await window.electron.readFile(path);
-            if (content) onAddFile({
+            if (content) hoistFileData({
                 name: file.name,
                 path,
                 content
@@ -56,7 +39,7 @@ function Dropbox({ onAddFile }: { onAddFile: (file: FileData) => void }) {
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            bg={isDragging ? useColorModeValue("#f0f0f0", "#2A2E30") : useColorModeValue("#eeeeee", "#1A2023")}
+            bg={isDragging ? useColorModeValue("#eeeefe", "#2A2E40") : useColorModeValue("#eeeeee", "#1A2023")}
             height="100px"
             borderRadius={25}
             border="2px dashed"
@@ -75,7 +58,7 @@ function Dropbox({ onAddFile }: { onAddFile: (file: FileData) => void }) {
                             textDecoration: 'none',
                             '&:hover': { textDecoration: 'underline', color: useColorModeValue('blue.600', 'blue.200') }
                         }}
-                        onClick={handleFileUploadClick}
+                        onClick={triggerFileUploadDialog}
                         id={"file-upload"}
                     >upload from your device.</Link>
                 }

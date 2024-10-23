@@ -78,3 +78,7 @@ ipcMain.handle('dialog:openFile', async () => {
 ipcMain.handle('file:read', async (event, path) => {
     return await readFile(path, 'utf-8').catch(() => null);
 });
+
+ipcMain.handle('app:quit', () => {
+    app.exit(0);
+});

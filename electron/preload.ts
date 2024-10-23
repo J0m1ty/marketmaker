@@ -11,12 +11,13 @@ const electronHandler = {
     },
     theme: {
         async send(theme: any): Promise<void> {
-            return ipcRenderer.invoke('set-theme', theme);  // Use invoke to return a promise
+            return ipcRenderer.invoke('set-theme', theme);
         }
     },
     selectFile: () => ipcRenderer.invoke('dialog:openFile'),
     getFilePath: (file: File, callback: (path: string) => void) => callback(webUtils.getPathForFile(file)),
     readFile: (path: string) => ipcRenderer.invoke('file:read', path),
+    quit: () => ipcRenderer.invoke('app:quit')
 }
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

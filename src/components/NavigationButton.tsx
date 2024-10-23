@@ -1,27 +1,33 @@
-import { Button, useColorModeValue } from "@chakra-ui/react";
+import {  Button, MenuButton, useColorModeValue } from "@chakra-ui/react";
+import { ReactNode } from "react";
 
-function NavigationButton({ text }: { text: string }) {
+function NavigationButton({ children }: { children?: ReactNode }) {
+    const color = useColorModeValue("#000000", "#808b8d");
+    const hoverBg = useColorModeValue("#000000", "#303739");
+    const hoverColor = useColorModeValue("#ffffff", "#f2fffc");
+    
     return (
-        <Button
-            height="30px"
+        <MenuButton
+            as={Button}
             size={"sm"}
+            height="30px"
             className="nondraggable"
             variant={"ghost"}
             verticalAlign={"middle"}
             fontWeight={300}
             fontSize={"18px"}
-            color={useColorModeValue("#000000", "#808b8d")}
+            color={color}
             textAlign={"center"}
             lineHeight={"1"}
             sx={{
                 '&:hover': {
-                    backgroundColor: useColorModeValue("#000000", "#303739"),
-                    color: useColorModeValue("#ffffff", "#f2fffc")
+                    backgroundColor: hoverBg,
+                    color: hoverColor,
                 },
             }}
         >
-            {text}
-        </Button>
+            { children }
+        </MenuButton>
     );
 }
 
