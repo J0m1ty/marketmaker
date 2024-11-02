@@ -20,7 +20,7 @@ function Dropbox({ triggerFileUploadDialog, hoistFileData }: { triggerFileUpload
         const file = event.dataTransfer.files[0];
 
         if (!file.name.endsWith(".csv")) {
-            console.log("Invalid file format. Please upload a CSV file.");
+            alert("Invalid file format. Please upload a CSV file.");
             return;
         }
 

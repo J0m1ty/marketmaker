@@ -24,9 +24,7 @@ const App = () => {
 }
 
 createRoot(document.querySelector("#entry")!).render(
-    <StrictMode>
-        <StorageProvider>
-            <App />
-        </StorageProvider>
-    </StrictMode>
+    <StorageProvider>
+        <App />
+    </StorageProvider>
 );

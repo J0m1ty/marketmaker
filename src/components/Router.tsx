@@ -9,7 +9,7 @@ import FileDisplay from "./FileDisplay";
 export interface RouterRef {
     triggerFileUploadDialog: () => void;
     closeFile: (index?: number) => void;
-}scrollTo
+}
 
 const Router = forwardRef<RouterRef>((_, ref) => {
     const [files, setFiles] = useState<File[]>([]);
@@ -17,6 +17,7 @@ const Router = forwardRef<RouterRef>((_, ref) => {
     const bgEmpty = useColorModeValue("white", "#1d2528");
     const bgFilled = useColorModeValue("white", "#273136");
     const pathColor = useColorModeValue("#555555", "#808b8d");
+    const borderColor = useColorModeValue("#fafafa", "#3a4449");
 
     useImperativeHandle(ref, () => ({
         triggerFileUploadDialog,
@@ -78,34 +79,33 @@ const Router = forwardRef<RouterRef>((_, ref) => {
         setFiles((prevFiles) => prevFiles.map((prevFile) => ({ ...prevFile, hover: false })));
     }
 
-    useEffect(() => {
-        console.log(files);
-    }, [files]);
-
     return (
-        <Box w="100vw" flex={1} backgroundColor={files.length == 0 ? bgEmpty : bgFilled}>
+        <Box w="100vw" flex={1} backgroundColor={files.length == 0 ? bgEmpty : bgFilled} overflowY="auto">
             {
-                files.length > 0 ? <Stack dir="column" spacing={0} flexDir={"column"} height="100%">
-                    <Stack spacing={0} maxWidth={"100%"} overflowX={"auto"} flexDir={"row"} height="51px">
-                        {files.map((file, index) => <Tab
-                            key={index}
-                            index={index}
-                            name={file.name}
-                            isActive={file.active}
-                            isHover={file.hover ?? false}
-                            closeFile={closeFile}
-                            onHover={onHandleMouseEnter}
-                            onLeave={onHandleMouseLeave}
-                            onClick={onHandleClick}
-                        ></Tab>)}
-                    </Stack> 
-                    <Box height="32px" alignContent={"center"} px={5}>
-                        <Text fontWeight={400} fontSize={"16px"} color={pathColor} lineHeight={"1"}>
-                            {files.filter(file => file.active)[0]?.path.split(/[\\/]/).slice(-3).map((seg, idx, arr) => <span key={idx}>{seg}{idx < arr.length - 1 && <ChevronRightIcon />}</span>)}
-                        </Text>
-                    </Box>
-                    <FileDisplay content={files.filter(file => file.active)[0]?.content} />
-                </Stack>
+                files.length > 0 ?
+                    <>
+                        <Box position="sticky" top="0" zIndex={1} backgroundColor={bgFilled} borderColor={borderColor} borderBottomWidth={1}>
+                            <Stack spacing={0} maxWidth={"100%"} overflowX={"auto"} flexDir={"row"} height="51px">
+                                {files.map((file, index) => <Tab
+                                    key={index}
+                                    index={index}
+                                    name={file.name}
+                                    isActive={file.active}
+                                    isHover={file.hover ?? false}
+                                    closeFile={closeFile}
+                                    onHover={onHandleMouseEnter}
+                                    onLeave={onHandleMouseLeave}
+                                    onClick={onHandleClick}
+                                ></Tab>)}
+                            </Stack>
+                            <Box height="32px" alignContent={"center"} px={5}>
+                                <Text fontWeight={400} fontSize={"16px"} color={pathColor} lineHeight={"1"}>
+                                    {files.filter(file => file.active)[0]?.path.split(/[\\/]/).slice(-3).map((seg, idx, arr) => <span key={idx}>{seg}{idx < arr.length - 1 && <ChevronRightIcon />}</span>)}
+                                </Text>
+                            </Box>
+                        </Box>
+                        <FileDisplay content={files.filter(file => file.active)[0]?.content} />
+                    </>
                     : <Dropbox triggerFileUploadDialog={triggerFileUploadDialog} hoistFileData={addFile} />
             }
         </Box>

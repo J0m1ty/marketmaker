@@ -64,6 +64,7 @@ ipcMain.handle('set-store', async (event, key, value) => {
 
 ipcMain.handle('set-theme', (event, newOverlay) => {
     win?.setTitleBarOverlay(newOverlay);
+    win?.setBackgroundColor(newOverlay.color);
 });
 
 ipcMain.handle('dialog:openFile', async () => {

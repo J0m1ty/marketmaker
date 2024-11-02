@@ -12,7 +12,8 @@ function Footer() {
             width="100vw"
             height="30px"
             minH="30px"
-            border={bgBorderColor}
+            borderColor={bgBorderColor}
+            borderTopWidth={1}
             alignContent={"center"}
             className="nonselectable"
         >
