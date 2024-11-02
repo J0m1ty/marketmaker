@@ -12,6 +12,7 @@ export interface RouterRef {
 }
 
 const Router = forwardRef<RouterRef>((_, ref) => {
+    const [activeFile, setActiveFile] = useState<File | null>(null);
     const [files, setFiles] = useState<File[]>([]);
 
     const bgEmpty = useColorModeValue("white", "#1d2528");
@@ -64,7 +65,13 @@ const Router = forwardRef<RouterRef>((_, ref) => {
             window.electron.store.set("files", newFiles);
         });
 
-        setFiles((prevFiles) => prevFiles.map((prevFile, i) => ({ ...prevFile, active: i === Math.max(index - 1, 0) })).filter((_, i) => i !== index));
+        setFiles((prevFiles) => {
+            const updatedFiles = prevFiles.filter((_, i) => i !== index);
+    
+            const newActiveIndex = Math.min(index, updatedFiles.length - 1);
+    
+            return updatedFiles.map((file, i) => ({ ...file, active: i === newActiveIndex }));
+        });
     }
 
     const onHandleClick = (index: number) => {
@@ -78,6 +85,10 @@ const Router = forwardRef<RouterRef>((_, ref) => {
     const onHandleMouseLeave = () => {
         setFiles((prevFiles) => prevFiles.map((prevFile) => ({ ...prevFile, hover: false })));
     }
+
+    useEffect(() => {
+        setActiveFile(files.find(file => file.active) ?? null);
+    }, [files]);
 
     return (
         <Box w="100vw" flex={1} backgroundColor={files.length == 0 ? bgEmpty : bgFilled} overflowY="auto">
@@ -98,13 +109,15 @@ const Router = forwardRef<RouterRef>((_, ref) => {
                                     onClick={onHandleClick}
                                 ></Tab>)}
                             </Stack>
-                            <Box height="32px" alignContent={"center"} px={5}>
-                                <Text fontWeight={400} fontSize={"16px"} color={pathColor} lineHeight={"1"}>
-                                    {files.filter(file => file.active)[0]?.path.split(/[\\/]/).slice(-3).map((seg, idx, arr) => <span key={idx}>{seg}{idx < arr.length - 1 && <ChevronRightIcon />}</span>)}
-                                </Text>
-                            </Box>
+                            {activeFile &&
+                                <Box height="32px" alignContent={"center"} px={5}>
+                                    <Text fontWeight={400} fontSize={"16px"} color={pathColor} lineHeight={"1"}>
+                                        {activeFile.path.split(/[\\/]/).slice(-3).map((seg, idx, arr) => <span key={idx}>{seg}{idx < arr.length - 1 && <ChevronRightIcon />}</span>)}
+                                    </Text>
+                                </Box>
+                            }
                         </Box>
-                        <FileDisplay content={files.filter(file => file.active)[0]?.content} />
+                        { activeFile && <FileDisplay key={activeFile.path} content={activeFile.content} /> }
                     </>
                     : <Dropbox triggerFileUploadDialog={triggerFileUploadDialog} hoistFileData={addFile} />
             }

@@ -71,7 +71,26 @@ const categorizeElasticity = (value: number) => {
     else return "perfectly elastic";
 }
 
-function MarketGraph({ market }: { market: Market }) {
+export interface MarketData {
+    ep: number;
+    eq: number;
+    tr: number;
+    de: string;
+    se: string;
+    eod: number;
+    eos: number;
+    eodc: string;
+    eosc: string;
+    cs: number;
+    ps: number;
+    ts: number;
+}
+
+export const isMarketData = (data: Partial<MarketData>): data is MarketData => {
+    return data.ep !== undefined && data.eq !== undefined && data.tr !== undefined && data.de !== undefined && data.se !== undefined && data.eod !== undefined && data.eos !== undefined && data.eodc !== undefined && data.eosc !== undefined && data.cs !== undefined && data.ps !== undefined && data.ts !== undefined;
+}
+
+function MarketGraph({ market, callback }: { market: Market, callback: (data: Partial<MarketData>) => void }) {
     const [app, setApp] = useState<Application | null>(null);
     const [demandCurve, setDemandCurve] = useState<Graphics | null>(null);
     const [supplyCurve, setSupplyCurve] = useState<Graphics | null>(null);
@@ -94,18 +113,18 @@ function MarketGraph({ market }: { market: Market }) {
     const display = async () => {
         if (!app) return;
 
-        console.log("Rendering market...");
+        const data: Partial<MarketData> = {};
+
         const demand = polynomial(market.demand.map(point => [point.price, point.quantity]), { order: 3 });
         const supply = polynomial(market.supply.map(point => [point.price, point.quantity]), { order: 3 });
+        data.de = demand.string;
+        data.se = supply.string;
 
         const priceMin = Math.min(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
         const priceMax = Math.max(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
 
         const quantityMin = Math.min(demand.predict(priceMin)[1], supply.predict(priceMin)[1], demand.predict(priceMax)[1], supply.predict(priceMax)[1]);
         const quantityMax = Math.max(demand.predict(priceMin)[1], supply.predict(priceMin)[1], demand.predict(priceMax)[1], supply.predict(priceMax)[1]);
-
-        console.log("Price range: $", priceMin.toFixed(2), "to $", priceMax.toFixed(2));
-        console.log("Quantity range:", quantityMin.toFixed(2), "to", quantityMax.toFixed(2));
 
         const margin = 25;
         const ticks = 9;
@@ -182,8 +201,8 @@ function MarketGraph({ market }: { market: Market }) {
             const equilibriumPrice = intersection.x;
             const equilibriumQuantity = intersection.y;
 
-            console.log("Equilibrium price: $", equilibriumPrice.toFixed(2));
-            console.log("Equilibrium quantity:", equilibriumQuantity.toFixed(2));
+            data.ep = equilibriumPrice;
+            data.eq = equilibriumQuantity;
 
             const ex = left + (equilibriumPrice - priceMin) / (priceMax - priceMin) * (right - left);
             const ey = bottom - ((equilibriumQuantity - quantityMin) / (quantityMax - quantityMin)) * (bottom - top);
@@ -244,7 +263,7 @@ function MarketGraph({ market }: { market: Market }) {
             app.stage.addChild(createEquilibrium);
 
             const totalRevenue = equilibriumPrice * equilibriumQuantity;
-            console.log("Total revenue: $", totalRevenue.toFixed(2));
+            data.tr = totalRevenue;
 
             const demandDerivativeCoeffs = differentiatePolynomial(demand.equation);
             const supplyDerivativeCoeffs = differentiatePolynomial(supply.equation);
@@ -255,8 +274,10 @@ function MarketGraph({ market }: { market: Market }) {
             const elasticityOfDemand = (demandSlope * equilibriumPrice) / equilibriumQuantity;
             const elasticityOfSupply = (supplySlope * equilibriumPrice) / equilibriumQuantity;
 
-            console.log("Elasticity of demand:", elasticityOfDemand.toFixed(2) + " (" + categorizeElasticity(elasticityOfDemand) + ")");
-            console.log("Elasticity of supply:", elasticityOfSupply.toFixed(2) + " (" + categorizeElasticity(elasticityOfSupply) + ")");
+            data.eod = elasticityOfDemand;
+            data.eos = elasticityOfSupply;
+            data.eodc = categorizeElasticity(elasticityOfDemand);
+            data.eosc = categorizeElasticity(elasticityOfSupply);
 
             const demandIntegral = integratePolynomial(demand.equation, priceMin, equilibriumPrice);
             const supplyIntegral = integratePolynomial(supply.equation, priceMin, equilibriumPrice);
@@ -264,15 +285,17 @@ function MarketGraph({ market }: { market: Market }) {
 
             const consumerSurplus = demandIntegral - equilibriumArea;
             const producerSurplus = equilibriumArea - supplyIntegral;
-
-            console.log("Consumer surplus: $", consumerSurplus.toFixed(2));
-            console.log("Producer surplus: $", producerSurplus.toFixed(2));
+            
+            data.cs = consumerSurplus;
+            data.ps = producerSurplus;
         }
         else {
             app.stage.addChild(createAxis);
             app.stage.addChild(createDemand);
             app.stage.addChild(createSupply);
         }
+
+        callback(data);
     }
 
     useEffect(() => {
@@ -281,6 +304,7 @@ function MarketGraph({ market }: { market: Market }) {
         return () => {
             app?.destroy(true, true);
             setApp(null);
+            console.log("Market graph destroyed.");
         }
     }, []);
 

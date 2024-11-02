@@ -23,7 +23,7 @@ app.whenReady().then(() => {
     win = new BrowserWindow({
         width: 1200,
         height: 800,
-        minWidth: 600,
+        minWidth: 900,
         minHeight: 400,
         titleBarStyle: 'hidden',
         titleBarOverlay: {
