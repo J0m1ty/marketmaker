@@ -365,4 +365,4 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
     return <Box width={500} height={500} ref={ref} />
 }
 
-export default MarketGraph;
+export default MarketGraph; 
