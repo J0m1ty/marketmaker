@@ -1,8 +1,8 @@
 import { Box, useColorMode } from "@chakra-ui/react";
-import { Application, Assets, Container, Graphics, Text } from "pixi.js";
+import { Application, Container, Graphics, Text } from "pixi.js";
 import { useEffect, useRef, useState } from "react";
 import { Market, XY } from "../types";
-import { exponential, linear, polynomial, Result } from "regression";
+import { polynomial, Result } from "regression";
 
 const findIntersection = (demand: Result, supply: Result, range: [number, number], tolerance = 0.00001, maxIterations = 1000): XY | null => {
     let [left, right] = range;
@@ -60,7 +60,13 @@ const integratePolynomial = (coeffs: number[], A: number, B: number) => {
     return integral(B) - integral(A);
 }
 
-const differentiatePolynomial = (coeffs: number[]) => coeffs.slice(0, -1).map((coeff, i) => coeff * (coeffs.length - i - 1));
+const differentiatePolynomial = (coeffs: number[]) => {
+    return coeffs.slice(0, -1).map((coeff, i) => coeff * (coeffs.length - i - 1));
+}
+
+const evaluatePolynomial = (coeffs: number[], x: number): number => {
+    return coeffs.reduce((acc, coeff, i) => acc + coeff * Math.pow(x, coeffs.length - i - 1), 0);
+};
 
 const categorizeElasticity = (value: number) => {
     value = Math.abs(value);
@@ -96,6 +102,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
     const [app, setApp] = useState<Application | null>(null);
     const [demandCurve, setDemandCurve] = useState<Graphics | null>(null);
     const [supplyCurve, setSupplyCurve] = useState<Graphics | null>(null);
+    const [axesText, setAxesText] = useState<Container | null>(null);
     const [axes, setAxes] = useState<Container | null>(null);
     const [equilibrium, setEquilibrium] = useState<Graphics | null>(null);
     const [consumerSurplus, setConsumerSurplus] = useState<Graphics | null>(null);
@@ -136,9 +143,10 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
         const bottom = app.screen.height - margin;
 
         const createAxis = new Container();
+        const createAxisText = new Container();
 
         const xAxis = new Graphics();
-        xAxis.moveTo(left, bottom).lineTo(right + 1, bottom).stroke({ color: 0xffffff, width: 2 });
+        xAxis.moveTo(left, bottom).lineTo(right, bottom).stroke({ color: 0xffffff, width: 2 });
 
         for (let i = left; i <= right; i += (right - left) / ticks) {
             xAxis
@@ -150,13 +158,14 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
             const label = new Text({ text: Math.floor(q), anchor: { x: 0.5, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff, fontFamily: "Arial", fontWeight: "lighter" } });
             label.position.set(i, app.screen.height - margin + 10);
-            createAxis.addChild(label);
+            createAxisText.addChild(label);
         }
         createAxis.addChild(xAxis);
         setAxes(createAxis);
+        setAxesText(createAxisText);
 
         const yAxis = new Graphics();
-        yAxis.moveTo(left, top - 1).lineTo(left, bottom).stroke({ color: 0xffffff, width: 2 });
+        yAxis.moveTo(left, top).lineTo(left, bottom).stroke({ color: 0xffffff, width: 2 });
         for (let i = top; i <= bottom; i += (bottom - top) / ticks) {
             yAxis
                 .moveTo(left, i)
@@ -167,7 +176,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
             const label = new Text({ text: Math.round(p), anchor: { x: 1, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff, fontFamily: "Arial", fontWeight: "lighter" } });
             label.position.set(left - 3, i - 1);
-            createAxis.addChild(label);
+            createAxisText.addChild(label);
         }
         createAxis.addChild(yAxis);
 
@@ -246,7 +255,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
                 .stroke({ color: 0xffffff, width: 1 });
 
             equibAxes
-                .lineTo(ex, ey)
+                .moveTo(ex, ey)
                 .lineTo(left, ey)
                 .stroke({ color: 0xffffff, width: 1 });
             createAxis.addChild(equibAxes);
@@ -288,6 +297,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             app.stage.addChild(createDemand);
             app.stage.addChild(createSupply);
             app.stage.addChild(createAxis);
+            app.stage.addChild(createAxisText);
             app.stage.addChild(createEquilibrium);
 
             const totalRevenue = equilibriumPrice * equilibriumQuantity;
@@ -296,8 +306,8 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             const demandDerivativeCoeffs = differentiatePolynomial(demand.equation);
             const supplyDerivativeCoeffs = differentiatePolynomial(supply.equation);
 
-            const demandSlope = demandDerivativeCoeffs.reduce((acc, coeff, i) => acc + coeff * equilibriumQuantity ** (demandDerivativeCoeffs.length - i - 1), 0);
-            const supplySlope = supplyDerivativeCoeffs.reduce((acc, coeff, i) => acc + coeff * equilibriumQuantity ** (supplyDerivativeCoeffs.length - i - 1), 0);
+            const demandSlope = evaluatePolynomial(demandDerivativeCoeffs, equilibriumQuantity);
+            const supplySlope = evaluatePolynomial(supplyDerivativeCoeffs, equilibriumQuantity);
 
             const elasticityOfDemand = (demandSlope * equilibriumQuantity) / equilibriumPrice;
             const elasticityOfSupply = (supplySlope * equilibriumQuantity) / equilibriumPrice;
@@ -322,6 +332,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             app.stage.addChild(createDemand);
             app.stage.addChild(createSupply);
             app.stage.addChild(createAxis);
+            app.stage.addChild(createAxisText);
         }
 
         callback(data);
@@ -344,11 +355,12 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
     useEffect(() => {
         if (demandCurve) demandCurve.tint = colorMode === "light" ? 0xf82121 : 0x891212;
         if (supplyCurve) supplyCurve.tint = colorMode === "light" ? 0x101bfe : 0x090F91;
-        if (axes) axes.tint = colorMode === "light" ? 0x000000 : 0x93a0a5;
-        if (equilibrium) equilibrium.tint = colorMode === "light" ? 0xc800c7 : 0xffffff;
+        if (axesText) axesText.tint = colorMode === "light" ? 0x000000 : 0xffffff;
+        if (axes) axes.tint = colorMode === "light" ? 0x000000 : 0xc2c2c2;
+        if (equilibrium) equilibrium.tint = colorMode === "light" ? 0xc800c7 : 0x8c26a0;
         if (consumerSurplus) consumerSurplus.tint = colorMode === "light" ? 0xffc2c2 : 0x6F5454;
         if (producerSurplus) producerSurplus.tint = colorMode === "light" ? 0x979fff : 0x41456F;
-    }, [colorMode, demandCurve, supplyCurve, axes, equilibrium, consumerSurplus, producerSurplus]);
+    }, [colorMode, demandCurve, supplyCurve, axes, equilibrium, consumerSurplus, producerSurplus, axesText]);
 
     return <Box width={500} height={500} ref={ref} />
 }
