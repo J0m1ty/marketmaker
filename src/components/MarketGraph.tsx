@@ -1,5 +1,5 @@
 import { Box, useColorMode } from "@chakra-ui/react";
-import { Application, Container, Graphics, Text } from "pixi.js";
+import { Application, Assets, Container, Graphics, Text } from "pixi.js";
 import { useEffect, useRef, useState } from "react";
 import { Market, XY } from "../types";
 import { exponential, linear, polynomial, Result } from "regression";
@@ -148,7 +148,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
             const q = map(i, left, right, quantityMin, quantityMax);
 
-            const label = new Text({ text: Math.floor(q), anchor: { x: 0.5, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff } });
+            const label = new Text({ text: Math.floor(q), anchor: { x: 0.5, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff, fontFamily: "Arial", fontWeight: "lighter" } });
             label.position.set(i, app.screen.height - margin + 10);
             createAxis.addChild(label);
         }
@@ -165,7 +165,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
             const p = map(i, bottom, top, priceMin, priceMax);
 
-            const label = new Text({ text: Math.round(p), anchor: { x: 1, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff } });
+            const label = new Text({ text: Math.round(p), anchor: { x: 1, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff, fontFamily: "Arial", fontWeight: "lighter" } });
             label.position.set(left - 3, i - 1);
             createAxis.addChild(label);
         }
@@ -284,10 +284,10 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             createProducerSurplus.fill({ color: 0xffffff, alpha: 0.8 });
             app.stage.addChild(createProducerSurplus);
             setProducerSurplus(createProducerSurplus);
-
-            app.stage.addChild(createAxis);
+            
             app.stage.addChild(createDemand);
             app.stage.addChild(createSupply);
+            app.stage.addChild(createAxis);
             app.stage.addChild(createEquilibrium);
 
             const totalRevenue = equilibriumPrice * equilibriumQuantity;
@@ -319,9 +319,9 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             data.ts = consumerSurplus + producerSurplus;
         }
         else {
-            app.stage.addChild(createAxis);
             app.stage.addChild(createDemand);
             app.stage.addChild(createSupply);
+            app.stage.addChild(createAxis);
         }
 
         callback(data);
@@ -344,7 +344,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
     useEffect(() => {
         if (demandCurve) demandCurve.tint = colorMode === "light" ? 0xf82121 : 0x891212;
         if (supplyCurve) supplyCurve.tint = colorMode === "light" ? 0x101bfe : 0x090F91;
-        if (axes) axes.tint = colorMode === "light" ? 0x000000 : 0xf2f2f2;
+        if (axes) axes.tint = colorMode === "light" ? 0x000000 : 0x93a0a5;
         if (equilibrium) equilibrium.tint = colorMode === "light" ? 0xc800c7 : 0xffffff;
         if (consumerSurplus) consumerSurplus.tint = colorMode === "light" ? 0xffc2c2 : 0x6F5454;
         if (producerSurplus) producerSurplus.tint = colorMode === "light" ? 0x979fff : 0x41456F;
