@@ -86,8 +86,8 @@ export interface MarketData {
     ts: number;
 }
 
-export const isMarketData = (data: Partial<MarketData>): data is MarketData => {
-    return data.ep !== undefined && data.eq !== undefined && data.tr !== undefined && data.de !== undefined && data.se !== undefined && data.eod !== undefined && data.eos !== undefined && data.eodc !== undefined && data.eosc !== undefined && data.cs !== undefined && data.ps !== undefined && data.ts !== undefined;
+export const isMarketData = (data: any): data is MarketData => {
+    return typeof data === "object" && "ep" in data && "eq" in data && "tr" in data && "de" in data && "se" in data && "eod" in data && "eos" in data && "eodc" in data && "eosc" in data && "cs" in data && "ps" in data && "ts" in data;
 }
 
 function MarketGraph({ market, callback }: { market: Market, callback: (data: Partial<MarketData>) => void }) {
@@ -288,6 +288,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             
             data.cs = consumerSurplus;
             data.ps = producerSurplus;
+            data.ts = consumerSurplus + producerSurplus;
         }
         else {
             app.stage.addChild(createAxis);
