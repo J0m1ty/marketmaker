@@ -2,7 +2,7 @@ import { Box, useColorMode } from "@chakra-ui/react";
 import { Application, Container, Graphics, Text } from "pixi.js";
 import { useEffect, useRef, useState } from "react";
 import { Market, XY } from "../types";
-import { polynomial, Result } from "regression";
+import { exponential, linear, polynomial, Result } from "regression";
 
 const findIntersection = (demand: Result, supply: Result, range: [number, number], tolerance = 0.00001, maxIterations = 1000): XY | null => {
     let [left, right] = range;
@@ -90,6 +90,8 @@ export const isMarketData = (data: any): data is MarketData => {
     return typeof data === "object" && "ep" in data && "eq" in data && "tr" in data && "de" in data && "se" in data && "eod" in data && "eos" in data && "eodc" in data && "eosc" in data && "cs" in data && "ps" in data && "ts" in data;
 }
 
+const map = (value: number, min1: number, max1: number, min2: number, max2: number) => min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+
 function MarketGraph({ market, callback }: { market: Market, callback: (data: Partial<MarketData>) => void }) {
     const [app, setApp] = useState<Application | null>(null);
     const [demandCurve, setDemandCurve] = useState<Graphics | null>(null);
@@ -115,16 +117,16 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
         const data: Partial<MarketData> = {};
 
-        const demand = polynomial(market.demand.map(point => [point.price, point.quantity]), { order: 3 });
-        const supply = polynomial(market.supply.map(point => [point.price, point.quantity]), { order: 3 });
+        const demand = polynomial(market.demand.map(point => [point.quantity, point.price]), { order: 3, precision: 6 });
+        const supply = polynomial(market.supply.map(point => [point.quantity, point.price]), { order: 3, precision: 6 });
         data.de = demand.string;
         data.se = supply.string;
 
         const priceMin = Math.min(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
         const priceMax = Math.max(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
 
-        const quantityMin = Math.min(demand.predict(priceMin)[1], supply.predict(priceMin)[1], demand.predict(priceMax)[1], supply.predict(priceMax)[1]);
-        const quantityMax = Math.max(demand.predict(priceMin)[1], supply.predict(priceMin)[1], demand.predict(priceMax)[1], supply.predict(priceMax)[1]);
+        const quantityMin = Math.min(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
+        const quantityMax = Math.max(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
 
         const margin = 25;
         const ticks = 9;
@@ -135,22 +137,6 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
         const createAxis = new Container();
 
-        const yAxis = new Graphics();
-        yAxis.moveTo(left, top - 1).lineTo(left, bottom).stroke({ color: 0xffffff, width: 2 });
-        for (let i = top; i <= bottom; i += (bottom - top) / ticks) {
-            yAxis
-                .moveTo(left, i)
-                .lineTo(left + 10, i)
-                .stroke({ color: 0xffffff, width: 2 });
-
-            const q = (i - bottom) / (top - bottom) * (quantityMax - quantityMin) + quantityMin;
-
-            const label = new Text({ text: Math.round(q), anchor: { x: 1, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff } });
-            label.position.set(left - 3, i - 1);
-            createAxis.addChild(label);
-        }
-        createAxis.addChild(yAxis);
-
         const xAxis = new Graphics();
         xAxis.moveTo(left, bottom).lineTo(right + 1, bottom).stroke({ color: 0xffffff, width: 2 });
 
@@ -160,22 +146,49 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
                 .lineTo(i, app.screen.height - margin - 10)
                 .stroke({ color: 0xffffff, width: 2 });
 
-            const x = (i - left) / (right - left) * (priceMax - priceMin) + priceMin;
+            const q = map(i, left, right, quantityMin, quantityMax);
 
-            const label = new Text({ text: Math.floor(x), anchor: { x: 0.5, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff } });
+            const label = new Text({ text: Math.floor(q), anchor: { x: 0.5, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff } });
             label.position.set(i, app.screen.height - margin + 10);
             createAxis.addChild(label);
         }
         createAxis.addChild(xAxis);
         setAxes(createAxis);
 
-        const createDemand = new Graphics();
-        for (let i = left; i < right; i += 1) {
-            const x = (i - left) / (right - left);
-            const y = demand.predict(x * (priceMax - priceMin) + priceMin)[1];
-            const j = bottom - ((y - quantityMin) / (quantityMax - quantityMin)) * (bottom - top);
+        const yAxis = new Graphics();
+        yAxis.moveTo(left, top - 1).lineTo(left, bottom).stroke({ color: 0xffffff, width: 2 });
+        for (let i = top; i <= bottom; i += (bottom - top) / ticks) {
+            yAxis
+                .moveTo(left, i)
+                .lineTo(left + 10, i)
+                .stroke({ color: 0xffffff, width: 2 });
 
-            if (i === left) createDemand.moveTo(i, j);
+            const p = map(i, bottom, top, priceMin, priceMax);
+
+            const label = new Text({ text: Math.round(p), anchor: { x: 1, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff } });
+            label.position.set(left - 3, i - 1);
+            createAxis.addChild(label);
+        }
+        createAxis.addChild(yAxis);
+
+        const createDemand = new Graphics();
+        
+        let first = true;
+        let last: [ number, number ] | null = null;
+        for (let i = left; i < right; i += 1) {
+            const quantity = map(i, left, right, quantityMin, quantityMax);
+            const price = demand.predict(quantity)[1];
+            const j = map(price, priceMin, priceMax, bottom, top);
+
+            if (j < top || j > bottom) {
+                last = [ i, Math.min(Math.max(j, top), bottom) ];
+                continue;
+            }
+
+            if (first) {
+                createDemand.moveTo(last ? last[0] : i, last ? last[1] : j);
+                first = false;
+            }
             else createDemand.lineTo(i, j);
         }
 
@@ -183,29 +196,42 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
         setDemandCurve(createDemand);
 
         const createSupply = new Graphics();
+        
+        first = true;
+        last = null;
         for (let i = left; i < right; i += 1) {
-            const x = (i - left) / (right - left);
-            const y = supply.predict(x * (priceMax - priceMin) + priceMin)[1];
-            const j = bottom - ((y - quantityMin) / (quantityMax - quantityMin)) * (bottom - top);
+            const quantity = map(i, left, right, quantityMin, quantityMax);
+            const price = supply.predict(quantity)[1];
+            const j = map(price, priceMin, priceMax, bottom, top);
 
-            if (i === left) createSupply.moveTo(i, j);
-            else createSupply.lineTo(i, j);
+            if (j < top || j > bottom) {
+                last = [ i, Math.min(Math.max(j, top), bottom) ];
+                continue;
+            }
+
+            if (first) {
+                createSupply.moveTo(last ? last[0] : i, last ? last[1] : j);
+                first = false;
+            }
+            else {
+                createSupply.lineTo(i, j);
+            }
         }
 
         createSupply.stroke({ color: 0xffffff, width: 2 });
         setSupplyCurve(createSupply);
 
-        const intersection = findIntersection(demand, supply, [priceMin, priceMax]);
+        const intersection = findIntersection(demand, supply, [quantityMin, quantityMax]);
         if (intersection) {
 
-            const equilibriumPrice = intersection.x;
-            const equilibriumQuantity = intersection.y;
+            const equilibriumQuantity = intersection.x;
+            const equilibriumPrice = intersection.y;
 
-            data.ep = equilibriumPrice;
             data.eq = equilibriumQuantity;
+            data.ep = equilibriumPrice;
 
-            const ex = left + (equilibriumPrice - priceMin) / (priceMax - priceMin) * (right - left);
-            const ey = bottom - ((equilibriumQuantity - quantityMin) / (quantityMax - quantityMin)) * (bottom - top);
+            const ex = map(equilibriumQuantity, quantityMin, quantityMax, left, right);
+            const ey = map(equilibriumPrice, priceMin, priceMax, bottom, top);
 
             const createEquilibrium = new Graphics();
             createEquilibrium
@@ -227,30 +253,32 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
             const createConsumerSurplus = new Graphics();
             for (let i = left; i < ex; i += 1) {
-                const x = (i - left) / (right - left) * (priceMax - priceMin) + priceMin;
-                const y = demand.predict(x)[1];
-                const j = bottom - ((y - quantityMin) / (quantityMax - quantityMin)) * (bottom - top);
+                const quantity = map(i, left, ex, quantityMin, equilibriumQuantity);
+                const price = demand.predict(quantity)[1];
+                const j = map(price, priceMin, equilibriumPrice, bottom, ey);
 
                 if (i === left) createConsumerSurplus.moveTo(i, j);
                 else createConsumerSurplus.lineTo(i, j);
             }
 
+            createConsumerSurplus.lineTo(ex, ey);
             createConsumerSurplus.lineTo(left, ey);
             createConsumerSurplus.closePath();
             createConsumerSurplus.fill({ color: 0xffffff, alpha: 0.8 });
             app.stage.addChild(createConsumerSurplus);
             setConsumerSurplus(createConsumerSurplus);
-
+            
             const createProducerSurplus = new Graphics();
             for (let i = left; i < ex; i += 1) {
-                const x = (i - left) / (right - left) * (priceMax - priceMin) + priceMin;
-                const y = supply.predict(x)[1];
-                const j = bottom - ((y - quantityMin) / (quantityMax - quantityMin)) * (bottom - top);
+                const quantity = map(i, left, ex, quantityMin, equilibriumQuantity);
+                const price = supply.predict(quantity)[1];
+                const j = Math.min(Math.max(map(price, priceMin, equilibriumPrice, bottom, ey),  ey), bottom);
 
                 if (i === left) createProducerSurplus.moveTo(i, j);
                 else createProducerSurplus.lineTo(i, j);
             }
 
+            createProducerSurplus.lineTo(ex, ey);
             createProducerSurplus.lineTo(left, ey);
             createProducerSurplus.closePath();
             createProducerSurplus.fill({ color: 0xffffff, alpha: 0.8 });
@@ -268,20 +296,20 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             const demandDerivativeCoeffs = differentiatePolynomial(demand.equation);
             const supplyDerivativeCoeffs = differentiatePolynomial(supply.equation);
 
-            const demandSlope = demandDerivativeCoeffs.reduce((acc, coeff, i) => acc + coeff * equilibriumPrice ** (demandDerivativeCoeffs.length - i - 1), 0);
-            const supplySlope = supplyDerivativeCoeffs.reduce((acc, coeff, i) => acc + coeff * equilibriumPrice ** (supplyDerivativeCoeffs.length - i - 1), 0);
+            const demandSlope = demandDerivativeCoeffs.reduce((acc, coeff, i) => acc + coeff * equilibriumQuantity ** (demandDerivativeCoeffs.length - i - 1), 0);
+            const supplySlope = supplyDerivativeCoeffs.reduce((acc, coeff, i) => acc + coeff * equilibriumQuantity ** (supplyDerivativeCoeffs.length - i - 1), 0);
 
-            const elasticityOfDemand = (demandSlope * equilibriumPrice) / equilibriumQuantity;
-            const elasticityOfSupply = (supplySlope * equilibriumPrice) / equilibriumQuantity;
+            const elasticityOfDemand = (demandSlope * equilibriumQuantity) / equilibriumPrice;
+            const elasticityOfSupply = (supplySlope * equilibriumQuantity) / equilibriumPrice;
 
             data.eod = elasticityOfDemand;
             data.eos = elasticityOfSupply;
             data.eodc = categorizeElasticity(elasticityOfDemand);
             data.eosc = categorizeElasticity(elasticityOfSupply);
 
-            const demandIntegral = integratePolynomial(demand.equation, priceMin, equilibriumPrice);
-            const supplyIntegral = integratePolynomial(supply.equation, priceMin, equilibriumPrice);
-            const equilibriumArea = (equilibriumPrice - priceMin) * equilibriumQuantity;
+            const demandIntegral = integratePolynomial(demand.equation, quantityMin, equilibriumQuantity);
+            const supplyIntegral = integratePolynomial(supply.equation, quantityMin, equilibriumQuantity);
+            const equilibriumArea = (equilibriumQuantity - quantityMin) * equilibriumPrice;
 
             const consumerSurplus = demandIntegral - equilibriumArea;
             const producerSurplus = equilibriumArea - supplyIntegral;

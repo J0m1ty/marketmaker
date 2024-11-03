@@ -48,9 +48,9 @@ function FileDisplay({ content }: { content: string }) {
                 </Stack>
                 <Stack gap={0}>
                     <Text fontSize={"xl"} color={titleColor}>Market Surplus</Text>
-                    <Text>Consumer Surplus: ${marketData.cs.toPrecision(3)}</Text>
-                    <Text>Producer Surplus: ${marketData.ps.toPrecision(3)}</Text>
-                    <Text>Total Surplus: ${marketData.ts.toPrecision(3)}</Text>
+                    <Text>Consumer Surplus: ${marketData.cs.toFixed(1)}</Text>
+                    <Text>Producer Surplus: ${marketData.ps.toFixed(1)}</Text>
+                    <Text>Total Surplus: ${marketData.ts.toFixed(1)}</Text>
                 </Stack>
             </Stack> }
         </Stack>
