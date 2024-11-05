@@ -18,7 +18,7 @@ function NavigationButton({ children }: { children?: ReactNode }) {
             fontSize={"18px"}
             color={color}
             textAlign={"center"}
-            lineHeight={"1"}
+            lineHeight={2}
             sx={{
                 '&:hover': {
                     backgroundColor: hoverBg,

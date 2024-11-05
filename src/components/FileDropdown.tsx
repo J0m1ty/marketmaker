@@ -1,4 +1,4 @@
-import { Menu, MenuDivider, MenuItem, MenuList, useColorModeValue } from "@chakra-ui/react";
+import { Menu, MenuDivider, MenuGroup, MenuItem, MenuList, Text, useColorModeValue } from "@chakra-ui/react";
 import NavigationButton from "./NavigationButton";
 
 function FileDropdown({ triggerFileUploadDialog, triggerCloseActiveFile }: { triggerFileUploadDialog: () => void, triggerCloseActiveFile: () => void }) {
@@ -18,8 +18,10 @@ function FileDropdown({ triggerFileUploadDialog, triggerCloseActiveFile }: { tri
                 borderColor={menuBorderColor}
                 bg={menuBgColor}
             >
-                <MenuItem onClick={triggerFileUploadDialog} bg="inherit" sx={{ '&:hover': { backgroundColor: menuHoverBgColor } }}>Open File</MenuItem>
-                <MenuItem onClick={triggerCloseActiveFile} bg="inherit" sx={{ '&:hover': { backgroundColor: menuHoverBgColor } }}>Close File</MenuItem>
+                <MenuGroup title="Files">
+                    <MenuItem onClick={triggerFileUploadDialog} bg="inherit" sx={{ '&:hover': { backgroundColor: menuHoverBgColor } }}>Open File</MenuItem>
+                    <MenuItem onClick={triggerCloseActiveFile} bg="inherit" sx={{ '&:hover': { backgroundColor: menuHoverBgColor } }}>Close File</MenuItem>
+                </MenuGroup>
                 <MenuDivider borderColor={menuDividerBorderColor}></MenuDivider>
                 <MenuItem onClick={handleExit} bg="inherit" sx={{ '&:hover': { backgroundColor: menuHoverBgColor } }}>Exit</MenuItem>
             </MenuList>
