@@ -4,6 +4,10 @@ import { fileURLToPath } from "url";
 import Store from 'electron-store';
 import { readFile } from "fs/promises";
 
+if (require('electron-squirrel-startup')) {
+    app.quit();
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';

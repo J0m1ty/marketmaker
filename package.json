@@ -1,45 +1,106 @@
 {
-	"name": "marketmaker",
-	"private": true,
-	"type": "module",
-	"version": "0.0.0",
-	"main": "dist-electron/main.js",
-	"build": {
-		"appId": "com.marketmaker.app"
-	},
-	"scripts": {
-		"build": "farm build",
-		"start": "farm build && electron .",
-		"watch": "farm start",
-		"jest": "jest"
-	},
-	"author": "Jonathan Schultz",
-	"devDependencies": {
-		"@farmfe/cli": "^1.0.4",
-		"@farmfe/core": "^1.3.29",
-		"@farmfe/plugin-react": "^1.2.4",
-		"@types/node": "^22.7.6",
-		"@types/react": "^18.3.11",
-		"@types/react-dom": "^18.3.1",
-		"@types/regression": "^2.0.6",
-		"electron": "^33.0.1",
-		"react-refresh": "^0.14.2",
-		"typescript": "^5.6.3"
-	},
-	"dependencies": {
-		"@chakra-ui/icons": "^2.2.4",
-		"@chakra-ui/react": "^2.10.3",
-		"@emotion/react": "^11.13.3",
-		"@emotion/styled": "^11.13.0",
-		"@farmfe/js-plugin-electron": "^1.0.1",
-		"core-js": "^3.38.1",
-		"curve-interpolator": "^3.3.1",
-		"electron-store": "^10.0.0",
-		"framer-motion": "^11.11.9",
-		"pixi.js": "^8.5.1",
-		"react": "^18.3.1",
-		"react-dom": "^18.3.1",
-		"react-router-dom": "^6.27.0",
-		"regression": "^2.0.1"
-	}
+  "name": "marketmaker",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "main": "dist-electron/main.js",
+  "build": {
+    "appId": "com.jomity.app"
+  },
+  "scripts": {
+    "build": "farm build",
+    "start": "farm build && electron .",
+    "watch": "farm start",
+    "jest": "jest",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "author": "Jonathan Schultz",
+  "devDependencies": {
+    "@electron-forge/cli": "^7.5.0",
+    "@electron-forge/maker-deb": "^7.5.0",
+    "@electron-forge/maker-rpm": "^7.5.0",
+    "@electron-forge/maker-squirrel": "^7.5.0",
+    "@electron-forge/maker-zip": "^7.5.0",
+    "@farmfe/cli": "^1.0.4",
+    "@farmfe/core": "^1.3.29",
+    "@farmfe/js-plugin-electron": "^1.0.1",
+    "@farmfe/plugin-react": "^1.2.4",
+    "@types/node": "^22.7.6",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@types/regression": "^2.0.6",
+    "electron": "^33.0.1",
+    "install": "^0.13.0",
+    "react-refresh": "^0.14.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.26.0",
+    "@chakra-ui/icons": "^2.2.4",
+    "@chakra-ui/react": "^2.10.3",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@popperjs/core": "^2.11.8",
+    "@zag-js/dom-query": "^0.77.0",
+    "@zag-js/focus-visible": "^0.77.0",
+    "aria-hidden": "^1.2.4",
+    "core-js": "^3.38.1",
+    "curve-interpolator": "^3.3.1",
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^10.0.0",
+    "focus-lock": "^1.3.5",
+    "framer-motion": "^11.11.9",
+    "js-tokens": "^9.0.0",
+    "loose-envify": "^1.4.0",
+    "object-assign": "^4.1.1",
+    "pixi.js": "^8.5.1",
+    "prop-types": "^15.8.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-fast-compare": "^3.2.2",
+    "react-focus-lock": "^2.13.2",
+    "react-router-dom": "^6.27.0",
+    "regenerator-runtime": "^0.14.1",
+    "regression": "^2.0.1",
+    "tslib": "^2.8.1"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "src/assets/favicon",
+        "description": "A desktop application for viewing and analyzing simple markets.",
+        "executableName": "marketmaker"
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "win32"
+          ],
+          "config": {
+            "name": "marketmaker",
+            "icon": "src/assets/favicon"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "marketmaker",
+            "title": "Market Maker",
+            "authors": "Jonathan Schultz",
+            "description": "A desktop application for viewing and analyzing simple markets.",
+            "setupIcon": "src/assets/favicon.ico",
+            "exe": "marketmaker.exe",
+            "setupExe": "marketmakerInstaller.exe",
+            "noMsi": true,
+            "noDelta": true
+          }
+        }
+      ]
+    }
+  },
+  "pnpm": {
+    "shamefully-hoist": true
+  }
 }

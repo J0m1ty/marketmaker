@@ -119,7 +119,7 @@ function MarketGraph({ market, displayMode, callback }: { market: Market, displa
         await create.init({ resizeTo: ref.current, antialias: true, backgroundAlpha: 0 });
         TexturePool.textureOptions.scaleMode = 'nearest';
 
-        ref.current.appendChild(create.canvas);
+        ref.current.appendChild(create.canvas); 
 
         setApp(create);
     }
