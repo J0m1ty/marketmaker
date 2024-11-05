@@ -1,0 +1,45 @@
+name: Build Electron App
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest 
+
+    strategy:
+      matrix:
+        node-version: [18]
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install Dependencies
+      run: |
+        npm install -g pnpm
+        pnpm install
+
+    - name: Build and Package Electron App
+      env:
+        ELECTRON_CACHE: ${{ runner.temp }}/electron_cache
+        ELECTRON_BUILDER_CACHE: ${{ runner.temp }}/electron_builder_cache
+      run: pnpm run make
+
+    - name: Upload Installer and Zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: electron-artifacts
+        path: |
+          out/make/squirrel.windows/x64/marketmakerInstaller.exe
+          out/make/zip/win32/x64/marketmaker-win32-x64-0.0.0.zip
