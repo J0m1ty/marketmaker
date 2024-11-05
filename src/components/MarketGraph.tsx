@@ -129,17 +129,28 @@ function MarketGraph({ market, displayMode, callback }: { market: Market, displa
 
         const data: Partial<MarketData> = {};
 
-        const rawDemand = new CurveInterpolator(market.demand.map(point => [point.quantity, point.price]), { tension: 0.2, alpha: 0.5 });
+        
+        const rawDemand = new CurveInterpolator(market.demand.map(point => [point.quantity, point.price]), { tension: 0.9, alpha: 1 });
+        
+        const demandLeftPoint = rawDemand.getPointAt(0);
         const demandLeftTangent = rawDemand.getTangentAtTime(0);
-        const demandLeftYIntercept = rawDemand.getPointAt(0)[1] - (1 / Math.tan(Math.atan2(demandLeftTangent[1], demandLeftTangent[0]))) * rawDemand.getPointAt(0)[0];
+        const demandLeftSlope = demandLeftTangent[1] / demandLeftTangent[0];
+        const demandLeftYIntercept = demandLeftPoint[1] - demandLeftSlope * demandLeftPoint[0];
+
+        const demandRightPoint = rawDemand.getPointAt(1);
         const demandRightTanget = rawDemand.getTangentAtTime(1);
-        const demandRightXIntercept = rawDemand.getPointAt(1)[0] - (1 / Math.tan(Math.atan2(demandRightTanget[1], demandRightTanget[0]))) * rawDemand.getPointAt(1)[1];
+        const demandRightSlope = demandRightTanget[1] / demandRightTanget[0];
+        const demandRightXIntercept = demandRightPoint[0] - demandRightPoint[1] / demandRightSlope;
+
         const demand = new CurveInterpolator([[0, demandLeftYIntercept], ...market.demand.map(point => [point.quantity, point.price]), [demandRightXIntercept, 0]], { tension: 0.2, alpha: 0.5 });
 
-        const rawSupply = new CurveInterpolator(market.supply.map(point => [point.quantity, point.price]), { tension: 0.2, alpha: 0.5 });
+        const rawSupply = new CurveInterpolator(market.supply.map(point => [point.quantity, point.price]), { tension: 0.9, alpha: 1 });
+        
+        const supplyLeftPoint = rawSupply.getPointAt(1);
         const supplyLeftTanget = rawSupply.getTangentAtTime(1);
-        const supplyLeftXIntercept = rawSupply.getPointAt(1)[0] - (1 / Math.tan(Math.atan2(supplyLeftTanget[1], supplyLeftTanget[0]))) * rawSupply.getPointAt(1)[1];
-        const supplyLeftYIntercept = rawSupply.getPointAt(1)[1] - (1 / Math.tan(Math.atan2(supplyLeftTanget[1], supplyLeftTanget[0]))) * rawSupply.getPointAt(1)[0];
+        const supplyLeftSlope = supplyLeftTanget[1] / supplyLeftTanget[0];
+        const supplyLeftYIntercept = supplyLeftPoint[1] - supplyLeftSlope * supplyLeftPoint[0];
+        const supplyLeftXIntercept = supplyLeftPoint[0] - supplyLeftPoint[1] / supplyLeftSlope;
         let supplyLeftIntercept = supplyLeftYIntercept < 0 ? [supplyLeftXIntercept, 0] : [0, supplyLeftYIntercept];
 
         const supply = new CurveInterpolator([...market.supply.map(point => [point.quantity, point.price]), supplyLeftIntercept], { tension: 0.2, alpha: 0.5 });
@@ -436,8 +447,8 @@ function MarketGraph({ market, displayMode, callback }: { market: Market, displa
     }, [displayMode]);
 
     useEffect(() => {
-        if (demandCurve) demandCurve.tint = colorMode === "light" ? 0xf82121 : 0x891212;
-        if (supplyCurve) supplyCurve.tint = colorMode === "light" ? 0x101bfe : 0x090F91;
+        if (demandCurve) demandCurve.tint = colorMode === "light" ? 0xf82121 : 0x891212; // color is red
+        if (supplyCurve) supplyCurve.tint = colorMode === "light" ? 0x101bfe : 0x090F91; // color is blue
         if (axesText) axesText.tint = colorMode === "light" ? 0x000000 : 0xffffff;
         if (axes) axes.tint = colorMode === "light" ? 0x000000 : 0xc2c2c2;
         if (equilibrium) equilibrium.tint = colorMode === "light" ? 0xc800c7 : 0x8c26a0;
