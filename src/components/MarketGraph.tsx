@@ -165,9 +165,6 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             ? 2 * intersection.x - quantityMin
             : Math.max(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
 
-        // add support for display window
-        // add support for government intervention (price floor, price ceiling, quotas, and taxes)
-
         const margin = 35;
         const ticks = 9;
         const left = margin;
