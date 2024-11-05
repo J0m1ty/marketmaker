@@ -44,7 +44,7 @@ const Router = forwardRef<RouterRef>((_, ref) => {
         }
 
         window.electron.store.get("files").then((results: unknown) => {
-            if (!files) results = [];
+            if (!results) results = [];
             const newFiles = [...(results as FileData[]), file];
             window.electron.store.set("files", newFiles);
         });

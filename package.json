@@ -10,7 +10,8 @@
 	"scripts": {
 		"build": "farm build",
 		"start": "farm build && electron .",
-		"watch": "farm start"
+		"watch": "farm start",
+		"jest": "jest"
 	},
 	"author": "Jonathan Schultz",
 	"devDependencies": {
@@ -32,6 +33,7 @@
 		"@emotion/styled": "^11.13.0",
 		"@farmfe/js-plugin-electron": "^1.0.1",
 		"core-js": "^3.38.1",
+		"curve-interpolator": "^3.3.1",
 		"electron-store": "^10.0.0",
 		"framer-motion": "^11.11.9",
 		"pixi.js": "^8.5.1",

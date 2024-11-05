@@ -1,16 +1,34 @@
 import { Box, useColorMode } from "@chakra-ui/react";
-import { Application, Container, Graphics, Text } from "pixi.js";
+import { Application, Assets, BitmapText, Container, Graphics, Text, TexturePool } from "pixi.js";
 import { useEffect, useRef, useState } from "react";
 import { Market, XY } from "../types";
-import { polynomial, Result } from "regression";
+import { CurveInterpolator } from "curve-interpolator";
 
-const findIntersection = (demand: Result, supply: Result, range: [number, number], tolerance = 0.00001, maxIterations = 1000): XY | null => {
+const pointAt = (curve: CurveInterpolator, x: number, backwards: boolean = false) => {
+    const bounds = curve.getBoundingBox();
+    const i = map(x, bounds.min[0], bounds.max[0], backwards ? 1 : 0, backwards ? 0 : 1);
+
+    try {
+        return curve.getPointAt(i);
+    } catch (ignored) { }
+
+    return [-1, -1];
+}
+
+const tangetAt = (curve: CurveInterpolator, x: number, backwards: boolean = false) => {
+    const bounds = curve.getBoundingBox();
+    const i = map(x, bounds.min[0], bounds.max[0], backwards ? 1 : 0, backwards ? 0 : 1);
+
+    return curve.getTangentAt(i);
+}
+
+const findIntersection = (demand: CurveInterpolator, supply: CurveInterpolator, range: [number, number], tolerance = 0.1, maxIterations = 1000): XY | null => {
     let [left, right] = range;
 
-    const f = (x: number) => demand.predict(x)[1] - supply.predict(x)[1];
+    const f = (x: number) => pointAt(demand, x)[1] - pointAt(supply, x, true)[1];
 
-    if (Math.abs(f(left)) < tolerance) return { x: left, y: demand.predict(left)[1] };
-    if (Math.abs(f(right)) < tolerance) return { x: right, y: demand.predict(right)[1] };
+    if (Math.abs(f(left)) < tolerance) return { x: left, y: pointAt(demand, left)[1] };
+    if (Math.abs(f(right)) < tolerance) return { x: right, y: pointAt(demand, right)[1] };
 
     let iteration = 0;
 
@@ -19,7 +37,7 @@ const findIntersection = (demand: Result, supply: Result, range: [number, number
         const fMid = f(mid);
 
         if (Math.abs(fMid) < tolerance) {
-            return { x: mid, y: demand.predict(mid)[1] };
+            return { x: mid, y: pointAt(demand, mid)[1] };
         }
 
         if (f(left) * fMid < 0) {
@@ -29,44 +47,27 @@ const findIntersection = (demand: Result, supply: Result, range: [number, number
         }
 
         iteration += 1;
-
-        // Newton-Raphson step
-        const derivative = (f(mid + tolerance) - f(mid - tolerance)) / (2 * tolerance);
-        if (Math.abs(derivative) > tolerance) {
-            const newMid = mid - fMid / derivative;
-
-            if (newMid > left && newMid < right) {
-                const fNewMid = f(newMid);
-                if (Math.abs(fNewMid) < tolerance) {
-                    return { x: newMid, y: demand.predict(newMid)[1] };
-                }
-
-                if (f(left) * fNewMid < 0) {
-                    right = newMid;
-                } else {
-                    left = newMid;
-                }
-            }
-        }
     }
 
-    console.warn("Intersection not found within tolerance and maximum iterations.");
+    console.warn("No intersection found.");
     return null;
 };
 
-const integratePolynomial = (coeffs: number[], A: number, B: number) => {
-    const n = coeffs.length;
-    const integral = (x: number) => coeffs.reduce((acc, coeff, i) => acc + coeff * x ** (n - i) / (n - i), 0);
-    return integral(B) - integral(A);
-}
+export const integrateCurve = (curve: CurveInterpolator, from: number, to: number, reverse: boolean = false, steps = 100) => {
+    const dx = (to - from) / steps;
+    let sum = 0;
 
-const differentiatePolynomial = (coeffs: number[]) => {
-    return coeffs.slice(0, -1).map((coeff, i) => coeff * (coeffs.length - i - 1));
-}
+    for (let i = 0; i < steps; i++) {
+        const x1 = from + i * dx;
+        const x2 = x1 + dx;
+        const y1 = pointAt(curve, x1, reverse)[1];
+        const y2 = pointAt(curve, x2, reverse)[1];
 
-const evaluatePolynomial = (coeffs: number[], x: number): number => {
-    return coeffs.reduce((acc, coeff, i) => acc + coeff * Math.pow(x, coeffs.length - i - 1), 0);
-};
+        sum += (y1 + y2) * 0.5 * dx;
+    }
+
+    return sum;
+}
 
 const categorizeElasticity = (value: number) => {
     value = Math.abs(value);
@@ -81,8 +82,6 @@ export interface MarketData {
     ep: number;
     eq: number;
     tr: number;
-    de: string;
-    se: string;
     eod: number;
     eos: number;
     eodc: string;
@@ -93,10 +92,12 @@ export interface MarketData {
 }
 
 export const isMarketData = (data: any): data is MarketData => {
-    return typeof data === "object" && "ep" in data && "eq" in data && "tr" in data && "de" in data && "se" in data && "eod" in data && "eos" in data && "eodc" in data && "eosc" in data && "cs" in data && "ps" in data && "ts" in data;
+    return typeof data === "object" && "ep" in data && "eq" in data && "tr" in data && "eod" in data && "eos" in data && "eodc" in data && "eosc" in data && "cs" in data && "ps" in data && "ts" in data;
 }
 
 const map = (value: number, min1: number, max1: number, min2: number, max2: number) => min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
 function MarketGraph({ market, callback }: { market: Market, callback: (data: Partial<MarketData>) => void }) {
     const [app, setApp] = useState<Application | null>(null);
@@ -114,8 +115,21 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
         if (!ref.current || app) return;
 
         const create = new Application();
+
         await create.init({ resizeTo: ref.current, antialias: true, backgroundAlpha: 0 });
+        TexturePool.textureOptions.scaleMode = 'nearest';
+
         ref.current.appendChild(create.canvas);
+
+        Assets.addBundle('fonts', [
+            { alias: "Roboto", src: "https://fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Mu4mxK.woff2" },
+            { alias: "RobotoBold", src: "https://fonts.gstatic.com/s/roboto/v32/KFOlCnqEu92Fr1MmWUlfBBc4.woff2" }
+        ]);
+
+        await Assets.load('fonts');
+
+        console.log(Assets);
+
         setApp(create);
     }
 
@@ -124,18 +138,39 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
         const data: Partial<MarketData> = {};
 
-        const demand = polynomial(market.demand.map(point => [point.quantity, point.price]), { order: 3, precision: 6 });
-        const supply = polynomial(market.supply.map(point => [point.quantity, point.price]), { order: 3, precision: 6 });
-        data.de = demand.string;
-        data.se = supply.string;
+        const rawDemand = new CurveInterpolator(market.demand.map(point => [point.quantity, point.price]), { tension: 0.2, alpha: 0.5 });
+        const demandLeftTangent = rawDemand.getTangentAtTime(0);
+        const demandLeftYIntercept = rawDemand.getPointAt(0)[1] - (1 / Math.tan(Math.atan2(demandLeftTangent[1], demandLeftTangent[0]))) * rawDemand.getPointAt(0)[0];
+        const demandRightTanget = rawDemand.getTangentAtTime(1);
+        const demandRightXIntercept = rawDemand.getPointAt(1)[0] - (1 / Math.tan(Math.atan2(demandRightTanget[1], demandRightTanget[0]))) * rawDemand.getPointAt(1)[1];
+        const demand = new CurveInterpolator([[0, demandLeftYIntercept], ...market.demand.map(point => [point.quantity, point.price]), [demandRightXIntercept, 0]], { tension: 0.2, alpha: 0.5 });
 
-        const priceMin = Math.min(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
-        const priceMax = Math.max(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
+        const rawSupply = new CurveInterpolator(market.supply.map(point => [point.quantity, point.price]), { tension: 0.2, alpha: 0.5 });
+        const supplyLeftTanget = rawSupply.getTangentAtTime(1);
+        const supplyLeftXIntercept = rawSupply.getPointAt(1)[0] - (1 / Math.tan(Math.atan2(supplyLeftTanget[1], supplyLeftTanget[0]))) * rawSupply.getPointAt(1)[1];
+        const supplyLeftYIntercept = rawSupply.getPointAt(1)[1] - (1 / Math.tan(Math.atan2(supplyLeftTanget[1], supplyLeftTanget[0]))) * rawSupply.getPointAt(1)[0];
+        let supplyLeftIntercept = supplyLeftYIntercept < 0 ? [supplyLeftXIntercept, 0] : [0, supplyLeftYIntercept];
 
-        const quantityMin = Math.min(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
-        const quantityMax = Math.max(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
 
-        const margin = 25;
+        const supply = new CurveInterpolator([...market.supply.map(point => [point.quantity, point.price]), supplyLeftIntercept], { tension: 0.2, alpha: 0.5 });
+
+        const intersection = findIntersection(demand, supply, [Math.max(demand.getBoundingBox().min[0], supply.getBoundingBox().min[0]), Math.min(demand.getBoundingBox().max[0], supply.getBoundingBox().max[0])]);
+
+        const priceMin = 0; //Math.min(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
+        const priceMax = intersection 
+            ? 4 * intersection.y - priceMin
+            : Math.max(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
+
+        const quantityMin = 0; //Math.min(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
+        const quantityMax = intersection
+            ? 2 * intersection.x - quantityMin
+            : Math.max(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
+
+        // add support for display window
+        // add support for government intervention (price floor, price ceiling, quotas)
+        // add support for taxes
+
+        const margin = 35;
         const ticks = 9;
         const left = margin;
         const right = app.screen.width - margin;
@@ -148,6 +183,31 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
         const xAxis = new Graphics();
         xAxis.moveTo(left, bottom).lineTo(right, bottom).stroke({ color: 0xffffff, width: 2 });
 
+        const xAxisLabel = new BitmapText({
+            text: "Quantity (in units)",
+            anchor: { x: 0.5, y: 0 },
+            style: { 
+                fontSize: 14, 
+                fill: 0xffffff, 
+                fontFamily: "Kfolcnqeu92fr1mmwulfbbc4"
+            }
+        });
+        xAxisLabel.position.set((left + right) / 2, bottom + 18);
+        createAxisText.addChild(xAxisLabel);
+
+        const yAxisLabel = new BitmapText({
+            text: "Price (in dollars)",
+            anchor: { x: 0.5, y: 0 },
+            style: { 
+                fontSize: 14, 
+                fill: 0xffffff, 
+                fontFamily: "Kfolcnqeu92fr1mmwulfbbc4"
+            }
+        });
+        yAxisLabel.rotation = -Math.PI / 2;
+        yAxisLabel.position.set(left - 35, (top + bottom) / 2);
+        createAxisText.addChild(yAxisLabel);
+
         for (let i = left; i <= right; i += (right - left) / ticks) {
             xAxis
                 .moveTo(i, app.screen.height - margin)
@@ -156,13 +216,21 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
             const q = map(i, left, right, quantityMin, quantityMax);
 
-            const label = new Text({ text: Math.floor(q), anchor: { x: 0.5, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff, fontFamily: "Arial", fontWeight: "lighter" } });
+            const label = new BitmapText({
+                text: Math.round(q),
+                style: {
+                    fontSize: 12,
+                    fill: 0xffffff,
+                    fontFamily: "Roboto"
+                },
+                anchor: { x: 0.5, y: 0.5 },
+            });
+
             label.position.set(i, app.screen.height - margin + 10);
             createAxisText.addChild(label);
         }
         createAxis.addChild(xAxis);
         setAxes(createAxis);
-        setAxesText(createAxisText);
 
         const yAxis = new Graphics();
         yAxis.moveTo(left, top).lineTo(left, bottom).stroke({ color: 0xffffff, width: 2 });
@@ -174,28 +242,37 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
             const p = map(i, bottom, top, priceMin, priceMax);
 
-            const label = new Text({ text: Math.round(p), anchor: { x: 1, y: 0.5 }, style: { fontSize: 12, fill: 0xffffff, fontFamily: "Arial", fontWeight: "lighter" } });
-            label.position.set(left - 3, i - 1);
+            const label = new BitmapText({
+                text: Math.round(p),
+                style: {
+                    fontSize: 12,
+                    fill: 0xffffff,
+                    fontFamily: "Roboto"
+                },
+                anchor: { x: 1, y: 0.5 },
+            });
+
+            label.position.set(left - 5, i);
             createAxisText.addChild(label);
         }
         createAxis.addChild(yAxis);
+        setAxesText(createAxisText);
 
         const createDemand = new Graphics();
-        
+
         let first = true;
-        let last: [ number, number ] | null = null;
         for (let i = left; i < right; i += 1) {
             const quantity = map(i, left, right, quantityMin, quantityMax);
-            const price = demand.predict(quantity)[1];
+
+            if (quantity < demand.getBoundingBox().min[0] || quantity > demand.getBoundingBox().max[0]) continue;
+
+            const price = pointAt(demand, quantity)[1];
             const j = map(price, priceMin, priceMax, bottom, top);
 
-            if (j < top || j > bottom) {
-                last = [ i, Math.min(Math.max(j, top), bottom) ];
-                continue;
-            }
+            if (i < left || i > right || j < top || j > bottom) continue;
 
             if (first) {
-                createDemand.moveTo(last ? last[0] : i, last ? last[1] : j);
+                createDemand.moveTo(i, j);
                 first = false;
             }
             else createDemand.lineTo(i, j);
@@ -205,37 +282,32 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
         setDemandCurve(createDemand);
 
         const createSupply = new Graphics();
-        
+
         first = true;
-        last = null;
         for (let i = left; i < right; i += 1) {
             const quantity = map(i, left, right, quantityMin, quantityMax);
-            const price = supply.predict(quantity)[1];
+
+            if (quantity < supply.getBoundingBox().min[0] || quantity > supply.getBoundingBox().max[0]) continue;
+
+            const price = pointAt(supply, quantity, true)[1];
             const j = map(price, priceMin, priceMax, bottom, top);
 
-            if (j < top || j > bottom) {
-                last = [ i, Math.min(Math.max(j, top), bottom) ];
-                continue;
-            }
+            if (i < left || i > right || j < top || j > bottom) continue;
 
             if (first) {
-                createSupply.moveTo(last ? last[0] : i, last ? last[1] : j);
+                createSupply.moveTo(i, j);
                 first = false;
             }
-            else {
-                createSupply.lineTo(i, j);
-            }
+            else createSupply.lineTo(i, j);
         }
 
         createSupply.stroke({ color: 0xffffff, width: 2 });
         setSupplyCurve(createSupply);
 
-        const intersection = findIntersection(demand, supply, [quantityMin, quantityMax]);
         if (intersection) {
 
             const equilibriumQuantity = intersection.x;
             const equilibriumPrice = intersection.y;
-
             data.eq = equilibriumQuantity;
             data.ep = equilibriumPrice;
 
@@ -263,8 +335,11 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             const createConsumerSurplus = new Graphics();
             for (let i = left; i < ex; i += 1) {
                 const quantity = map(i, left, ex, quantityMin, equilibriumQuantity);
-                const price = demand.predict(quantity)[1];
-                const j = map(price, priceMin, equilibriumPrice, bottom, ey);
+
+                if (quantity < demand.getBoundingBox().min[0] || quantity > demand.getBoundingBox().max[0]) continue;
+
+                const price = pointAt(demand, quantity)[1];
+                const j = clamp(map(price, priceMin, equilibriumPrice, bottom, ey), top, ey);
 
                 if (i === left) createConsumerSurplus.moveTo(i, j);
                 else createConsumerSurplus.lineTo(i, j);
@@ -276,12 +351,12 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             createConsumerSurplus.fill({ color: 0xffffff, alpha: 0.8 });
             app.stage.addChild(createConsumerSurplus);
             setConsumerSurplus(createConsumerSurplus);
-            
+
             const createProducerSurplus = new Graphics();
             for (let i = left; i < ex; i += 1) {
                 const quantity = map(i, left, ex, quantityMin, equilibriumQuantity);
-                const price = supply.predict(quantity)[1];
-                const j = Math.min(Math.max(map(price, priceMin, equilibriumPrice, bottom, ey),  ey), bottom);
+                const price = pointAt(supply, quantity, true)[1];
+                const j = clamp(map(price, priceMin, equilibriumPrice, bottom, ey), ey, bottom);
 
                 if (i === left) createProducerSurplus.moveTo(i, j);
                 else createProducerSurplus.lineTo(i, j);
@@ -293,7 +368,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             createProducerSurplus.fill({ color: 0xffffff, alpha: 0.8 });
             app.stage.addChild(createProducerSurplus);
             setProducerSurplus(createProducerSurplus);
-            
+
             app.stage.addChild(createDemand);
             app.stage.addChild(createSupply);
             app.stage.addChild(createAxis);
@@ -303,30 +378,27 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             const totalRevenue = equilibriumPrice * equilibriumQuantity;
             data.tr = totalRevenue;
 
-            const demandDerivativeCoeffs = differentiatePolynomial(demand.equation);
-            const supplyDerivativeCoeffs = differentiatePolynomial(supply.equation);
+            const demandTangentVector = tangetAt(demand, equilibriumQuantity);
+            const demandSlope = demandTangentVector[1] / demandTangentVector[0];
+            const elasticityOfDemand = demandSlope * (equilibriumQuantity / equilibriumPrice);
 
-            const demandSlope = evaluatePolynomial(demandDerivativeCoeffs, equilibriumQuantity);
-            const supplySlope = evaluatePolynomial(supplyDerivativeCoeffs, equilibriumQuantity);
-
-            const elasticityOfDemand = (demandSlope * equilibriumQuantity) / equilibriumPrice;
-            const elasticityOfSupply = (supplySlope * equilibriumQuantity) / equilibriumPrice;
+            const supplyTangentVector = tangetAt(supply, equilibriumQuantity, true);
+            const supplySlope = supplyTangentVector[1] / supplyTangentVector[0];
+            const elasticityOfSupply = supplySlope * (equilibriumQuantity / equilibriumPrice);
 
             data.eod = elasticityOfDemand;
             data.eos = elasticityOfSupply;
             data.eodc = categorizeElasticity(elasticityOfDemand);
             data.eosc = categorizeElasticity(elasticityOfSupply);
 
-            const demandIntegral = integratePolynomial(demand.equation, quantityMin, equilibriumQuantity);
-            const supplyIntegral = integratePolynomial(supply.equation, quantityMin, equilibriumQuantity);
-            const equilibriumArea = (equilibriumQuantity - quantityMin) * equilibriumPrice;
-
-            const consumerSurplus = demandIntegral - equilibriumArea;
-            const producerSurplus = equilibriumArea - supplyIntegral;
-            
+            const consumerSurplus = integrateCurve(demand, 0, equilibriumQuantity) - totalRevenue
             data.cs = consumerSurplus;
+            
+            const producerSurplus = totalRevenue - integrateCurve(supply, 0, equilibriumQuantity, true);
             data.ps = producerSurplus;
-            data.ts = consumerSurplus + producerSurplus;
+            
+            const totalSurplus = consumerSurplus + producerSurplus;
+            data.ts = totalSurplus;
         }
         else {
             app.stage.addChild(createDemand);

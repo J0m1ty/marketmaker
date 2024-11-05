@@ -35,16 +35,14 @@ function FileDisplay({ content }: { content: string }) {
             { marketData && <Stack gap={10} color={contentColor} mt={5}>
                 <Stack gap={0}>
                     <Text fontSize={"xl"} color={titleColor}>Market Overview</Text>
-                    <Text>Equilibrium Price: ${marketData.ep.toPrecision(3)}</Text>
-                    <Text>Equilibrium Quantity: {marketData.eq.toPrecision(3)}</Text>
-                    <Text>Total Revenue: ${marketData.tr.toPrecision(3)}</Text>
-                    <Text>Demand Equation: {marketData.de}</Text>
-                    <Text>Supply Equation: {marketData.se}</Text>
+                    <Text>Equilibrium Price: ${marketData.ep.toFixed(3)}</Text>
+                    <Text>Equilibrium Quantity: {marketData.eq.toFixed(3)}</Text>
+                    <Text>Total Revenue: ${marketData.tr.toFixed(3)}</Text>
                 </Stack>
                 <Stack gap={0}>
                     <Text fontSize={"xl"} color={titleColor}>Price Sensitivity</Text>
-                    <Text>Elasticity of Demand: {marketData.eod.toPrecision(2)} ({marketData.eodc})</Text>
-                    <Text>Elasticity of Supply: {marketData.eos.toPrecision(2)} ({marketData.eosc})</Text>
+                    <Text>Elasticity of Demand: {marketData.eod.toFixed(2)} ({marketData.eodc})</Text>
+                    <Text>Elasticity of Supply: {marketData.eos.toFixed(2)} ({marketData.eosc})</Text>
                 </Stack>
                 <Stack gap={0}>
                     <Text fontSize={"xl"} color={titleColor}>Market Surplus</Text>
