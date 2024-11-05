@@ -1,5 +1,5 @@
 import { Box, useColorMode } from "@chakra-ui/react";
-import { Application, Assets, BitmapText, Container, Graphics, TexturePool } from "pixi.js";
+import { Application, Assets, Text, Container, Graphics, TexturePool } from "pixi.js";
 import { useEffect, useRef, useState } from "react";
 import { DisplayMode, Market, XY } from "../types";
 import { CurveInterpolator } from "curve-interpolator";
@@ -121,14 +121,6 @@ function MarketGraph({ market, displayMode, callback }: { market: Market, displa
 
         ref.current.appendChild(create.canvas);
 
-        if (!Assets.cache.has('fonts')) {
-            Assets.addBundle('fonts', [
-                { alias: "Roboto", src: "https://fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Mu4mxK.woff2" },
-            ]);
-
-            await Assets.load('fonts');
-        }
-
         setApp(create);
     }
 
@@ -191,25 +183,27 @@ function MarketGraph({ market, displayMode, callback }: { market: Market, displa
         const xAxis = new Graphics();
         xAxis.moveTo(left, bottom).lineTo(right, bottom).stroke({ color: 0xffffff, width: 2 });
 
-        const xAxisLabel = new BitmapText({
+        const xAxisLabel = new Text({
             text: "Quantity (in units)",
             anchor: { x: 0.5, y: 0 },
             style: { 
                 fontSize: 14, 
                 fill: 0xffffff, 
-                fontFamily: "Roboto"
+                fontFamily: "Roboto",
+                fontWeight: "700"
             }
         });
         xAxisLabel.position.set((left + right) / 2, bottom + 18);
         createAxisText.addChild(xAxisLabel);
 
-        const yAxisLabel = new BitmapText({
+        const yAxisLabel = new Text({
             text: "Price (in dollars)",
             anchor: { x: 0.5, y: 0 },
             style: { 
                 fontSize: 14, 
                 fill: 0xffffff, 
-                fontFamily: "Roboto"
+                fontFamily: "Roboto",
+                fontWeight: "700"
             }
         });
         yAxisLabel.rotation = -Math.PI / 2;
@@ -224,12 +218,13 @@ function MarketGraph({ market, displayMode, callback }: { market: Market, displa
 
             const q = map(i, left, right, quantityMin, quantityMax);
 
-            const label = new BitmapText({
+            const label = new Text({
                 text: Math.round(q),
                 style: {
                     fontSize: 12,
                     fill: 0xffffff,
-                    fontFamily: "Roboto"
+                    fontFamily: "Roboto",
+                    fontWeight: "100"
                 },
                 anchor: { x: 0.5, y: 0.5 },
             });
@@ -250,12 +245,13 @@ function MarketGraph({ market, displayMode, callback }: { market: Market, displa
 
             const p = map(i, bottom, top, priceMin, priceMax);
 
-            const label = new BitmapText({
+            const label = new Text({
                 text: Math.round(p),
                 style: {
                     fontSize: 12,
                     fill: 0xffffff,
-                    fontFamily: "Roboto"
+                    fontFamily: "Roboto",
+                    fontWeight: "100"
                 },
                 anchor: { x: 1, y: 0.5 },
             });
