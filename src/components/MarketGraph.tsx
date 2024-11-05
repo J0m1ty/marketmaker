@@ -3,6 +3,7 @@ import { Application, Assets, BitmapText, Container, Graphics, Text, TexturePool
 import { useEffect, useRef, useState } from "react";
 import { Market, XY } from "../types";
 import { CurveInterpolator } from "curve-interpolator";
+import { m } from "framer-motion";
 
 const pointAt = (curve: CurveInterpolator, x: number, backwards: boolean = false) => {
     const bounds = curve.getBoundingBox();
@@ -123,7 +124,6 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
         Assets.addBundle('fonts', [
             { alias: "Roboto", src: "https://fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Mu4mxK.woff2" },
-            { alias: "RobotoBold", src: "https://fonts.gstatic.com/s/roboto/v32/KFOlCnqEu92Fr1MmWUlfBBc4.woff2" }
         ]);
 
         await Assets.load('fonts');
@@ -151,14 +151,13 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
         const supplyLeftYIntercept = rawSupply.getPointAt(1)[1] - (1 / Math.tan(Math.atan2(supplyLeftTanget[1], supplyLeftTanget[0]))) * rawSupply.getPointAt(1)[0];
         let supplyLeftIntercept = supplyLeftYIntercept < 0 ? [supplyLeftXIntercept, 0] : [0, supplyLeftYIntercept];
 
-
         const supply = new CurveInterpolator([...market.supply.map(point => [point.quantity, point.price]), supplyLeftIntercept], { tension: 0.2, alpha: 0.5 });
 
         const intersection = findIntersection(demand, supply, [Math.max(demand.getBoundingBox().min[0], supply.getBoundingBox().min[0]), Math.min(demand.getBoundingBox().max[0], supply.getBoundingBox().max[0])]);
 
         const priceMin = 0; //Math.min(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
         const priceMax = intersection 
-            ? 4 * intersection.y - priceMin
+            ? 2 * intersection.y - priceMin
             : Math.max(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
 
         const quantityMin = 0; //Math.min(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
@@ -167,8 +166,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             : Math.max(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
 
         // add support for display window
-        // add support for government intervention (price floor, price ceiling, quotas)
-        // add support for taxes
+        // add support for government intervention (price floor, price ceiling, quotas, and taxes)
 
         const margin = 35;
         const ticks = 9;
@@ -189,7 +187,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             style: { 
                 fontSize: 14, 
                 fill: 0xffffff, 
-                fontFamily: "Kfolcnqeu92fr1mmwulfbbc4"
+                fontFamily: "Roboto"
             }
         });
         xAxisLabel.position.set((left + right) / 2, bottom + 18);
@@ -201,7 +199,7 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             style: { 
                 fontSize: 14, 
                 fill: 0xffffff, 
-                fontFamily: "Kfolcnqeu92fr1mmwulfbbc4"
+                fontFamily: "Roboto"
             }
         });
         yAxisLabel.rotation = -Math.PI / 2;
@@ -379,12 +377,12 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
             data.tr = totalRevenue;
 
             const demandTangentVector = tangetAt(demand, equilibriumQuantity);
-            const demandSlope = demandTangentVector[1] / demandTangentVector[0];
-            const elasticityOfDemand = demandSlope * (equilibriumQuantity / equilibriumPrice);
+            const demandSlope = demandTangentVector[0] / demandTangentVector[1];
+            const elasticityOfDemand = demandSlope * (equilibriumPrice / equilibriumQuantity);
 
             const supplyTangentVector = tangetAt(supply, equilibriumQuantity, true);
-            const supplySlope = supplyTangentVector[1] / supplyTangentVector[0];
-            const elasticityOfSupply = supplySlope * (equilibriumQuantity / equilibriumPrice);
+            const supplySlope = supplyTangentVector[0] / supplyTangentVector[1];
+            const elasticityOfSupply = supplySlope * (equilibriumPrice / equilibriumQuantity);
 
             data.eod = elasticityOfDemand;
             data.eos = elasticityOfSupply;
