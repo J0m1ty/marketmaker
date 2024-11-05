@@ -1,9 +1,8 @@
 import { Box, useColorMode } from "@chakra-ui/react";
-import { Application, Assets, BitmapText, Container, Graphics, Text, TexturePool } from "pixi.js";
+import { Application, Assets, BitmapText, Container, Graphics, TexturePool } from "pixi.js";
 import { useEffect, useRef, useState } from "react";
-import { Market, XY } from "../types";
+import { DisplayMode, Market, XY } from "../types";
 import { CurveInterpolator } from "curve-interpolator";
-import { m } from "framer-motion";
 
 const pointAt = (curve: CurveInterpolator, x: number, backwards: boolean = false) => {
     const bounds = curve.getBoundingBox();
@@ -100,7 +99,7 @@ const map = (value: number, min1: number, max1: number, min2: number, max2: numb
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-function MarketGraph({ market, callback }: { market: Market, callback: (data: Partial<MarketData>) => void }) {
+function MarketGraph({ market, displayMode, callback }: { market: Market, displayMode: DisplayMode, callback: (data: Partial<MarketData>) => void }) {
     const [app, setApp] = useState<Application | null>(null);
     const [demandCurve, setDemandCurve] = useState<Graphics | null>(null);
     const [supplyCurve, setSupplyCurve] = useState<Graphics | null>(null);
@@ -122,13 +121,13 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
         ref.current.appendChild(create.canvas);
 
-        Assets.addBundle('fonts', [
-            { alias: "Roboto", src: "https://fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Mu4mxK.woff2" },
-        ]);
+        if (!Assets.cache.has('fonts')) {
+            Assets.addBundle('fonts', [
+                { alias: "Roboto", src: "https://fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Mu4mxK.woff2" },
+            ]);
 
-        await Assets.load('fonts');
-
-        console.log(Assets);
+            await Assets.load('fonts');
+        }
 
         setApp(create);
     }
@@ -155,15 +154,29 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
 
         const intersection = findIntersection(demand, supply, [Math.max(demand.getBoundingBox().min[0], supply.getBoundingBox().min[0]), Math.min(demand.getBoundingBox().max[0], supply.getBoundingBox().max[0])]);
 
-        const priceMin = 0; //Math.min(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
-        const priceMax = intersection 
-            ? 2 * intersection.y - priceMin
-            : Math.max(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
+        let priceMin: number, priceMax: number;
+        let quantityMin: number, quantityMax: number;
 
-        const quantityMin = 0; //Math.min(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
-        const quantityMax = intersection
-            ? 2 * intersection.x - quantityMin
-            : Math.max(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
+        if (displayMode === "centered" && intersection) {
+            priceMin = 0;
+            priceMax = 2 * intersection.y - priceMin;
+
+            quantityMin = 0;
+            quantityMax = 2 * intersection.x - quantityMin;
+        }
+        else {
+            priceMin = (displayMode === "origin" || displayMode === "square") ? 0 : Math.min(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
+            priceMax = Math.max(...market.demand.map(point => point.price), ...market.supply.map(point => point.price));
+
+            quantityMin = (displayMode === "origin" || displayMode === "square") ? 0 : Math.min(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
+            quantityMax = Math.max(...market.demand.map(point => point.quantity), ...market.supply.map(point => point.quantity));
+
+            if (displayMode === "square") {
+                let max = Math.max(priceMax, quantityMax);
+                priceMax = max;
+                quantityMax = max;
+            }
+        }
 
         const margin = 35;
         const ticks = 9;
@@ -418,6 +431,13 @@ function MarketGraph({ market, callback }: { market: Market, callback: (data: Pa
     useEffect(() => {
         display();
     }, [app]);
+
+    useEffect(() => {
+        if (app) {
+            app.stage.removeChildren();
+            display();
+        }
+    }, [displayMode]);
 
     useEffect(() => {
         if (demandCurve) demandCurve.tint = colorMode === "light" ? 0xf82121 : 0x891212;

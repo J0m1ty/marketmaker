@@ -25,3 +25,5 @@ export type Market = {
     demand: Curve;
     supply: Curve;
 }
+
+export type DisplayMode = "auto" | "centered" | "origin" | "square";

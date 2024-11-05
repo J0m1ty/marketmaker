@@ -3,17 +3,20 @@ import Dropbox from "./Dropbox";
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import Tab from "./Tab";
-import { File, FileData } from "../types";
+import { DisplayMode, File, FileData } from "../types";
 import FileDisplay from "./FileDisplay";
+import React from "react";
 
 export interface RouterRef {
     triggerFileUploadDialog: () => void;
+    triggerDisplayModeChange: (mode: DisplayMode) => void;
     closeFile: (index?: number) => void;
 }
 
 const Router = forwardRef<RouterRef>((_, ref) => {
     const [activeFile, setActiveFile] = useState<File | null>(null);
     const [files, setFiles] = useState<File[]>([]);
+    const [ displayMode, setDisplayMode ] = useState<DisplayMode>("auto");
 
     const bgEmpty = useColorModeValue("white", "#1d2528");
     const bgFilled = useColorModeValue("white", "#273136");
@@ -21,9 +24,14 @@ const Router = forwardRef<RouterRef>((_, ref) => {
     const borderColor = useColorModeValue("#fafafa", "#3a4449");
 
     useImperativeHandle(ref, () => ({
+        triggerDisplayModeChange,
         triggerFileUploadDialog,
         closeFile
     }));
+
+    const triggerDisplayModeChange = (mode: DisplayMode) => {
+        setDisplayMode(mode);
+    }
 
     const triggerFileUploadDialog = async () => {
         const path = await window.electron.selectFile();
@@ -117,7 +125,7 @@ const Router = forwardRef<RouterRef>((_, ref) => {
                                 </Box>
                             }
                         </Box>
-                        { activeFile && <FileDisplay key={activeFile.path} content={activeFile.content} /> }
+                        { activeFile && <FileDisplay key={activeFile.path} content={activeFile.content} displayMode={displayMode} /> }
                     </>
                     : <Dropbox triggerFileUploadDialog={triggerFileUploadDialog} hoistFileData={addFile} />
             }

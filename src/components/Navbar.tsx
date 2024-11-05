@@ -4,8 +4,9 @@ import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { useEffect } from "react";
 import FileDropdown from "./FileDropdown";
 import ViewDropdown from "./ViewDropdown";
+import { DisplayMode } from "../types";
 
-function Navbar({ triggerFileUploadDialog, triggerCloseActiveFile }: { triggerFileUploadDialog: () => void, triggerCloseActiveFile: () => void }) {
+function Navbar({ triggerFileUploadDialog, triggerCloseActiveFile, triggerDisplayModeChange }: { triggerFileUploadDialog: () => void, triggerCloseActiveFile: () => void, triggerDisplayModeChange: (mode: DisplayMode) => void }) {
     const { colorMode, toggleColorMode } = useColorMode();
 
     const bgColor = useColorModeValue("white", "#1d2528");
@@ -52,7 +53,7 @@ function Navbar({ triggerFileUploadDialog, triggerCloseActiveFile }: { triggerFi
                         mx="2px"
                     />
                     <FileDropdown triggerFileUploadDialog={triggerFileUploadDialog} triggerCloseActiveFile={triggerCloseActiveFile} />
-                    <ViewDropdown />
+                    <ViewDropdown triggerDisplayModeChange={triggerDisplayModeChange} />
                 </Stack>
                 <IconButton
                     height="30px"

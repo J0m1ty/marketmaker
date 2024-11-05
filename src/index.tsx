@@ -15,7 +15,7 @@ const App = () => {
         <ChakraProvider theme={theme}>
             <ColorModeScript initialColorMode={theme.config.initialColorMode} />
             <Stack direction="column" gap={0} display={"flex"} flexDir={"column"} h="100vh" w="100vw">
-                <Navbar triggerFileUploadDialog={() => routerRef.current?.triggerFileUploadDialog()} triggerCloseActiveFile={() => routerRef.current?.closeFile()} />
+                <Navbar triggerFileUploadDialog={() => routerRef.current?.triggerFileUploadDialog()} triggerCloseActiveFile={() => routerRef.current?.closeFile()} triggerDisplayModeChange={(mode) => routerRef.current?.triggerDisplayModeChange(mode)} />
                 <Router ref={routerRef} />
                 <Footer />
             </Stack>

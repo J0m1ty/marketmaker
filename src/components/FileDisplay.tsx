@@ -1,9 +1,9 @@
 import { Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import MarketGraph, { isMarketData, MarketData } from "./MarketGraph";
-import { Market } from "../types";
+import { DisplayMode, Market } from "../types";
 import { useEffect, useState } from "react";
 
-function FileDisplay({ content }: { content: string }) {
+function FileDisplay({ content, displayMode }: { content: string, displayMode: DisplayMode }) {
     const [ market, setMarket ] = useState<Market | null>(null);
     const [ marketData, setMarketData ] = useState<MarketData | null>(null);
 
@@ -31,7 +31,7 @@ function FileDisplay({ content }: { content: string }) {
 
     return (
         <Stack flex={1} px={10} py={2} flexDir={"row"} display={"flex"} gap={10}>
-            <MarketGraph market={market} callback={marketDataCallback} />
+            <MarketGraph market={market} displayMode={displayMode} callback={marketDataCallback} />
             { marketData && <Stack gap={10} color={contentColor} mt={5}>
                 <Stack gap={0}>
                     <Text fontSize={"xl"} color={titleColor}>Market Overview</Text>
