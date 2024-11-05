@@ -12,8 +12,8 @@
     "start": "farm build && electron .",
     "watch": "farm start",
     "jest": "jest",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
+    "package": "farm build && electron-forge package",
+    "make": "farm build && electron-forge make"
   },
   "author": "Jonathan Schultz",
   "devDependencies": {
