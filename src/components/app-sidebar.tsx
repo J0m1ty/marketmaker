@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "./ui/sidebar"
-import { BookOpenText, ChartSpline, ExternalLink } from "lucide-react";
+import { BookOpenText, ChartSpline, CirclePlus, CircleX, ExternalLink, FileDown, FilePlus2, FileUp } from "lucide-react";
 
 export const AppSidebar = () => {
     const location = useLocation();
@@ -29,7 +29,13 @@ export const AppSidebar = () => {
                             <SidebarMenuItem>
                                 <SidebarMenuButton onClick={() => navigate("/")} isActive={location.pathname === "/"}>
                                     <ChartSpline />
-                                    <span className="translate-y-[1px]">Simulate</span>
+                                    <span className="translate-y-[1px]">Interact</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton onClick={() => navigate("/create")} isActive={location.pathname === "/create"}>
+                                    <FilePlus2 />
+                                    <span className="translate-y-[1px]">Create</span>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarMenuItem>
@@ -47,12 +53,60 @@ export const AppSidebar = () => {
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
+                {location.pathname === "/" && (
+                    <SidebarGroup>
+                        <SidebarGroupLabel>
+                            Actions
+                        </SidebarGroupLabel>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton>
+                                    <FileUp />
+                                    <span className="translate-y-[1px]">Upload</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton disabled>
+                                    <CircleX />
+                                    <span className="translate-y-[1px]">Close</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
+                {location.pathname === "/create" && (
+                    <SidebarGroup>
+                        <SidebarGroupLabel>
+                            Actions
+                        </SidebarGroupLabel>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton>
+                                    <CirclePlus />
+                                    <span className="translate-y-[1px]">New</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton>
+                                    <FileUp />
+                                    <span className="translate-y-[1px]">Upload & Edit</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton disabled>
+                                    <FileDown />
+                                    <span className="translate-y-[1px]">Save</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
             </SidebarContent>
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="sm">
-                            <span className="text-sm opacity-50">{ state === "expanded" ? "Made by Jonathan Schultz" : ""}</span>
+                            <span className="text-sm opacity-50">{state === "expanded" ? "Jonathan Schultz @ RIT" : ""}</span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>

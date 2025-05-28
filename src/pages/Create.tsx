@@ -1,4 +1,4 @@
-export const Learn = () => {
+export const Create = () => {
     return (
         <div>
             
