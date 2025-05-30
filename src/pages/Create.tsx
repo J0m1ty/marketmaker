@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/data-table";
 import { columns } from "@/model/market.columns";
@@ -6,7 +6,7 @@ import type { MarketRow } from "@/model/market.schema";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { TableButton } from "@/components/table-button";
-import { hasUserData, useCreateStore } from "@/model/market.data";
+import { hasUserData, useDataStore } from "@/model/market.data";
 import { convertToCSV, convertToMarketFile, downloadFile } from "@/lib/download";
 import { ClearDialog } from "@/components/clear-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -27,9 +27,8 @@ const columnMap: { [key: number]: keyof MarketRow } = {
 
 export const Create = () => {
     const [lines, setLines] = useState<number>(10);
-    const [filename, setFilename] = useState<string>("");
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-    const { data, resetData, updateData } = useCreateStore();
+    const { data, filename, setFilename, resetData, updateData } = useDataStore();
 
     // fill dialog
     const [showFillDialog, setShowFillDialog] = useState(false);
@@ -166,13 +165,8 @@ export const Create = () => {
 
     const handleRename = () => {
         const input = document.getElementById('filename-input') as HTMLInputElement;
-        console.log('Input element:', input);
-        console.log('Input is visible:', input && input.offsetParent !== null);
-        console.log('Input is disabled:', input && input.disabled);
-        console.log('Active element before focus:', document.activeElement);
         if (input) {
             input.focus();
-            input.select();
         }
     };
 
@@ -187,16 +181,13 @@ export const Create = () => {
                         value={filename}
                         onChange={handleFilenameChange}
                     />
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                             <TableButton className="mr-3" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={handleRename}>
+                            <DropdownMenuItem onSelect={handleRename}>
                                 Rename
-                            </DropdownMenuItem>
-                            <DropdownMenuItem variant="destructive" onClick={() => setShowConfirmDialog(true)} disabled={!hasUserData(data)}>
-                                Clear
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -237,6 +228,7 @@ export const Create = () => {
                 </div>
             </div>
             <ClearDialog
+                confirmSource="clear"
                 showConfirmDialog={showConfirmDialog}
                 setShowConfirmDialog={setShowConfirmDialog}
                 resetData={resetData}
@@ -244,7 +236,7 @@ export const Create = () => {
             <Dialog open={showFillDialog} onOpenChange={setShowFillDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Fill column #{fillColumnIndex}</DialogTitle>
+                        <DialogTitle>Populate column #{fillColumnIndex}</DialogTitle>
 
                     </DialogHeader>
                     <Tabs defaultValue={defaultFillType} className="w-full gap-4">
@@ -296,22 +288,25 @@ export const Create = () => {
                                     />
                                 </div>
                             </div>
-                            <div className="grid w-full items-center gap-2">
-                                <div className="flex flex-row items-center gap-1">
-                                    <Label htmlFor="linear_step">Step</Label>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild><Info size={16} className="-translate-y-[2px] text-neutral-700" /></TooltipTrigger>
-                                        <TooltipContent className="max-w-m">
-                                            How much each row increments the X value.
-                                        </TooltipContent>
-                                    </Tooltip>
+                            <div className="flex flex-row w-full gap-2">
+                                <div className="grid w-full items-center gap-2">
+                                    <Label htmlFor="linear_coefficient">Coefficient (m)</Label>
+                                    <Input
+                                        id="linear_coefficient"
+                                        type="number"
+                                        defaultValue={1}
+                                        onChange={(e) => setCoefficient(parseFloat(e.target.value) || 1)}
+                                    />
                                 </div>
-                                <Input
-                                    id="linear_step"
-                                    type="number"
-                                    defaultValue={1}
-                                    onChange={(e) => setStepSize(parseFloat(e.target.value) || 1)}
-                                />
+                                <div className="grid w-full items-center gap-2">
+                                    <Label htmlFor="linear_offset">Offset (b)</Label>
+                                    <Input
+                                        id="linear_offset"
+                                        type="number"
+                                        defaultValue={0}
+                                        onChange={(e) => setOffset(parseFloat(e.target.value) || 0)}
+                                    />
+                                </div>
                             </div>
                         </TabsContent>
                         <TabsContent value="power" className="flex flex-col gap-4">
@@ -359,7 +354,7 @@ export const Create = () => {
                             </div>
                             <div className="flex flex-row w-full gap-2">
                                 <div className="grid w-full items-center gap-2">
-                                    <Label htmlFor="power_coefficient">Coefficient</Label>
+                                    <Label htmlFor="power_coefficient">Coefficient (a)</Label>
                                     <Input
                                         id="power_coefficient"
                                         type="number"
@@ -368,7 +363,7 @@ export const Create = () => {
                                     />
                                 </div>
                                 <div className="grid w-full items-center gap-2">
-                                    <Label htmlFor="power_exponent">Exponent</Label>
+                                    <Label htmlFor="power_exponent">Exponent (b)</Label>
                                     <Input
                                         id="power_exponent"
                                         type="number"
@@ -377,7 +372,7 @@ export const Create = () => {
                                     />
                                 </div>
                                 <div className="grid w-full items-center gap-2">
-                                    <Label htmlFor="power_offset">Offset</Label>
+                                    <Label htmlFor="power_offset">Offset (c)</Label>
                                     <Input
                                         id="power_offset"
                                         type="number"
@@ -432,7 +427,7 @@ export const Create = () => {
                             </div>
                             <div className="flex flex-row w-full gap-2">
                                 <div className="grid w-full items-center gap-2">
-                                    <Label htmlFor="log_coefficient">Coefficient</Label>
+                                    <Label htmlFor="log_coefficient">Coefficient (a)</Label>
                                     <Input
                                         id="log_coefficient"
                                         type="number"
@@ -441,7 +436,7 @@ export const Create = () => {
                                     />
                                 </div>
                                 <div className="grid w-full items-center gap-2">
-                                    <Label htmlFor="log_offset">Offset</Label>
+                                    <Label htmlFor="log_offset">Offset (b)</Label>
                                     <Input
                                         id="log_offset"
                                         type="number"

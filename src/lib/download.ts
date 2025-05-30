@@ -1,6 +1,6 @@
 import type { MarketFile, MarketRow } from "@/model/market.schema";
 
-const sanitizeNumber = (value: string | number | undefined): string => {
+export const sanitizeNumber = (value: string | number | undefined): string => {
     if (value === undefined || value === null) return "0";
     
     const numValue = typeof value === "string" ? parseFloat(value) : value;
@@ -10,7 +10,7 @@ const sanitizeNumber = (value: string | number | undefined): string => {
     return numValue.toString();
 };
 
-const sanitizeMarketRow = (row: Partial<MarketRow>, index: number): MarketRow => {
+export const sanitizeMarketRow = (row: Partial<MarketRow>, index: number): MarketRow => {
     return {
         id: row.id ?? index + 1,
         price: sanitizeNumber(row.price),

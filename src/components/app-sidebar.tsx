@@ -1,16 +1,30 @@
 import { useLocation, useNavigate } from "react-router"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "./ui/sidebar"
 import { BookOpenText, ChartSpline, CirclePlus, CopyX, ExternalLink, FilePlus2, FileUp, SquareX } from "lucide-react";
-import { hasUserData, useCreateStore } from "@/model/market.data";
+import { hasUserData, useDataStore } from "@/model/market.data";
 import { useState } from "react";
 import { ClearDialog } from "./clear-dialog";
+import { uploadFile } from "@/lib/upload";
+import { toast } from "sonner";
 
 export const AppSidebar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { state } = useSidebar();
-    const { data, resetData } = useCreateStore();
+    const { data, setFilename, setData, resetData } = useDataStore();
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+    const handleUpload = async () => {
+        try {
+            const { filename, data } = await uploadFile();
+            setData(data);
+            setFilename(filename);
+            
+            toast.success(`File uploaded successfully!`);
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to upload file");
+        }
+    }
 
     return (
         <>
@@ -93,13 +107,16 @@ export const AppSidebar = () => {
                             </SidebarGroupLabel>
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton>
+                                    <SidebarMenuButton onClick={handleUpload}>
                                         <FileUp />
-                                        <span className="translate-y-[1px]">Upload & Edit</span>
+                                        <span className="translate-y-[1px]">Upload</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton onClick={() => setShowConfirmDialog(true)} disabled={!hasUserData(data)}>
+                                    <SidebarMenuButton
+                                        onClick={() => setShowConfirmDialog(true)}
+                                        disabled={!hasUserData(data)}
+                                    >
                                         <CirclePlus />
                                         <span className="translate-y-[1px]">New</span>
                                     </SidebarMenuButton>
@@ -119,6 +136,7 @@ export const AppSidebar = () => {
                 </SidebarFooter>
             </Sidebar>
             <ClearDialog
+                confirmSource="new"
                 showConfirmDialog={showConfirmDialog}
                 setShowConfirmDialog={setShowConfirmDialog}
                 resetData={resetData}
