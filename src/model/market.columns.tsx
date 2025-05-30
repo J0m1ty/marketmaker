@@ -49,7 +49,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
             const b = parseFloat(rowB.getValue("price") as string) || 0;
             return a - b;
         },
-        header: ({ column }) =>
+        header: ({ column, table }) =>
             <DropdownMenu>
                 <div className="flex flex-row justify-between items-center gap-1">
                     <span>
@@ -60,36 +60,20 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                     </DropdownMenuTrigger>
                 </div>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                            Sort
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                            <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
-                                Ascending
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
-                                Descending
-                            </DropdownMenuItem>
-                        </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                            Fill
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                            <DropdownMenuItem>
-                                With 1's
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                With 5's
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                With 10's
-                            </DropdownMenuItem>
-                        </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                    <DropdownMenuItem variant="destructive">
+                    <DropdownMenuItem onClick={() => {
+                        const fillColumn = (table.options.meta as MetaType)?.fillColumn;
+                        if (fillColumn) {
+                            fillColumn(column.getIndex(), true, "linear");
+                        }
+                    }}>
+                        Populate (linear)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem variant="destructive" onClick={() => {
+                        const clearColumn = (table.options.meta as MetaType)?.clearColumn;
+                        if (clearColumn) {
+                            clearColumn(column.getIndex());
+                        }
+                    }}>
                         Clear
                     </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -121,7 +105,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
             const b = parseFloat(rowB.getValue("qd") as string) || 0;
             return a - b;
         },
-        header: ({ column }) =>
+        header: ({ column, table }) =>
             <DropdownMenu>
                 <div className="flex flex-row justify-between items-center gap-1">
                     <span>
@@ -134,37 +118,41 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                 <DropdownMenuContent align="end">
                     <DropdownMenuSub>
                         <DropdownMenuSubTrigger>
-                            Sort
+                            Populate
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                            <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
-                                Ascending
+                            <DropdownMenuItem onClick={() => {
+                                const fillColumn = (table.options.meta as MetaType)?.fillColumn;
+                                if (fillColumn) {
+                                    fillColumn(column.getIndex(), true, "all");
+                                }
+                            }}>
+                                Linear
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
-                                Descending
+                            <DropdownMenuItem onClick={() => {
+                                const fillColumn = (table.options.meta as MetaType)?.fillColumn;
+                                if (fillColumn) {
+                                    fillColumn(column.getIndex(), false, "all");
+                                }
+                            }}>
+                                Curve
                             </DropdownMenuItem>
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                            Fill
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                            <DropdownMenuItem>
-                                With 1's
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                With 2's
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                With 5's
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                With 10's
-                            </DropdownMenuItem>
-                        </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                    <DropdownMenuItem variant="destructive">
+                    <DropdownMenuItem onClick={() => {
+                        const flipColumn = (table.options.meta as MetaType)?.flipColumn;
+                        if (flipColumn) {
+                            flipColumn(column.getIndex());
+                        }
+                    }}>
+                        Flip
+                    </DropdownMenuItem>
+                    <DropdownMenuItem variant="destructive" onClick={() => {
+                        const clearColumn = (table.options.meta as MetaType)?.clearColumn;
+                        if (clearColumn) {
+                            clearColumn(column.getIndex());
+                        }
+                    }}>
                         Clear
                     </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -196,7 +184,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
             const b = parseFloat(rowB.getValue("qs") as string) || 0;
             return a - b;
         },
-        header: ({ column }) =>
+        header: ({ column, table }) =>
             <DropdownMenu>
                 <div className="flex flex-row justify-between items-center gap-1">
                     <span>
@@ -209,37 +197,41 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                 <DropdownMenuContent align="end">
                     <DropdownMenuSub>
                         <DropdownMenuSubTrigger>
-                            Sort
+                            Populate
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                            <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
-                                Ascending
+                            <DropdownMenuItem onClick={() => {
+                                const fillColumn = (table.options.meta as MetaType)?.fillColumn;
+                                if (fillColumn) {
+                                    fillColumn(column.getIndex(), true, "all");
+                                }
+                            }}>
+                                Linear
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
-                                Descending
+                            <DropdownMenuItem onClick={() => {
+                                const fillColumn = (table.options.meta as MetaType)?.fillColumn;
+                                if (fillColumn) {
+                                    fillColumn(column.getIndex(), false, "all");
+                                }
+                            }}>
+                                Curve
                             </DropdownMenuItem>
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                            Fill
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                            <DropdownMenuItem>
-                                With 1's
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                With 2's
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                With 5's
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                With 10's
-                            </DropdownMenuItem>
-                        </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                    <DropdownMenuItem variant="destructive">
+                    <DropdownMenuItem onClick={() => {
+                        const flipColumn = (table.options.meta as MetaType)?.flipColumn;
+                        if (flipColumn) {
+                            flipColumn(column.getIndex());
+                        }
+                    }}>
+                        Flip
+                    </DropdownMenuItem>
+                    <DropdownMenuItem variant="destructive" onClick={() => {
+                        const clearColumn = (table.options.meta as MetaType)?.clearColumn;
+                        if (clearColumn) {
+                            clearColumn(column.getIndex());
+                        }
+                    }}>
                         Clear
                     </DropdownMenuItem>
                 </DropdownMenuContent>

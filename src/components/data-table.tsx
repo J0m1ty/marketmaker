@@ -3,18 +3,27 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 
 export interface MetaType {
     updateData?: (rowIndex: number, columnIndex: number, value?: string, submit?: boolean) => void;
+    fillColumn?: (columnIndex: Number, linear: boolean, allowed: "linear" | "all") => void;
+    flipColumn?: (columnIndex: number) => void;
+    clearColumn?: (columnIndex: number) => void;
 }
 
 interface DataTableProps<TData, TValue> extends MetaType {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
     onUpdateData?: (rowIndex: number, columnIndex: number, value?: string, submit?: boolean) => void;
+    onFillColumn?: (columnIndex: number, linear: boolean, allowed: "linear" | "all") => void;
+    onFlipColumn?: (columnIndex: number) => void;
+    onClearColumn?: (columnIndex: number) => void;
 }
 
 export const DataTable = <TData, TValue>({
     columns,
     data,
     onUpdateData,
+    onFillColumn,
+    onFlipColumn,
+    onClearColumn
 }: DataTableProps<TData, TValue>) => {
     const table = useReactTable({
         data,
@@ -22,7 +31,10 @@ export const DataTable = <TData, TValue>({
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         meta: {
-            updateData: onUpdateData
+            updateData: onUpdateData,
+            fillColumn: onFillColumn,
+            flipColumn: onFlipColumn,
+            clearColumn: onClearColumn
         }
     });
 
