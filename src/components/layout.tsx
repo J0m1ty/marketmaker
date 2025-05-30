@@ -6,7 +6,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     return (
         <SidebarProvider>
             <AppSidebar />
-            <SidebarInset>
+            <SidebarInset className="h-[calc(100svh-1rem)]">
                 <Header />
                 {children}
             </SidebarInset>
