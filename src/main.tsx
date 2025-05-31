@@ -1,22 +1,59 @@
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Route, Routes } from "react-router";
-import { App } from './pages/App.tsx';
-import { Learn } from './pages/Learn.tsx';
+import { BrowserRouter, Route, Routes } from 'react-router';
+import { Suspense, lazy } from 'react';
 import './index.css';
 import { ThemeProvider } from './components/theme-provider.tsx';
 import { Layout } from './components/layout.tsx';
-import { Create } from './pages/Create.tsx';
+import { LoadingFallback } from './components/loading-fallback.tsx';
+
+// Lazy load page components for code splitting
+const App = lazy(() =>
+    import('./pages/App.tsx').then((module) => ({ default: module.App }))
+);
+const Create = lazy(() =>
+    import('./pages/Create.tsx').then((module) => ({ default: module.Create }))
+);
+const Learn = lazy(() =>
+    import('./pages/Learn.tsx').then((module) => ({ default: module.Learn }))
+);
 
 createRoot(document.getElementById('root')!).render(
-    <ThemeProvider defaultTheme="dark" storageKey="ui-theme">
+    <ThemeProvider defaultTheme='dark' storageKey='ui-theme'>
         <BrowserRouter>
             <Layout>
                 <Routes>
-                    <Route path="/" element={<App />} />
-                    <Route path="/create" element={<Create />} />
-                    <Route path="/learn" element={<Learn />} />
+                    <Route
+                        path='/'
+                        element={
+                            <Suspense
+                                fallback={<LoadingFallback variant='default' />}
+                            >
+                                <App />
+                            </Suspense>
+                        }
+                    />
+                    <Route
+                        path='/create'
+                        element={
+                            <Suspense
+                                fallback={<LoadingFallback variant='table' />}
+                            >
+                                <Create />
+                            </Suspense>
+                        }
+                    />
+                    <Route
+                        path='/learn'
+                        element={
+                            <Suspense
+                                fallback={<LoadingFallback variant='default' />}
+                            >
+                                <Learn />
+                            </Suspense>
+                        }
+                    />
                 </Routes>
             </Layout>
         </BrowserRouter>
-    </ThemeProvider>,
+    </ThemeProvider>
 );

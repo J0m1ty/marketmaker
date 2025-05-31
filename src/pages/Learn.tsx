@@ -1,9 +1,3 @@
-
-
 export const Learn = () => {
-    return (
-        <div>
-            
-        </div>
-    );
-}
+    return <div></div>;
+};
