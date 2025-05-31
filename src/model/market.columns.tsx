@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import type { MarketRow } from "./market.schema";
+import type { MarketRow } from "../lib/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { TableButton } from "@/components/table-button";
 import { SpreadsheetInput } from "@/components/spreadsheet-input";

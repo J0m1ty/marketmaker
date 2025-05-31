@@ -1,4 +1,4 @@
-import type { MarketFile, MarketRow } from "@/model/market.schema";
+import type { MarketFile, MarketRow } from "@/lib/types";
 
 export const sanitizeNumber = (value: string | number | undefined): string => {
     if (value === undefined || value === null) return "0";
@@ -48,7 +48,7 @@ export const downloadFile = (content: string, filename: string) => {
     link.href = url;
     
     const cleanFilename = filename.replace(/\.[^/.]+$/, "") || "Untitled";
-    link.download = `${cleanFilename}.market`;
+    link.download = `${cleanFilename}.csv`;
     
     link.click();
     

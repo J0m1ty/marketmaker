@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from "react-router";
 import { App } from './pages/App.tsx';
-import { Learn } from './pages/About.tsx';
+import { Learn } from './pages/Learn.tsx';
 import './index.css';
 import { ThemeProvider } from './components/theme-provider.tsx';
 import { Layout } from './components/layout.tsx';

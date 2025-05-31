@@ -7,7 +7,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     return (
         <SidebarProvider>
             <AppSidebar />
-            <SidebarInset className="h-[calc(100svh-1rem)]">
+            <SidebarInset className="h-[calc(100svh-1rem)] overflow-x-hidden">
                 <Header />
                 {children}
                 <Toaster />
