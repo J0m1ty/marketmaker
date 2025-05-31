@@ -60,7 +60,7 @@ export const handleMarketFileUpload = async (
     onSuccess: (market: Market) => boolean | void
 ): Promise<void> => {
     try {
-        const { filename, data } = await uploadFile();
+        const { filename, data, fileSize } = await uploadFile();
         const mockFile = new File([], filename);
         const market = createMarketFromFile(mockFile, data);
         const wasAlreadyOpen = onSuccess(market);
@@ -68,7 +68,7 @@ export const handleMarketFileUpload = async (
         if (wasAlreadyOpen) {
             toast.info(`File is already open`);
         } else {
-            toast.success(`Successfully loaded ${filename}`);
+            toast.success(`Successfully loaded ${filename}.csv (${formatFileSize(fileSize)})`);
         }
     } catch (error) {
         console.log(error)

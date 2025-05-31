@@ -44,7 +44,7 @@ const parseFileObject = (file: File): Promise<MarketRow[]> => {
     });
 };
 
-export const uploadFile = (): Promise<{ filename: string, data: MarketRow[] }> => {
+export const uploadFile = (): Promise<{ filename: string, data: MarketRow[], fileSize: number }> => {
     return new Promise((resolve, reject) => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -65,7 +65,8 @@ export const uploadFile = (): Promise<{ filename: string, data: MarketRow[] }> =
                     const filename = file.name.replace(/\.[^/.]+$/, "") || "Untitled";
                     resolve({
                         filename,
-                        data
+                        data,
+                        fileSize: file.size
                     });
                 } catch (error) {
                     reject(error);

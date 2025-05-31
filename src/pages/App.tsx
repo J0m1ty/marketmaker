@@ -12,7 +12,7 @@ export const App = () => {
     }
 
     return (
-        <div className="flex flex-col w-full h-full pt-2">
+        <div className="flex flex-col w-full h-full pt-2 overflow-x-clip">
             {tabs.length > 0 ? (
                 <TabGroup />
             ): (
