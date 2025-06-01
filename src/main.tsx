@@ -6,9 +6,8 @@ import { ThemeProvider } from './components/theme-provider.tsx';
 import { Layout } from './components/layout.tsx';
 import { LoadingFallback } from './components/loading-fallback.tsx';
 
-// Lazy load page components for code splitting
-const App = lazy(() =>
-    import('./pages/App.tsx').then((module) => ({ default: module.App }))
+const Interact = lazy(() =>
+    import('./pages/Interact.tsx').then((module) => ({ default: module.Interact }))
 );
 const Create = lazy(() =>
     import('./pages/Create.tsx').then((module) => ({ default: module.Create }))
@@ -28,7 +27,7 @@ createRoot(document.getElementById('root')!).render(
                             <Suspense
                                 fallback={<LoadingFallback variant='default' />}
                             >
-                                <App />
+                                <Interact />
                             </Suspense>
                         }
                     />

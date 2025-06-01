@@ -25,6 +25,7 @@ interface MarketTabsStore {
     ) => void;
 
     getTab: (id: string) => MarketTab | undefined;
+    getActiveTab: () => MarketTab | undefined;
 }
 
 export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
@@ -142,4 +143,5 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
         })),
 
     getTab: (id) => get().tabs.find((tab) => tab.market.id === id),
+    getActiveTab: () => get().getTab(get().activeTabId || ''),
 }));
