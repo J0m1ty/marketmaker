@@ -1,11 +1,11 @@
 import { Dropzone } from '@/components/dropzone';
 import { Simulation } from '@/components/simulation';
 import { MarketOptions } from '@/components/market-options';
-import { MarketTable } from '@/components/market-table';
+import { MarketResults } from '@/components/market-results';
 import { TabGroup } from '@/components/tab-group';
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useMarketTabsStore } from '@/hooks/markets.store';
 import { handleDropzoneUpload } from '@/lib/market-upload';
+import { ScrollArea } from '@radix-ui/react-scroll-area';
 
 export const Interact = () => {
     const { tabs, openTab } = useMarketTabsStore();
@@ -19,16 +19,13 @@ export const Interact = () => {
             {tabs.length > 0 ? (
                 <>
                     <TabGroup />
-                    <ResizablePanelGroup direction="vertical">
-                        <ResizablePanel className="flex flex-row">
+                    <ScrollArea>
+                        <div className='flex flex-col lg:flex-row'>
                             <Simulation />
-                            <MarketTable />
-                        </ResizablePanel>
-                        <ResizableHandle withHandle />
-                        <ResizablePanel maxSize={20} minSize={15} collapsible={true}>
-                            <MarketOptions />
-                        </ResizablePanel>
-                    </ResizablePanelGroup>
+                            <MarketResults />
+                        </div>
+                        <MarketOptions />
+                    </ScrollArea>
                 </>
             ) : (
                 <Dropzone className='m-5' onDrop={handleDrop} />

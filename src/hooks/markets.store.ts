@@ -1,4 +1,4 @@
-import type { Market, MarketTab } from '@/lib/types';
+import type { Market, MarketData, MarketTab } from '@/lib/types';
 import { create } from 'zustand';
 
 interface MarketTabsStore {
@@ -23,6 +23,7 @@ interface MarketTabsStore {
         side: 'demand' | 'supply',
         color: string
     ) => void;
+    updateComputed: (id: string, computed: Partial<MarketData>) => void;
 
     getTab: (id: string) => MarketTab | undefined;
     getActiveTab: () => MarketTab | undefined;
@@ -32,13 +33,11 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
     tabs: [],
     activeTabId: null,
 
-    openTab: (market) => {
+    openTab: market => {
         let wasAlreadyOpen = false;
 
-        set((state) => {
-            const exists = state.tabs.find(
-                (tab) => tab.market.id === market.id
-            );
+        set(state => {
+            const exists = state.tabs.find(tab => tab.market.id === market.id);
             if (exists) {
                 wasAlreadyOpen = true;
                 return { activeTabId: market.id };
@@ -46,12 +45,27 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
 
             const newTab: MarketTab = {
                 market,
-                bounds: 'auto',
+                bounds: {
+                    type: 'auto',
+                    priceMin: 0,
+                    priceMax: 10,
+                    quantityMin: 0,
+                    quantityMax: 10,
+                },
                 curves: {
                     demand: { fit: 'linear', color: '#ff0000' },
                     supply: { fit: 'linear', color: '#00ff00' },
                 },
                 intervention: { type: 'none' },
+                computed: {
+                    equilibrium_price: 3.3,
+                    equilibrium_quantity: 2.3,
+                    arc_price_elasticity_of_demand: -2.8,
+                    arc_price_elasticity_of_supply: 1.2,
+                    consumer_surplus: 3.1,
+                    producer_surplus: 2.6,
+                    total_surplus: 5.8,
+                },
             };
 
             return {
@@ -63,9 +77,9 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
         return wasAlreadyOpen;
     },
 
-    closeTab: (id) => {
-        set((state) => {
-            const remaining = state.tabs.filter((tab) => tab.market.id !== id);
+    closeTab: id => {
+        set(state => {
+            const remaining = state.tabs.filter(tab => tab.market.id !== id);
             const newActive =
                 state.activeTabId === id
                     ? (remaining[0]?.market.id ?? null)
@@ -79,14 +93,14 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
 
     closeAllTabs: () => set(() => ({ tabs: [], activeTabId: null })),
 
-    setActiveTab: (id) => set(() => ({ activeTabId: id })),
+    setActiveTab: id => set(() => ({ activeTabId: id })),
 
     reorderTabs: (activeId, overId) => {
         set(({ tabs }) => {
             const activeIndex = tabs.findIndex(
-                (tab) => tab.market.id === activeId
+                tab => tab.market.id === activeId
             );
-            const overIndex = tabs.findIndex((tab) => tab.market.id === overId);
+            const overIndex = tabs.findIndex(tab => tab.market.id === overId);
 
             if (activeIndex === -1 || overIndex === -1) return {};
 
@@ -100,21 +114,19 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
 
     updateIntervention: (id, i) =>
         set(({ tabs }) => ({
-            tabs: tabs.map((t) =>
+            tabs: tabs.map(t =>
                 t.market.id === id ? { ...t, intervention: i } : t
             ),
         })),
 
     updateBounds: (id, b) =>
         set(({ tabs }) => ({
-            tabs: tabs.map((t) =>
-                t.market.id === id ? { ...t, bounds: b } : t
-            ),
+            tabs: tabs.map(t => (t.market.id === id ? { ...t, bounds: b } : t)),
         })),
 
     updateCurveFit: (id, side, fit) =>
         set(({ tabs }) => ({
-            tabs: tabs.map((t) =>
+            tabs: tabs.map(t =>
                 t.market.id === id
                     ? {
                           ...t,
@@ -129,7 +141,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
 
     updateCurveColor: (id, side, color) =>
         set(({ tabs }) => ({
-            tabs: tabs.map((t) =>
+            tabs: tabs.map(t =>
                 t.market.id === id
                     ? {
                           ...t,
@@ -142,6 +154,21 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
             ),
         })),
 
-    getTab: (id) => get().tabs.find((tab) => tab.market.id === id),
+    updateComputed: (id, computed) =>
+        set(({ tabs }) => ({
+            tabs: tabs.map(t =>
+                t.market.id === id
+                    ? {
+                          ...t,
+                          computed: {
+                              ...(t.computed || {}),
+                              ...computed,
+                          } as MarketData,
+                      }
+                    : t
+            ),
+        })),
+
+    getTab: id => get().tabs.find(tab => tab.market.id === id),
     getActiveTab: () => get().getTab(get().activeTabId || ''),
 }));

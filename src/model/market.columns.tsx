@@ -100,7 +100,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
             return (
                 <SpreadsheetInput
                     value={price}
-                    onChange={(event) => {
+                    onChange={event => {
                         if (updateData) {
                             updateData(
                                 row.index,
@@ -110,7 +110,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                             );
                         }
                     }}
-                    onBlur={(event) => {
+                    onBlur={event => {
                         if (updateData) {
                             updateData(
                                 row.index,
@@ -213,7 +213,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
             return (
                 <SpreadsheetInput
                     value={qd}
-                    onChange={(event) => {
+                    onChange={event => {
                         if (updateData) {
                             updateData(
                                 row.index,
@@ -223,7 +223,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                             );
                         }
                     }}
-                    onBlur={(event) => {
+                    onBlur={event => {
                         if (updateData) {
                             updateData(
                                 row.index,
@@ -326,7 +326,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
             return (
                 <SpreadsheetInput
                     value={qs}
-                    onChange={(event) => {
+                    onChange={event => {
                         if (updateData) {
                             updateData(
                                 row.index,
@@ -336,7 +336,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                             );
                         }
                     }}
-                    onBlur={(event) => {
+                    onBlur={event => {
                         if (updateData) {
                             updateData(
                                 row.index,

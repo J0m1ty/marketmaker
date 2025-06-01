@@ -73,12 +73,12 @@ export const DataTable = <TData, TValue>({
         <div className='relative overflow-auto'>
             <Table>
                 <TableHeader className='sticky top-0 bg-neutral-200 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-800'>
-                    {table.getHeaderGroups().map((headerGroup) => (
+                    {table.getHeaderGroups().map(headerGroup => (
                         <TableRow
                             key={headerGroup.id}
                             className='hover:bg-transparent'
                         >
-                            {headerGroup.headers.map((header) => {
+                            {headerGroup.headers.map(header => {
                                 return (
                                     <TableHead key={header.id}>
                                         {header.isPlaceholder

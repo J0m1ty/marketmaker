@@ -86,11 +86,11 @@ export const Create = () => {
     const handleAddRows = () => {
         const newRows = Array.from({ length: lines }, (_, index) => ({
             id: data.length + index + 1,
-            price: '0',
-            qd: '0',
-            qs: '0',
+            price: 0,
+            qd: 0,
+            qs: 0,
         }));
-        updateData((prevData) => [...prevData, ...newRows]);
+        updateData(prevData => [...prevData, ...newRows]);
     };
 
     const handleUpdateData = (
@@ -115,7 +115,7 @@ export const Create = () => {
         const propertyName = columnMap[colIndex];
         if (!propertyName) return;
 
-        updateData((prevData) =>
+        updateData(prevData =>
             prevData.map((row, index) =>
                 index === rowIndex ? { ...row, [propertyName]: clean } : row
             )
@@ -160,7 +160,7 @@ export const Create = () => {
             }
         };
 
-        updateData((prevData) =>
+        updateData(prevData =>
             prevData.map((row, index) => {
                 const value = fillValue(index);
                 const finalValue =
@@ -180,8 +180,8 @@ export const Create = () => {
         const propertyName = columnMap[columnIndex];
         if (!propertyName) return;
 
-        updateData((prevData) => {
-            const values = prevData.map((row) => row[propertyName]);
+        updateData(prevData => {
+            const values = prevData.map(row => row[propertyName]);
             const flippedValues = values.reverse();
             return prevData.map((row, index) => ({
                 ...row,
@@ -194,8 +194,8 @@ export const Create = () => {
         const propertyName = columnMap[columnIndex];
         if (!propertyName) return;
 
-        updateData((prevData) =>
-            prevData.map((row) => ({ ...row, [propertyName]: '0' }))
+        updateData(prevData =>
+            prevData.map(row => ({ ...row, [propertyName]: '0' }))
         );
     };
 
@@ -360,7 +360,7 @@ export const Create = () => {
                                         id='linear_start'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setStartingValue(
                                                 parseFloat(e.target.value) || 1
                                             )
@@ -389,7 +389,7 @@ export const Create = () => {
                                         id='linear_step'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setStepSize(
                                                 parseFloat(e.target.value) || 1
                                             )
@@ -406,7 +406,7 @@ export const Create = () => {
                                         id='linear_coefficient'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setCoefficient(
                                                 parseFloat(e.target.value) || 1
                                             )
@@ -421,7 +421,7 @@ export const Create = () => {
                                         id='linear_offset'
                                         type='number'
                                         defaultValue={0}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setOffset(
                                                 parseFloat(e.target.value) || 0
                                             )
@@ -469,7 +469,7 @@ export const Create = () => {
                                         id='power_start'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setStartingValue(
                                                 parseFloat(e.target.value) || 1
                                             )
@@ -496,7 +496,7 @@ export const Create = () => {
                                         id='power_step'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setStepSize(
                                                 parseFloat(e.target.value) || 1
                                             )
@@ -513,7 +513,7 @@ export const Create = () => {
                                         id='power_coefficient'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setCoefficient(
                                                 parseFloat(e.target.value) || 1
                                             )
@@ -528,7 +528,7 @@ export const Create = () => {
                                         id='power_exponent'
                                         type='number'
                                         defaultValue={2}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setExponent(
                                                 parseFloat(e.target.value) || 2
                                             )
@@ -543,7 +543,7 @@ export const Create = () => {
                                         id='power_offset'
                                         type='number'
                                         defaultValue={0}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setOffset(
                                                 parseFloat(e.target.value) || 0
                                             )
@@ -589,7 +589,7 @@ export const Create = () => {
                                         id='log_start'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setStartingValue(
                                                 parseFloat(e.target.value) || 1
                                             )
@@ -616,7 +616,7 @@ export const Create = () => {
                                         id='log_step'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setStepSize(
                                                 parseFloat(e.target.value) || 1
                                             )
@@ -633,7 +633,7 @@ export const Create = () => {
                                         id='log_coefficient'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setCoefficient(
                                                 parseFloat(e.target.value) || 1
                                             )
@@ -648,7 +648,7 @@ export const Create = () => {
                                         id='log_offset'
                                         type='number'
                                         defaultValue={0}
-                                        onChange={(e) =>
+                                        onChange={e =>
                                             setOffset(
                                                 parseFloat(e.target.value) || 0
                                             )
@@ -661,7 +661,7 @@ export const Create = () => {
                     <div className='flex flex-row justify-start items-center gap-2'>
                         <Checkbox
                             checked={preventNegativeValues}
-                            onCheckedChange={(checked) =>
+                            onCheckedChange={checked =>
                                 setPreventNegativeValues(
                                     checked === 'indeterminate' ? true : checked
                                 )

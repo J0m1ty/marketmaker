@@ -14,8 +14,8 @@ export function parseFileContent(
 const parseStringContent = (content: string): MarketRow[] => {
     const lines = content
         .split('\n')
-        .map((line) => line.trim())
-        .filter((line) => line && !line.startsWith('#'));
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#'));
 
     const dataLines = lines[0]?.includes('id,price,qd,qs')
         ? lines.slice(1)
@@ -24,7 +24,7 @@ const parseStringContent = (content: string): MarketRow[] => {
     return dataLines.map((line, index) => {
         const [id, price, qd, qs] = line
             .split(',')
-            .map((val) => val?.trim() || '0');
+            .map(val => val?.trim() || '0');
         return sanitizeMarketRow(
             {
                 id: parseInt(id) || undefined,
@@ -40,7 +40,7 @@ const parseStringContent = (content: string): MarketRow[] => {
 const parseFileObject = (file: File): Promise<MarketRow[]> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = e => {
             try {
                 const content = e.target?.result as string;
                 const data = parseStringContent(content);
@@ -64,7 +64,7 @@ export const uploadFile = (): Promise<{
         input.type = 'file';
         input.accept = '.csv';
 
-        input.onchange = (event) => {
+        input.onchange = event => {
             const file = (event.target as HTMLInputElement).files?.[0];
             if (!file) {
                 reject(new Error('No file selected'));
@@ -72,7 +72,7 @@ export const uploadFile = (): Promise<{
             }
 
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = e => {
                 try {
                     const content = e.target?.result as string;
                     const data = parseStringContent(content);

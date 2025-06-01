@@ -20,11 +20,11 @@ interface DataStore {
     ) => void;
 }
 
-export const useDataStore = create<DataStore>((set) => ({
+export const useDataStore = create<DataStore>(set => ({
     data: createInitialData(),
     filename: '',
-    setData: (data) => set({ data }),
-    setFilename: (filename) => set({ filename }),
+    setData: data => set({ data }),
+    setFilename: filename => set({ filename }),
     resetData: () => set({ data: createInitialData() }),
-    updateData: (updater) => set((state) => ({ data: updater(state.data) })),
+    updateData: updater => set(state => ({ data: updater(state.data) })),
 }));

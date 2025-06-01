@@ -39,7 +39,7 @@ export const convertToCSV = (marketFile: MarketFile): string => {
         `# Created: ${marketFile.createdAt}`,
         headers.join(','),
         ...marketFile.rows.map(
-            (row) => `${row.id},${row.price},${row.qd},${row.qs}`
+            row => `${row.id},${row.price},${row.qd},${row.qs}`
         ),
     ];
     return csvRows.join('\n');

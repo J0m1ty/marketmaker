@@ -7,13 +7,15 @@ import { Layout } from './components/layout.tsx';
 import { LoadingFallback } from './components/loading-fallback.tsx';
 
 const Interact = lazy(() =>
-    import('./pages/Interact.tsx').then((module) => ({ default: module.Interact }))
+    import('./pages/Interact.tsx').then(module => ({
+        default: module.Interact,
+    }))
 );
 const Create = lazy(() =>
-    import('./pages/Create.tsx').then((module) => ({ default: module.Create }))
+    import('./pages/Create.tsx').then(module => ({ default: module.Create }))
 );
 const Learn = lazy(() =>
-    import('./pages/Learn.tsx').then((module) => ({ default: module.Learn }))
+    import('./pages/Learn.tsx').then(module => ({ default: module.Learn }))
 );
 
 createRoot(document.getElementById('root')!).render(

@@ -10,7 +10,10 @@ export function Simulation() {
     const containerRef = useRef<HTMLDivElement>(null);
 
     return (
-        <div className='flex-1 w-full h-full min-w-0 min-h-0' ref={containerRef}>
+        <div
+            className='flex-1 w-full h-full min-w-0 min-h-0'
+            ref={containerRef}
+        >
             <Application
                 autoStart
                 antialias
@@ -31,5 +34,5 @@ export function Simulation() {
                 </ResizeProvider>
             </Application>
         </div>
-    )
+    );
 }

@@ -79,10 +79,10 @@ const SortableTab = ({
                     tab.market.id != activeTabId &&
                         'invisible group-hover:visible'
                 )}
-                onMouseDown={(e) => {
+                onMouseDown={e => {
                     e.stopPropagation();
                 }}
-                onClick={(e) => {
+                onClick={e => {
                     e.stopPropagation();
                     onTabClose(tab.market.id);
                 }}
@@ -132,11 +132,11 @@ export const TabGroup = () => {
                     modifiers={[restrictToParentElement]}
                 >
                     <SortableContext
-                        items={tabs.map((tab) => tab.market.id)}
+                        items={tabs.map(tab => tab.market.id)}
                         strategy={horizontalListSortingStrategy}
                     >
                         <div className='flex flex-row items-center'>
-                            {tabs.map((tab) => (
+                            {tabs.map(tab => (
                                 <SortableTab
                                     key={tab.market.id}
                                     tab={tab}

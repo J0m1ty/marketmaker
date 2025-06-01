@@ -34,7 +34,8 @@ export function ThemeProvider({
         () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
     );
     const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => {
-        const initialThemeValue = (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+        const initialThemeValue =
+            (localStorage.getItem(storageKey) as Theme) || defaultTheme;
         if (initialThemeValue === 'system') {
             return window.matchMedia('(prefers-color-scheme: dark)').matches
                 ? 'dark'
