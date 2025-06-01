@@ -1,0 +1,25 @@
+# robots.txt for Market Maker
+
+User-agent: *
+Allow: /
+
+# Allow access to main pages
+Allow: /create
+Allow: /learn
+
+# Allow access to static assets
+Allow: /assets/
+Allow: /*.css
+Allow: /*.js
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.svg
+Allow: /*.ico
+Allow: /*.webp
+Allow: /*.woff
+Allow: /*.woff2
+
+# Standard crawl delay (optional - remove if you want faster crawling)
+Crawl-delay: 1
