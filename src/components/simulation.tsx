@@ -11,7 +11,7 @@ export function Simulation() {
 
     return (
         <div
-            className='flex-1 w-full h-full min-w-0 min-h-0'
+            className='w-full h-full min-w-0 min-h-0'
             ref={containerRef}
         >
             <Application
