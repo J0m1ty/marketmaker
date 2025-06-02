@@ -75,7 +75,7 @@ export const MarketResults = () => {
                                 {resultsData.map((item, index) => (
                                     <div
                                         key={index}
-                                        className='h-12 w-full rounded-md flex flex-row items-center gap-3 px-3 bg-neutral-200 dark:bg-neutral-900'
+                                        className='h-12 w-full rounded-md flex flex-row items-center gap-3 px-3 border-1'
                                     >
                                         {item.icon}
                                         <div className='flex flex-col items-start'>
@@ -91,7 +91,7 @@ export const MarketResults = () => {
                             </div>
                         </div>
 
-                        {activeTab.intervention.type !== 'none' && (
+                        {activeTab.adjustment.mode !== 'none' && (
                             <div className='flex-1 lg:flex-none lg:pt-3'>
                                 <span className='text-lg font-semibold'>Intervention</span>
                                 {/* Intervention content will go here */}

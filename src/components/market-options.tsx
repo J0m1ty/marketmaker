@@ -5,9 +5,12 @@ import { Input } from "./ui/input";
 import { Minus } from "lucide-react";
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { ColorSelect } from "./color-select";
+import { CurveFits, type CurveFitType } from "@/lib/types";
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
 export const MarketOptions = () => {
-    const { getActiveTab, updateBounds } = useMarketTabsStore();
+    const { getActiveTab, updateBounds, updateCurveColor, updateCurves, updateCurveFit } = useMarketTabsStore();
     const [activeInput, setActiveInput] = useState(0);
 
     const activeTab = getActiveTab();
@@ -113,7 +116,7 @@ export const MarketOptions = () => {
                     </div>
                 </CardContent>
             </Card>
-            <Card className="gap-0 flex-1 dark:bg-neutral-900">
+            <Card className="gap-1 flex-1 dark:bg-neutral-900">
                 <CardHeader className="text-center text-sm">
                     Intervention
                 </CardHeader>
@@ -128,12 +131,52 @@ export const MarketOptions = () => {
                     </Select>
                 </CardContent>
             </Card>
-            <Card className="gap-0 flex-1 dark:bg-neutral-900">
+            <Card className="gap-1 flex-1 dark:bg-neutral-900">
                 <CardHeader className="text-center text-sm">
-                    Curves
+                    Curve Options
                 </CardHeader>
                 <CardContent className="px-2 sm:px-6">
-                    Hi
+                    <div className='flex flex-col gap-2'>
+                        <Tabs
+                            value={activeTab.curves.selected}
+                            onValueChange={(value) => {
+                                updateCurves(activeTab.market.id, {
+                                    ...activeTab.curves,
+                                    selected: value as 'demand' | 'supply',
+                                });
+                            }}
+                        >
+                            <TabsList className="w-full">
+                                <TabsTrigger value='demand'>Demand</TabsTrigger>
+                                <TabsTrigger value='supply'>Supply</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        <Select
+                            value={activeTab.curves[activeTab.curves.selected].fit}
+                            onValueChange={(value) => {
+                                updateCurveFit(activeTab.market.id, activeTab.curves.selected, value as CurveFitType);
+                            }}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {CurveFits.map((fit) => (
+                                    <SelectItem key={fit} value={fit}>
+                                        {fit.charAt(0).toUpperCase() + fit.slice(1)}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <ColorSelect
+                            curve={activeTab.curves.selected}
+                            hex={activeTab.curves[activeTab.curves.selected].color}
+                            setHex={(hex) => {
+                                console.log(activeTab.curves.selected, hex);
+                                updateCurveColor(activeTab.market.id, activeTab.curves.selected, hex as `#${string}`);
+                            }}
+                        />
+                    </div>
                 </CardContent>
             </Card>
         </div>

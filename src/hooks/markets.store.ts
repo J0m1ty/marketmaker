@@ -11,8 +11,12 @@ interface MarketTabsStore {
     setActiveTab: (id: string) => void;
     reorderTabs: (activeId: string, overId: string) => void;
 
-    updateIntervention: (id: string, i: MarketTab['intervention']) => void;
+    updateIntervention: (id: string, i: MarketTab['adjustment']) => void;
     updateBounds: (id: string, b: MarketTab['bounds']) => void;
+    updateCurves: (
+        id: string,
+        curves: MarketTab['curves']
+    ) => void;
     updateCurveFit: (
         id: string,
         side: 'demand' | 'supply',
@@ -21,7 +25,7 @@ interface MarketTabsStore {
     updateCurveColor: (
         id: string,
         side: 'demand' | 'supply',
-        color: string
+        color: `#${string}`
     ) => void;
     updateComputed: (id: string, computed: Partial<MarketData>) => void;
 
@@ -53,10 +57,11 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                     quantityMax: 10,
                 },
                 curves: {
-                    demand: { fit: 'linear', color: '#ff0000' },
-                    supply: { fit: 'linear', color: '#00ff00' },
+                    selected: 'demand',
+                    demand: { fit: 'linear', color: '#e91e63' },
+                    supply: { fit: 'linear', color: '#3f51b5' },
                 },
-                intervention: { type: 'none' },
+                adjustment: { mode: 'none' },
                 computed: {
                     equilibrium_price: 3.3,
                     equilibrium_quantity: 2.3,
@@ -115,13 +120,22 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
     updateIntervention: (id, i) =>
         set(({ tabs }) => ({
             tabs: tabs.map(t =>
-                t.market.id === id ? { ...t, intervention: i } : t
+                t.market.id === id ? { ...t, adjustment: i } : t
             ),
         })),
 
     updateBounds: (id, b) =>
         set(({ tabs }) => ({
             tabs: tabs.map(t => (t.market.id === id ? { ...t, bounds: b } : t)),
+        })),
+
+    updateCurves: (id, curves) =>
+        set(({ tabs }) => ({
+            tabs: tabs.map(t =>
+                t.market.id === id
+                    ? { ...t, curves }
+                    : t
+            ),
         })),
 
     updateCurveFit: (id, side, fit) =>

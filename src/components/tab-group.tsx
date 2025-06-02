@@ -24,6 +24,7 @@ import { restrictToParentElement } from '@dnd-kit/modifiers';
 interface SortableTabProps {
     tab: MarketTab;
     activeTabId: string | null;
+    activeCurveColor: string | null;
     onTabClick: (id: string) => void;
     onTabClose: (id: string) => void;
 }
@@ -31,6 +32,7 @@ interface SortableTabProps {
 const SortableTab = ({
     tab,
     activeTabId,
+    activeCurveColor,
     onTabClick,
     onTabClose,
 }: SortableTabProps) => {
@@ -51,20 +53,28 @@ const SortableTab = ({
         opacity: isDragging ? 0.5 : 1,
     };
 
+    const isActive = tab.market.id == activeTabId;
+    const activeColor = activeCurveColor || '#8b5cf6';
+
     return (
         <div
             ref={setNodeRef}
-            style={style}
             {...attributes}
             {...listeners}
             className={cn(
                 'flex flex-row items-center gap-1.5 pl-3 pt-2 pb-2 pr-1 group',
                 'border-b-2 transition-colors border-transparent hover:border-neutral-400 dark:hover:border-neutral-700',
                 'text-muted-foreground',
-                tab.market.id == activeTabId &&
-                    'text-purple-700 border-purple-700 dark:text-purple-400 dark:border-purple-400',
+                isActive && 'border-neutral-400 dark:border-neutral-700',
                 isDragging && 'border-neutral-400 dark:border-neutral-700'
             )}
+            style={{
+                ...style,
+                ...(isActive && {
+                    borderBottomColor: activeColor,
+                    color: activeColor,
+                })
+            }}
             onMouseDown={() => onTabClick(tab.market.id)}
         >
             <FileSpreadsheet size='16' />
@@ -74,11 +84,10 @@ const SortableTab = ({
             <div
                 className={cn(
                     'p-[0.12em] rounded-xs hover:bg-neutral-200 dark:hover:bg-neutral-800',
-                    tab.market.id == activeTabId &&
-                        'hover:bg-purple-100 dark:hover:bg-purple-900',
-                    tab.market.id != activeTabId &&
-                        'invisible group-hover:visible'
+                    isActive && 'hover:bg-neutral-100 dark:hover:bg-neutral-900',
+                    !isActive && 'invisible group-hover:visible'
                 )}
+                style={isActive ? { color: `${activeColor}80` } : {}}
                 onMouseDown={e => {
                     e.stopPropagation();
                 }}
@@ -94,7 +103,7 @@ const SortableTab = ({
 };
 
 export const TabGroup = () => {
-    const { tabs, activeTabId, setActiveTab, closeTab, openTab, reorderTabs } =
+    const { tabs, activeTabId, setActiveTab, closeTab, openTab, reorderTabs, getActiveTab } =
         useMarketTabsStore();
 
     const sensors = useSensors(
@@ -117,6 +126,9 @@ export const TabGroup = () => {
     };
 
     if (tabs.length === 0) return null;
+
+    const activeTab = getActiveTab();
+    const activeCurveColor = activeTab?.curves[activeTab.curves.selected]?.color || null;
 
     const handleMarketUpload = async () => {
         await handleMarketFileUpload(openTab);
@@ -141,6 +153,7 @@ export const TabGroup = () => {
                                     key={tab.market.id}
                                     tab={tab}
                                     activeTabId={activeTabId}
+                                    activeCurveColor={activeCurveColor}
                                     onTabClick={setActiveTab}
                                     onTabClose={closeTab}
                                 />

@@ -9,9 +9,9 @@ export const hasUserData = (data: Partial<MarketRow>[]) => {
             const qs = Number(row.qs ?? '0');
 
             return (
-                (!isNaN(price) && price !== 0 && `${price}` === row.price) ||
-                (!isNaN(qd) && qd !== 0 && `${qd}` === row.qd) ||
-                (!isNaN(qs) && qs !== 0 && `${qs}` === row.qs)
+                (!isNaN(price) && price !== 0 && price === row.price) ||
+                (!isNaN(qd) && qd !== 0 && qd === row.qd) ||
+                (!isNaN(qs) && qs !== 0 && qs === row.qs)
             );
         })
     );

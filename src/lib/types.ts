@@ -18,12 +18,15 @@ export type Market = {
     file: MarketFile;
 };
 
-export type CurveFitType =
-    | 'linear'
-    | 'exponential'
-    | 'logarithmic'
-    | 'power'
-    | 'polynomial';
+export const CurveFits = [
+    'linear',
+    'exponential',
+    'logarithmic',
+    'power',
+    'polynomial',
+] as const;
+
+export type CurveFitType = typeof CurveFits[number];
 
 export type AxisBounds = {
     type: 'auto' | 'manual';
@@ -71,26 +74,28 @@ export type ElasticityResult = {
     point_price_elasticity_of_supply: number;
 };
 
-export type Intervention = DiscriminatedUnion<
-    'type',
+export type Adjustment = DiscriminatedUnion<
+    'mode',
     {
-        none: {
-            result?: null;
-        };
+        none: {};
         price_floor: {
+            type: 'intervention';
             price: number;
             result?: QuantityResult & RevenueResult & WelfareResult;
         };
         price_ceiling: {
+            type: 'intervention';
             price: number;
             result?: QuantityResult & RevenueResult & WelfareResult;
         };
         per_unit_tax: {
+            type: 'intervention';
             amount: number;
             side: 'supplier' | 'consumer';
             result?: QuantityResult & RevenueResult & WelfareResult & TaxResult;
         };
         per_unit_subsidy: {
+            type: 'intervention';
             amount: number;
             side: 'supplier' | 'consumer';
             result?: QuantityResult &
@@ -99,14 +104,17 @@ export type Intervention = DiscriminatedUnion<
             SubsidyResult;
         };
         demand_shift: {
+            type: 'change';
             amount: number;
             result?: EquilibriumResult & WelfareResult;
         };
         supply_shift: {
+            type: 'change';
             amount: number;
             result?: EquilibriumResult & WelfareResult;
         };
         point_elasticity: {
+            type: 'calculation';
             quantity: number;
             result?: ElasticityResult;
         };
@@ -127,9 +135,10 @@ export type MarketTab = {
     market: Market;
     bounds: AxisBounds;
     curves: {
+        selected: 'demand' | 'supply';
         demand: { fit: CurveFitType; color: string };
         supply: { fit: CurveFitType; color: string };
     };
-    intervention: Intervention;
+    adjustment: Adjustment;
     computed?: MarketData;
 };

@@ -28,9 +28,9 @@ const parseStringContent = (content: string): MarketRow[] => {
         return sanitizeMarketRow(
             {
                 id: parseInt(id) || undefined,
-                price,
-                qd,
-                qs,
+                price: parseFloat(price) || undefined,
+                qd: parseFloat(qd) || undefined,
+                qs: parseFloat(qs) || undefined,
             },
             index
         );

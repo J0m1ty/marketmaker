@@ -16,9 +16,9 @@ export const sanitizeMarketRow = (
 ): MarketRow => {
     return {
         id: row.id ?? index + 1,
-        price: sanitizeNumber(row.price),
-        qd: sanitizeNumber(row.qd),
-        qs: sanitizeNumber(row.qs),
+        price: parseFloat(sanitizeNumber(row.price)),
+        qd: parseFloat(sanitizeNumber(row.qd)),
+        qs: parseFloat(sanitizeNumber(row.qs)),
     };
 };
 

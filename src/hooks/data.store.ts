@@ -4,9 +4,9 @@ import type { MarketRow } from '../lib/types';
 const createInitialData = () =>
     Array.from({ length: 20 }, (_, index) => ({
         id: index + 1,
-        price: '0',
-        qd: '0',
-        qs: '0',
+        price: 0,
+        qd: 0,
+        qs: 0,
     }));
 
 interface DataStore {
