@@ -4,6 +4,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Input } from "./ui/input";
 import { Minus } from "lucide-react";
 import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 export const MarketOptions = () => {
     const { getActiveTab, updateBounds } = useMarketTabsStore();
@@ -116,15 +117,22 @@ export const MarketOptions = () => {
                 <CardHeader className="text-center text-sm">
                     Intervention
                 </CardHeader>
-                <CardContent>
-                    Hi
+                <CardContent className="px-2 sm:px-6">
+                    <Select>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select effect" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </CardContent>
             </Card>
             <Card className="gap-0 flex-1 dark:bg-neutral-900">
                 <CardHeader className="text-center text-sm">
                     Curves
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-2 sm:px-6">
                     Hi
                 </CardContent>
             </Card>

@@ -19,16 +19,16 @@ export const Interact = () => {
                 <>
                     <TabGroup />
                     <div className='flex-1 min-h-0 overflow-auto lg:overflow-hidden lg:flex lg:flex-col'>
-                         <div className='flex flex-col lg:flex-row lg:flex-1 lg:min-h-0'>
-                            <div className='w-full lg:min-w-0'>
+                        <div className="flex flex-col lg:flex-row lg:flex-1 lg:min-h-0">
+                            <div className="w-full lg:flex-1 lg:min-w-0">
                                 <Simulation />
                             </div>
-                            
+
                             <div className='flex-shrink-0 lg:min-w-60'>
                                 <MarketResults />
                             </div>
                         </div>
-                        
+
                         <div className='flex-shrink-0'>
                             <MarketOptions />
                         </div>

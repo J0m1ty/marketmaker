@@ -11,10 +11,11 @@ export function Simulation() {
 
     return (
         <div
-            className='w-full h-full min-w-0 min-h-0'
+            className='w-full aspect-square min-w-0 relative lg:aspect-auto lg:h-full'
             ref={containerRef}
         >
             <Application
+                className="absolute inset-0"
                 autoStart
                 antialias
                 autoDensity
