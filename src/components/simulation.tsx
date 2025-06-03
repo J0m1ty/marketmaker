@@ -1,12 +1,9 @@
-import { Application, useExtend } from '@pixi/react';
-import { Container, Graphics, Text } from 'pixi.js';
+import { Application } from '@pixi/react';
 import { useRef } from 'react';
 import { ResizeProvider } from './pixi/resize-provider';
 import { Graph } from './pixi/graph';
 
 export function Simulation() {
-    useExtend({ Container, Graphics, Text });
-
     const containerRef = useRef<HTMLDivElement>(null);
 
     return (

@@ -38,7 +38,6 @@ export const ResizeProvider = ({ observe, children }: ResizeProviderProps) => {
         observer.observe(observe.current);
 
         const listener = (width: number, height: number) => {
-            console.log('resize', width, height);
             setSize({ width, height });
         };
 
