@@ -26,7 +26,7 @@ export const CurveFits = [
     'polynomial',
 ] as const;
 
-export type CurveFitType = typeof CurveFits[number];
+export type CurveFitType = (typeof CurveFits)[number];
 
 export type AxisBounds = {
     type: 'auto' | 'manual';
@@ -42,12 +42,9 @@ export type EquilibriumResult = {
 };
 
 export type QuantityResult = {
+    price: number;
     quantity_demanded: number;
     quantity_supplied: number;
-};
-
-export type RevenueResult = {
-    total_revenue: number;
 };
 
 export type WelfareResult = {
@@ -74,6 +71,17 @@ export type ElasticityResult = {
     point_price_elasticity_of_supply: number;
 };
 
+export const AdjustmentModes = [
+    'none',
+    'price_floor',
+    'price_ceiling',
+    'per_unit_tax',
+    'per_unit_subsidy',
+    'demand_shift',
+    'supply_shift',
+    'point_elasticity',
+] as const;
+
 export type Adjustment = DiscriminatedUnion<
     'mode',
     {
@@ -81,27 +89,26 @@ export type Adjustment = DiscriminatedUnion<
         price_floor: {
             type: 'intervention';
             price: number;
-            result?: QuantityResult & RevenueResult & WelfareResult;
+            result?: QuantityResult & WelfareResult;
         };
         price_ceiling: {
             type: 'intervention';
             price: number;
-            result?: QuantityResult & RevenueResult & WelfareResult;
+            result?: QuantityResult & WelfareResult;
         };
         per_unit_tax: {
             type: 'intervention';
             amount: number;
             side: 'supplier' | 'consumer';
-            result?: QuantityResult & RevenueResult & WelfareResult & TaxResult;
+            result?: QuantityResult & WelfareResult & TaxResult;
         };
         per_unit_subsidy: {
             type: 'intervention';
             amount: number;
             side: 'supplier' | 'consumer';
             result?: QuantityResult &
-            RevenueResult &
-            WelfareResult &
-            SubsidyResult;
+                WelfareResult &
+                SubsidyResult;
         };
         demand_shift: {
             type: 'change';
@@ -118,12 +125,29 @@ export type Adjustment = DiscriminatedUnion<
             quantity: number;
             result?: ElasticityResult;
         };
-    }
+    },
+    (typeof AdjustmentModes)[number]
 >;
+
+export const groupedAdjustments: Record<
+    string,
+    (typeof AdjustmentModes)[number][]
+> = {
+    none: ['none'],
+    intervention: [
+        'price_floor',
+        'price_ceiling',
+        'per_unit_tax',
+        'per_unit_subsidy',
+    ],
+    change: ['demand_shift', 'supply_shift'],
+    calculation: ['point_elasticity'],
+};
 
 export type MarketData = {
     equilibrium_price: number;
     equilibrium_quantity: number;
+    total_revenue: number;
     arc_price_elasticity_of_demand: number;
     arc_price_elasticity_of_supply: number;
     consumer_surplus: number;

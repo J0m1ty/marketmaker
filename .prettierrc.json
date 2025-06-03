@@ -9,11 +9,11 @@
     "jsxSingleQuote": true,
     "bracketSpacing": true,
     "bracketSameLine": false,
-    "arrowParens": "avoid",
+    "arrowParens": "always",
     "endOfLine": "lf",
     "embeddedLanguageFormatting": "auto",
-    "proseWrap": "preserve",
-    "htmlWhitespaceSensitivity": "css",
+    "proseWrap": "always",
+    "htmlWhitespaceSensitivity": "ignore",
     "vueIndentScriptAndStyle": false,
-    "experimentalTernaries": false
+    "experimentalTernaries": true
 }

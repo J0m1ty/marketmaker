@@ -114,8 +114,8 @@ importers:
         specifier: ^4.1.7
         version: 4.1.7
       ts-safe-union:
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.1.0
+        version: 1.1.0
       zod:
         specifier: ^3.25.32
         version: 3.25.32
@@ -1873,8 +1873,8 @@ packages:
     resolution: {integrity: sha512-tX5e7OM1HnYr2+a2C/4V0htOcSQcoSTH9KgJnVvNm5zm/cyEWKJ7j7YutsH9CxMdtOkkLFy2AHrMci9IM8IPZQ==}
     engines: {node: '>=12.0.0'}
 
-  ts-safe-union@1.0.2:
-    resolution: {integrity: sha512-q5t+kaLlN+JLYHp/USRcYqmEqIkvEcMfUSuC7Y9AiPMEoBW+KRLR5GqH+SefdDC6bNEsXXV5IgLrTnc11DG79A==}
+  ts-safe-union@1.1.0:
+    resolution: {integrity: sha512-S6og3UGiA2aicGwpQ6vQHbuntkdM3rxpI1VNi4eeQGdD4/x2u9akvGhaTT+4nlc6uE60xnZAdCqf2D3QPF1ZwQ==}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -3603,7 +3603,7 @@ snapshots:
       fdir: 6.4.4(picomatch@4.0.2)
       picomatch: 4.0.2
 
-  ts-safe-union@1.0.2: {}
+  ts-safe-union@1.1.0: {}
 
   tslib@2.8.1: {}
 
