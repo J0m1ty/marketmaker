@@ -236,39 +236,37 @@ export const createPriceFloor = ({
             return dataX >= qd && dataX <= quantity;
         });
 
-
-        dwlGraphics.moveTo(Math.max(qdScreenX, effectiveLeftX), floorScreenY);
-
         if (demandPointsInDWL.length >= 2) {
+            dwlGraphics.moveTo(Math.max(qdScreenX, effectiveLeftX), floorScreenY);
+
+
             for (const point of demandPointsInDWL) {
                 dwlGraphics.lineTo(point.x, point.y);
             }
-        } else {
 
-        }
 
-        if (supplyPointsInDWL.length >= 2) {
+            if (supplyPointsInDWL.length >= 2) {
+                for (let i = supplyPointsInDWL.length - 1; i >= 0; i--) {
+                    const point = supplyPointsInDWL[i];
+                    dwlGraphics.lineTo(point.x, point.y);
+                }
 
-            for (let i = supplyPointsInDWL.length - 1; i >= 0; i--) {
-                const point = supplyPointsInDWL[i];
-                dwlGraphics.lineTo(point.x, point.y);
+                if (supplyPointsInDWL[supplyPointsInDWL.length - 1].y < bottom) {
+                    dwlGraphics.lineTo(Math.max(qdScreenX, effectiveLeftX), bottom);
+                }
+            } else {
+                dwlGraphics.lineTo(qdScreenX, bottom);
             }
 
-            if (supplyPointsInDWL[supplyPointsInDWL.length - 1].y < bottom) {
-                dwlGraphics.lineTo(Math.max(qdScreenX, effectiveLeftX), bottom);
-            }
-        } else {
-            dwlGraphics.lineTo(qdScreenX, bottom);
+            dwlGraphics.closePath();
+
+            dwlGraphics.fill({
+                color,
+                alpha: 0.3,
+            });
+
+            equilibriumContainer.addChild(dwlGraphics);
         }
-
-        dwlGraphics.closePath();
-
-        dwlGraphics.fill({
-            color,
-            alpha: 0.3,
-        });
-
-        equilibriumContainer.addChild(dwlGraphics);
     }
 
     return {
