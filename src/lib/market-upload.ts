@@ -48,21 +48,15 @@ export const handleDropzoneUpload = async (
         if (wasAlreadyOpen) {
             toast.info(`File is already open`);
         } else {
-            toast.success(
-                `Successfully loaded ${file.name} (${formatFileSize(file.size)})`
-            );
+            toast.success(`Successfully loaded ${file.name} (${formatFileSize(file.size)})`);
         }
     } catch (error) {
         console.error('Error parsing file:', error);
-        toast.error(
-            `Failed to load ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
+        toast.error(`Failed to load ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 };
 
-export const handleMarketFileUpload = async (
-    onSuccess: (market: Market) => boolean | void
-): Promise<void> => {
+export const handleMarketFileUpload = async (onSuccess: (market: Market) => boolean | void): Promise<void> => {
     try {
         const { filename, data, fileSize } = await uploadFile();
         const mockFile = new File([], filename);
@@ -72,9 +66,7 @@ export const handleMarketFileUpload = async (
         if (wasAlreadyOpen) {
             toast.info(`File is already open`);
         } else {
-            toast.success(
-                `Successfully loaded ${filename}.csv (${formatFileSize(fileSize)})`
-            );
+            toast.success(`Successfully loaded ${filename}.csv (${formatFileSize(fileSize)})`);
         }
     } catch (error) {
         console.log(error);

@@ -12,27 +12,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { TableButton } from '@/components/table-button';
 import { useDataStore } from '@/hooks/data.store';
-import {
-    convertToCSV,
-    convertToMarketFile,
-    downloadFile,
-} from '@/lib/download';
+import { convertToCSV, convertToMarketFile, downloadFile } from '@/lib/download';
 import { ClearDialog } from '@/components/clear-dialog';
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Info, SquareFunction } from 'lucide-react';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Checkbox } from '@/components/ui/checkbox';
 import { hasUserData } from '@/lib/sheet';
 
@@ -48,21 +34,14 @@ const columnMap: { [key: number]: keyof MarketRow } = {
 export const Create = () => {
     const [lines, setLines] = useState<number>(10);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-    const { data, filename, setFilename, resetData, updateData } =
-        useDataStore();
+    const { data, filename, setFilename, resetData, updateData } = useDataStore();
 
     // fill dialog
     const [showFillDialog, setShowFillDialog] = useState(false);
     const [fillColumnIndex, setFillColumnIndex] = useState<number>(0);
-    const [selectedFillType, setSelectedFillType] = useState<
-        'linear' | 'power' | 'logarithmic'
-    >('linear');
-    const [defaultFillType, setDefaultFillType] = useState<
-        'linear' | 'power' | 'logarithmic'
-    >('linear');
-    const [allowedFillType, setAllowedFillType] = useState<'linear' | 'all'>(
-        'linear'
-    );
+    const [selectedFillType, setSelectedFillType] = useState<'linear' | 'power' | 'logarithmic'>('linear');
+    const [defaultFillType, setDefaultFillType] = useState<'linear' | 'power' | 'logarithmic'>('linear');
+    const [allowedFillType, setAllowedFillType] = useState<'linear' | 'all'>('linear');
 
     // fill options
     const [startingValue, setStartingValue] = useState<number>(1);
@@ -70,8 +49,7 @@ export const Create = () => {
     const [coefficient, setCoefficient] = useState<number>(1);
     const [exponent, setExponent] = useState<number>(2);
     const [offset, setOffset] = useState<number>(0);
-    const [preventNegativeValues, setPreventNegativeValues] =
-        useState<boolean>(true);
+    const [preventNegativeValues, setPreventNegativeValues] = useState<boolean>(true);
 
     const handleLinesChange = (e: ChangeEvent<HTMLInputElement>) => {
         const sanitized = e.target.value.replace(NUMERIC_ILLEGAL_CHARS, '');
@@ -90,23 +68,16 @@ export const Create = () => {
             qd: 0,
             qs: 0,
         }));
-        updateData(prevData => [...prevData, ...newRows]);
+        updateData((prevData) => [...prevData, ...newRows]);
     };
 
-    const handleUpdateData = (
-        rowIndex: number,
-        colIndex: number,
-        value?: string,
-        submit?: boolean
-    ) => {
+    const handleUpdateData = (rowIndex: number, colIndex: number, value?: string, submit?: boolean) => {
         let clean = (value ?? '').replace(/[^\d.]/g, '');
 
         if (submit) {
             const dotIndex = clean.indexOf('.');
             if (dotIndex !== -1) {
-                clean =
-                    clean.substring(0, dotIndex + 1) +
-                    clean.substring(dotIndex + 1).replace(/\./g, '');
+                clean = clean.substring(0, dotIndex + 1) + clean.substring(dotIndex + 1).replace(/\./g, '');
             }
 
             clean = `${isNaN(Number(clean)) ? '0' : Number(clean)}`;
@@ -115,18 +86,12 @@ export const Create = () => {
         const propertyName = columnMap[colIndex];
         if (!propertyName) return;
 
-        updateData(prevData =>
-            prevData.map((row, index) =>
-                index === rowIndex ? { ...row, [propertyName]: clean } : row
-            )
+        updateData((prevData) =>
+            prevData.map((row, index) => (index === rowIndex ? { ...row, [propertyName]: clean } : row))
         );
     };
 
-    const handleFillData = (
-        columnIndex: number,
-        linear: boolean,
-        allowed: 'linear' | 'all'
-    ) => {
+    const handleFillData = (columnIndex: number, linear: boolean, allowed: 'linear' | 'all') => {
         const fillType = linear || allowed == 'linear' ? 'linear' : 'power';
 
         setFillColumnIndex(columnIndex);
@@ -160,16 +125,13 @@ export const Create = () => {
             }
         };
 
-        updateData(prevData =>
+        updateData((prevData) =>
             prevData.map((row, index) => {
                 const value = fillValue(index);
-                const finalValue =
-                    preventNegativeValues && value < 0 ? 0 : value;
+                const finalValue = preventNegativeValues && value < 0 ? 0 : value;
                 return {
                     ...row,
-                    [columnMap[fillColumnIndex]]: Number(
-                        finalValue.toFixed(3)
-                    ).toString(),
+                    [columnMap[fillColumnIndex]]: Number(finalValue.toFixed(3)).toString(),
                 };
             })
         );
@@ -180,8 +142,8 @@ export const Create = () => {
         const propertyName = columnMap[columnIndex];
         if (!propertyName) return;
 
-        updateData(prevData => {
-            const values = prevData.map(row => row[propertyName]);
+        updateData((prevData) => {
+            const values = prevData.map((row) => row[propertyName]);
             const flippedValues = values.reverse();
             return prevData.map((row, index) => ({
                 ...row,
@@ -194,9 +156,7 @@ export const Create = () => {
         const propertyName = columnMap[columnIndex];
         if (!propertyName) return;
 
-        updateData(prevData =>
-            prevData.map(row => ({ ...row, [propertyName]: '0' }))
-        );
+        updateData((prevData) => prevData.map((row) => ({ ...row, [propertyName]: '0' })));
     };
 
     const handleSave = () => {
@@ -206,9 +166,7 @@ export const Create = () => {
     };
 
     const handleRename = () => {
-        const input = document.getElementById(
-            'filename-input'
-        ) as HTMLInputElement;
+        const input = document.getElementById('filename-input') as HTMLInputElement;
         if (input) {
             input.focus();
         }
@@ -230,9 +188,7 @@ export const Create = () => {
                             <TableButton className='mr-3' />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align='end'>
-                            <DropdownMenuItem onSelect={handleRename}>
-                                Rename
-                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={handleRename}>Rename</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -282,49 +238,32 @@ export const Create = () => {
             <Dialog open={showFillDialog} onOpenChange={setShowFillDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>
-                            Populate column #{fillColumnIndex}
-                        </DialogTitle>
+                        <DialogTitle>Populate column #{fillColumnIndex}</DialogTitle>
                     </DialogHeader>
-                    <Tabs
-                        defaultValue={defaultFillType}
-                        className='w-full gap-4'
-                    >
+                    <Tabs defaultValue={defaultFillType} className='w-full gap-4'>
                         <TabsList className='w-full justify-center'>
                             <TabsTrigger
                                 value='linear'
-                                onClick={() => (
-                                    clearFillOptions(),
-                                    setSelectedFillType('linear')
-                                )}
+                                onClick={() => (clearFillOptions(), setSelectedFillType('linear'))}
                             >
                                 Linear
                             </TabsTrigger>
                             <TabsTrigger
                                 value='power'
                                 disabled={allowedFillType !== 'all'}
-                                onClick={() => (
-                                    clearFillOptions(),
-                                    setSelectedFillType('power')
-                                )}
+                                onClick={() => (clearFillOptions(), setSelectedFillType('power'))}
                             >
                                 Power
                             </TabsTrigger>
                             <TabsTrigger
                                 value='logarithmic'
                                 disabled={allowedFillType !== 'all'}
-                                onClick={() => (
-                                    clearFillOptions(),
-                                    setSelectedFillType('logarithmic')
-                                )}
+                                onClick={() => (clearFillOptions(), setSelectedFillType('logarithmic'))}
                             >
                                 Logarithmic
                             </TabsTrigger>
                         </TabsList>
-                        <TabsContent
-                            value='linear'
-                            className='flex flex-col gap-4'
-                        >
+                        <TabsContent value='linear' className='flex flex-col gap-4'>
                             <div className='flex flex-col gap-2'>
                                 <Label htmlFor='linear_equation'>Formula</Label>
                                 <div
@@ -340,19 +279,13 @@ export const Create = () => {
                             <div className='flex flex-row w-full gap-2'>
                                 <div className='grid w-full items-center gap-2'>
                                     <div className='flex flex-row items-center gap-1'>
-                                        <Label htmlFor='linear_start'>
-                                            Start
-                                        </Label>
+                                        <Label htmlFor='linear_start'>Start</Label>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Info
-                                                    size={16}
-                                                    className='-translate-y-[2px] text-neutral-700'
-                                                />
+                                                <Info size={16} className='-translate-y-[2px] text-neutral-700' />
                                             </TooltipTrigger>
                                             <TooltipContent className='max-w-m'>
-                                                The starting X value for the
-                                                first row.
+                                                The starting X value for the first row.
                                             </TooltipContent>
                                         </Tooltip>
                                     </div>
@@ -360,28 +293,18 @@ export const Create = () => {
                                         id='linear_start'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={e =>
-                                            setStartingValue(
-                                                parseFloat(e.target.value) || 1
-                                            )
-                                        }
+                                        onChange={(e) => setStartingValue(parseFloat(e.target.value) || 1)}
                                     />
                                 </div>
                                 <div className='grid w-full items-center gap-2'>
                                     <div className='flex flex-row items-center gap-1'>
-                                        <Label htmlFor='linear_step'>
-                                            Step
-                                        </Label>
+                                        <Label htmlFor='linear_step'>Step</Label>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Info
-                                                    size={16}
-                                                    className='-translate-y-[2px] text-neutral-700'
-                                                />
+                                                <Info size={16} className='-translate-y-[2px] text-neutral-700' />
                                             </TooltipTrigger>
                                             <TooltipContent className='max-w-m'>
-                                                How much each row increments the
-                                                X value.
+                                                How much each row increments the X value.
                                             </TooltipContent>
                                         </Tooltip>
                                     </div>
@@ -389,51 +312,32 @@ export const Create = () => {
                                         id='linear_step'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={e =>
-                                            setStepSize(
-                                                parseFloat(e.target.value) || 1
-                                            )
-                                        }
+                                        onChange={(e) => setStepSize(parseFloat(e.target.value) || 1)}
                                     />
                                 </div>
                             </div>
                             <div className='flex flex-row w-full gap-2'>
                                 <div className='grid w-full items-center gap-2'>
-                                    <Label htmlFor='linear_coefficient'>
-                                        Coefficient (m)
-                                    </Label>
+                                    <Label htmlFor='linear_coefficient'>Coefficient (m)</Label>
                                     <Input
                                         id='linear_coefficient'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={e =>
-                                            setCoefficient(
-                                                parseFloat(e.target.value) || 1
-                                            )
-                                        }
+                                        onChange={(e) => setCoefficient(parseFloat(e.target.value) || 1)}
                                     />
                                 </div>
                                 <div className='grid w-full items-center gap-2'>
-                                    <Label htmlFor='linear_offset'>
-                                        Offset (b)
-                                    </Label>
+                                    <Label htmlFor='linear_offset'>Offset (b)</Label>
                                     <Input
                                         id='linear_offset'
                                         type='number'
                                         defaultValue={0}
-                                        onChange={e =>
-                                            setOffset(
-                                                parseFloat(e.target.value) || 0
-                                            )
-                                        }
+                                        onChange={(e) => setOffset(parseFloat(e.target.value) || 0)}
                                     />
                                 </div>
                             </div>
                         </TabsContent>
-                        <TabsContent
-                            value='power'
-                            className='flex flex-col gap-4'
-                        >
+                        <TabsContent value='power' className='flex flex-col gap-4'>
                             <div className='flex flex-col gap-2'>
                                 <Label htmlFor='power_equation'>Formula</Label>
                                 <div
@@ -449,19 +353,13 @@ export const Create = () => {
                             <div className='flex flex-row w-full gap-2'>
                                 <div className='grid w-full items-center gap-2'>
                                     <div className='flex flex-row items-center gap-1'>
-                                        <Label htmlFor='power_start'>
-                                            Start
-                                        </Label>
+                                        <Label htmlFor='power_start'>Start</Label>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Info
-                                                    size={16}
-                                                    className='-translate-y-[2px] text-neutral-700'
-                                                />
+                                                <Info size={16} className='-translate-y-[2px] text-neutral-700' />
                                             </TooltipTrigger>
                                             <TooltipContent className='max-w-m'>
-                                                The starting X value for the
-                                                first row.
+                                                The starting X value for the first row.
                                             </TooltipContent>
                                         </Tooltip>
                                     </div>
@@ -469,11 +367,7 @@ export const Create = () => {
                                         id='power_start'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={e =>
-                                            setStartingValue(
-                                                parseFloat(e.target.value) || 1
-                                            )
-                                        }
+                                        onChange={(e) => setStartingValue(parseFloat(e.target.value) || 1)}
                                     />
                                 </div>
                                 <div className='grid w-full items-center gap-2'>
@@ -481,14 +375,10 @@ export const Create = () => {
                                         <Label htmlFor='power_step'>Step</Label>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Info
-                                                    size={16}
-                                                    className='-translate-y-[2px] text-neutral-700'
-                                                />
+                                                <Info size={16} className='-translate-y-[2px] text-neutral-700' />
                                             </TooltipTrigger>
                                             <TooltipContent className='max-w-m'>
-                                                How much each row increments the
-                                                X value.
+                                                How much each row increments the X value.
                                             </TooltipContent>
                                         </Tooltip>
                                     </div>
@@ -496,66 +386,41 @@ export const Create = () => {
                                         id='power_step'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={e =>
-                                            setStepSize(
-                                                parseFloat(e.target.value) || 1
-                                            )
-                                        }
+                                        onChange={(e) => setStepSize(parseFloat(e.target.value) || 1)}
                                     />
                                 </div>
                             </div>
                             <div className='flex flex-row w-full gap-2'>
                                 <div className='grid w-full items-center gap-2'>
-                                    <Label htmlFor='power_coefficient'>
-                                        Coefficient (a)
-                                    </Label>
+                                    <Label htmlFor='power_coefficient'>Coefficient (a)</Label>
                                     <Input
                                         id='power_coefficient'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={e =>
-                                            setCoefficient(
-                                                parseFloat(e.target.value) || 1
-                                            )
-                                        }
+                                        onChange={(e) => setCoefficient(parseFloat(e.target.value) || 1)}
                                     />
                                 </div>
                                 <div className='grid w-full items-center gap-2'>
-                                    <Label htmlFor='power_exponent'>
-                                        Exponent (b)
-                                    </Label>
+                                    <Label htmlFor='power_exponent'>Exponent (b)</Label>
                                     <Input
                                         id='power_exponent'
                                         type='number'
                                         defaultValue={2}
-                                        onChange={e =>
-                                            setExponent(
-                                                parseFloat(e.target.value) || 2
-                                            )
-                                        }
+                                        onChange={(e) => setExponent(parseFloat(e.target.value) || 2)}
                                     />
                                 </div>
                                 <div className='grid w-full items-center gap-2'>
-                                    <Label htmlFor='power_offset'>
-                                        Offset (c)
-                                    </Label>
+                                    <Label htmlFor='power_offset'>Offset (c)</Label>
                                     <Input
                                         id='power_offset'
                                         type='number'
                                         defaultValue={0}
-                                        onChange={e =>
-                                            setOffset(
-                                                parseFloat(e.target.value) || 0
-                                            )
-                                        }
+                                        onChange={(e) => setOffset(parseFloat(e.target.value) || 0)}
                                     />
                                 </div>
                             </div>
                         </TabsContent>
-                        <TabsContent
-                            value='logarithmic'
-                            className='flex flex-col gap-4'
-                        >
+                        <TabsContent value='logarithmic' className='flex flex-col gap-4'>
                             <div className='flex flex-col gap-2'>
                                 <Label htmlFor='log_equation'>Formula</Label>
                                 <div
@@ -574,14 +439,10 @@ export const Create = () => {
                                         <Label htmlFor='log_start'>Start</Label>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Info
-                                                    size={16}
-                                                    className='-translate-y-[2px] text-neutral-700'
-                                                />
+                                                <Info size={16} className='-translate-y-[2px] text-neutral-700' />
                                             </TooltipTrigger>
                                             <TooltipContent className='max-w-m'>
-                                                The starting X value for the
-                                                first row.
+                                                The starting X value for the first row.
                                             </TooltipContent>
                                         </Tooltip>
                                     </div>
@@ -589,11 +450,7 @@ export const Create = () => {
                                         id='log_start'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={e =>
-                                            setStartingValue(
-                                                parseFloat(e.target.value) || 1
-                                            )
-                                        }
+                                        onChange={(e) => setStartingValue(parseFloat(e.target.value) || 1)}
                                     />
                                 </div>
                                 <div className='grid w-full items-center gap-2'>
@@ -601,14 +458,10 @@ export const Create = () => {
                                         <Label htmlFor='log_step'>Step</Label>
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Info
-                                                    size={16}
-                                                    className='-translate-y-[2px] text-neutral-700'
-                                                />
+                                                <Info size={16} className='-translate-y-[2px] text-neutral-700' />
                                             </TooltipTrigger>
                                             <TooltipContent className='max-w-m'>
-                                                How much each row increments the
-                                                X value.
+                                                How much each row increments the X value.
                                             </TooltipContent>
                                         </Tooltip>
                                     </div>
@@ -616,43 +469,27 @@ export const Create = () => {
                                         id='log_step'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={e =>
-                                            setStepSize(
-                                                parseFloat(e.target.value) || 1
-                                            )
-                                        }
+                                        onChange={(e) => setStepSize(parseFloat(e.target.value) || 1)}
                                     />
                                 </div>
                             </div>
                             <div className='flex flex-row w-full gap-2'>
                                 <div className='grid w-full items-center gap-2'>
-                                    <Label htmlFor='log_coefficient'>
-                                        Coefficient (a)
-                                    </Label>
+                                    <Label htmlFor='log_coefficient'>Coefficient (a)</Label>
                                     <Input
                                         id='log_coefficient'
                                         type='number'
                                         defaultValue={1}
-                                        onChange={e =>
-                                            setCoefficient(
-                                                parseFloat(e.target.value) || 1
-                                            )
-                                        }
+                                        onChange={(e) => setCoefficient(parseFloat(e.target.value) || 1)}
                                     />
                                 </div>
                                 <div className='grid w-full items-center gap-2'>
-                                    <Label htmlFor='log_offset'>
-                                        Offset (b)
-                                    </Label>
+                                    <Label htmlFor='log_offset'>Offset (b)</Label>
                                     <Input
                                         id='log_offset'
                                         type='number'
                                         defaultValue={0}
-                                        onChange={e =>
-                                            setOffset(
-                                                parseFloat(e.target.value) || 0
-                                            )
-                                        }
+                                        onChange={(e) => setOffset(parseFloat(e.target.value) || 0)}
                                     />
                                 </div>
                             </div>
@@ -661,10 +498,8 @@ export const Create = () => {
                     <div className='flex flex-row justify-start items-center gap-2'>
                         <Checkbox
                             checked={preventNegativeValues}
-                            onCheckedChange={checked =>
-                                setPreventNegativeValues(
-                                    checked === 'indeterminate' ? true : checked
-                                )
+                            onCheckedChange={(checked) =>
+                                setPreventNegativeValues(checked === 'indeterminate' ? true : checked)
                             }
                         />
                         <span>Prevent negative values</span>

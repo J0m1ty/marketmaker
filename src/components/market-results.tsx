@@ -45,6 +45,19 @@ const MarketResult = ({
     units = false,
     override = value,
 }: MarketResultProps) => {
+    if (value === undefined || value === null) {
+        return (
+            <div className='h-12 w-full rounded-md flex flex-row items-center justify-between px-3 border-1'>
+                <div className='flex flex-row items-center gap-3'>
+                    {icon}
+                    <div className='flex flex-col items-start'>
+                        <span className='text-xs text-muted-foreground'>{title}</span>
+                        <span className='text-sm'>N/A</span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
     const diff = override - value;
 
     const formatNumber = (num: number) => {
@@ -64,11 +77,11 @@ const MarketResult = ({
             <div className='flex flex-row items-center gap-3'>
                 {icon}
                 <div className='flex flex-col items-start'>
-                    <span className='text-xs text-muted-foreground'>
-                        {title}
-                    </span>
+                    <span className='text-xs text-muted-foreground'>{title}</span>
                     <div className='flex flex-row gap-2 items-center'>
-                        <span className='text-sm'>{valueFormatted} {extra}</span>
+                        <span className='text-sm'>
+                            {valueFormatted} {extra}
+                        </span>
                         {overrideFormatted && (
                             <MoveRight
                                 size={14}
@@ -95,7 +108,7 @@ export const MarketResults = () => {
     if (!activeTab) return null;
 
     const resultsData: MarketResultProps[] =
-        activeTab.computed ?
+        activeTab.computed && activeTab.computed.intersect ?
             [
                 {
                     icon: <DollarSign />,
@@ -152,8 +165,7 @@ export const MarketResults = () => {
                                 activeTab.adjustment.mode === 'price_floor' ||
                                 activeTab.adjustment.mode === 'price_ceiling' ||
                                 activeTab.adjustment.mode === 'per_unit_tax' ||
-                                activeTab.adjustment.mode ===
-                                    'per_unit_subsidy' ||
+                                activeTab.adjustment.mode === 'per_unit_subsidy' ||
                                 activeTab.adjustment.mode === 'demand_shift' ||
                                 activeTab.adjustment.mode === 'supply_shift'
                             ) ?
@@ -173,8 +185,7 @@ export const MarketResults = () => {
                                 activeTab.adjustment.mode === 'price_floor' ||
                                 activeTab.adjustment.mode === 'price_ceiling' ||
                                 activeTab.adjustment.mode === 'per_unit_tax' ||
-                                activeTab.adjustment.mode ===
-                                    'per_unit_subsidy' ||
+                                activeTab.adjustment.mode === 'per_unit_subsidy' ||
                                 activeTab.adjustment.mode === 'demand_shift' ||
                                 activeTab.adjustment.mode === 'supply_shift'
                             ) ?
@@ -194,8 +205,7 @@ export const MarketResults = () => {
                                 activeTab.adjustment.mode === 'price_floor' ||
                                 activeTab.adjustment.mode === 'price_ceiling' ||
                                 activeTab.adjustment.mode === 'per_unit_tax' ||
-                                activeTab.adjustment.mode ===
-                                    'per_unit_subsidy' ||
+                                activeTab.adjustment.mode === 'per_unit_subsidy' ||
                                 activeTab.adjustment.mode === 'demand_shift' ||
                                 activeTab.adjustment.mode === 'supply_shift'
                             ) ?
@@ -232,7 +242,7 @@ export const MarketResults = () => {
 
     const adjustmentResults = () => {
         if (!activeTab.adjustment.result) return null;
-        if (!activeTab.computed) return null;
+        if (!activeTab.computed || !activeTab.computed.intersect) return null;
 
         switch (activeTab.adjustment.mode) {
             case 'price_floor':
@@ -241,21 +251,13 @@ export const MarketResults = () => {
                     <>
                         <MarketResult
                             icon={<OctagonAlert />}
-                            title={
-                                activeTab.adjustment.mode === 'price_floor' ?
-                                    'Surplus'
-                                :   'Shortage'
-                            }
+                            title={activeTab.adjustment.mode === 'price_floor' ? 'Surplus' : 'Shortage'}
                             value={
                                 activeTab.adjustment.mode === 'price_floor' ?
-                                    activeTab.adjustment.result
-                                        .quantity_supplied -
-                                    activeTab.adjustment.result
-                                        .quantity_demanded
-                                :   activeTab.adjustment.result
-                                        .quantity_demanded -
-                                    activeTab.adjustment.result
-                                        .quantity_supplied
+                                    activeTab.adjustment.result.quantity_supplied -
+                                    activeTab.adjustment.result.quantity_demanded
+                                :   activeTab.adjustment.result.quantity_demanded -
+                                    activeTab.adjustment.result.quantity_supplied
                             }
                             units
                         />
@@ -264,10 +266,8 @@ export const MarketResults = () => {
                                 icon={<Landmark />}
                                 title='Government Purchase'
                                 value={
-                                    (activeTab.adjustment.result
-                                        .quantity_supplied -
-                                        activeTab.adjustment.result
-                                            .quantity_demanded) *
+                                    (activeTab.adjustment.result.quantity_supplied -
+                                        activeTab.adjustment.result.quantity_demanded) *
                                     activeTab.computed.equilibrium_price
                                 }
                                 currency
@@ -293,17 +293,13 @@ export const MarketResults = () => {
                         <MarketResult
                             icon={<Frown />}
                             title='Consumer Tax Burden'
-                            value={
-                                activeTab.adjustment.result.consumer_tax_burden
-                            }
+                            value={activeTab.adjustment.result.consumer_tax_burden}
                             currency
                         />
                         <MarketResult
                             icon={<Weight />}
                             title='Producer Tax Burden'
-                            value={
-                                activeTab.adjustment.result.producer_tax_burden
-                            }
+                            value={activeTab.adjustment.result.producer_tax_burden}
                             currency
                         />
                     </>
@@ -320,19 +316,13 @@ export const MarketResults = () => {
                         <MarketResult
                             icon={<Smile />}
                             title='Consumer Subsidy Benefit'
-                            value={
-                                activeTab.adjustment.result
-                                    .consumer_subsidy_benefit
-                            }
+                            value={activeTab.adjustment.result.consumer_subsidy_benefit}
                             currency
                         />
                         <MarketResult
                             icon={<HeartHandshake />}
                             title='Producer Subsidy Benefit'
-                            value={
-                                activeTab.adjustment.result
-                                    .producer_subsidy_benefit
-                            }
+                            value={activeTab.adjustment.result.producer_subsidy_benefit}
                             currency
                         />
                     </>
@@ -343,18 +333,12 @@ export const MarketResults = () => {
                         <MarketResult
                             icon={<Store />}
                             title='Point PED'
-                            value={
-                                activeTab.adjustment.result
-                                    .point_price_elasticity_of_demand
-                            }
+                            value={activeTab.adjustment.result.point_price_elasticity_of_demand}
                         />
                         <MarketResult
                             icon={<Factory />}
                             title='Point PES'
-                            value={
-                                activeTab.adjustment.result
-                                    .point_price_elasticity_of_supply
-                            }
+                            value={activeTab.adjustment.result.point_price_elasticity_of_supply}
                         />
                     </>
                 );
@@ -363,7 +347,7 @@ export const MarketResults = () => {
 
     return (
         <div className='w-full lg:w-full lg:h-full'>
-            {activeTab.computed ?
+            {activeTab.computed && activeTab.computed.intersect ?
                 <div className='w-full lg:h-full lg:overflow-y-auto'>
                     <div className='flex w-full p-2 gap-2 flex-row lg:flex-col lg:gap-6'>
                         {activeTab.adjustment.mode !== 'none' &&
@@ -373,14 +357,8 @@ export const MarketResults = () => {
                                 <div className='flex-1 lg:flex-none'>
                                     <span className='text-lg font-semibold'>
                                         {formatGroupName(
-                                            Object.keys(
-                                                groupedAdjustments
-                                            ).find((key) =>
-                                                groupedAdjustments[
-                                                    key
-                                                ].includes(
-                                                    activeTab.adjustment.mode
-                                                )
+                                            Object.keys(groupedAdjustments).find((key) =>
+                                                groupedAdjustments[key].includes(activeTab.adjustment.mode)
                                             ) || 'Other'
                                         )}
                                     </span>
@@ -391,9 +369,7 @@ export const MarketResults = () => {
                             )}
 
                         <div className='flex-1 lg:flex-none'>
-                            <span className='text-lg font-semibold'>
-                                Basic Analysis
-                            </span>
+                            <span className='text-lg font-semibold'>Basic Analysis</span>
                             <div className='flex flex-col w-full space-y-2 lg:space-y-4 mt-2'>
                                 {resultsData.map((item, index) => (
                                     <MarketResult

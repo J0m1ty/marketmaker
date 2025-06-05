@@ -3,7 +3,7 @@ import type { MarketRow } from '@/lib/types';
 export const hasUserData = (data: Partial<MarketRow>[]) => {
     return (
         data.length > 20 ||
-        data.some(row => {
+        data.some((row) => {
             const price = Number(row.price ?? '0');
             const qd = Number(row.qd ?? '0');
             const qs = Number(row.qs ?? '0');

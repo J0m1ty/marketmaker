@@ -4,9 +4,7 @@ interface LoadingFallbackProps {
     variant?: 'default' | 'table';
 }
 
-export const LoadingFallback = ({
-    variant = 'default',
-}: LoadingFallbackProps) => {
+export const LoadingFallback = ({ variant = 'default' }: LoadingFallbackProps) => {
     if (variant === 'table') {
         return (
             <div className='flex flex-col w-full h-full p-6 space-y-4'>

@@ -10,10 +10,7 @@ export const sanitizeNumber = (value: string | number | undefined): string => {
     return numValue.toString();
 };
 
-export const sanitizeMarketRow = (
-    row: Partial<MarketRow>,
-    index: number
-): MarketRow => {
+export const sanitizeMarketRow = (row: Partial<MarketRow>, index: number): MarketRow => {
     return {
         id: row.id ?? index + 1,
         price: parseFloat(sanitizeNumber(row.price)),
@@ -23,9 +20,7 @@ export const sanitizeMarketRow = (
 };
 
 export const convertToMarketFile = (data: Partial<MarketRow>[]): MarketFile => {
-    const sanitizedRows = data.map((row, index) =>
-        sanitizeMarketRow(row, index)
-    );
+    const sanitizedRows = data.map((row, index) => sanitizeMarketRow(row, index));
 
     return {
         createdAt: new Date().toISOString(),
@@ -38,9 +33,7 @@ export const convertToCSV = (marketFile: MarketFile): string => {
     const csvRows = [
         `# Created: ${marketFile.createdAt}`,
         headers.join(','),
-        ...marketFile.rows.map(
-            row => `${row.id},${row.price},${row.qd},${row.qs}`
-        ),
+        ...marketFile.rows.map((row) => `${row.id},${row.price},${row.qd},${row.qs}`),
     ];
     return csvRows.join('\n');
 };

@@ -9,10 +9,7 @@ interface DropzoneProps {
 }
 
 export const Dropzone = ({ className, onDrop }: DropzoneProps) => {
-    const handleDrop = (
-        acceptedFiles: File[],
-        rejectedFiles: FileRejection[]
-    ) => {
+    const handleDrop = (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
         if (rejectedFiles.length > 0) {
             const rejection = rejectedFiles[0];
             const errorCode = rejection.errors[0]?.code;
@@ -38,13 +35,7 @@ export const Dropzone = ({ className, onDrop }: DropzoneProps) => {
         }
     };
 
-    const {
-        getRootProps,
-        getInputProps,
-        isDragActive,
-        isDragAccept,
-        isDragReject,
-    } = useDropzone({
+    const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
         onDrop: handleDrop,
         accept: {
             'text/csv': [],
@@ -59,12 +50,8 @@ export const Dropzone = ({ className, onDrop }: DropzoneProps) => {
                 'relative border-2 border-dashed p-10 rounded-2xl transition-all duration-200 cursor-pointer group',
                 'hover:border-primary/50 hover:bg-muted/30',
                 isDragActive && 'border-primary bg-primary/5 scale-[1.01]',
-                isDragActive &&
-                    isDragAccept &&
-                    'border-purple-500 bg-purple-50 dark:bg-purple-950/10',
-                isDragActive &&
-                    isDragReject &&
-                    'border-red-500 bg-red-50 dark:bg-red-950/20',
+                isDragActive && isDragAccept && 'border-purple-500 bg-purple-50 dark:bg-purple-950/10',
+                isDragActive && isDragReject && 'border-red-500 bg-red-50 dark:bg-red-950/20',
                 className
             )}
         >
@@ -75,67 +62,42 @@ export const Dropzone = ({ className, onDrop }: DropzoneProps) => {
                         'p-4 rounded-full',
                         'bg-muted',
                         isDragActive && 'bg-primary/10',
-                        isDragActive &&
-                            isDragAccept &&
-                            'bg-purple-100 dark:bg-purple-900/50',
-                        isDragActive &&
-                            isDragReject &&
-                            'bg-red-100 dark:bg-red-900/30'
+                        isDragActive && isDragAccept && 'bg-purple-100 dark:bg-purple-900/50',
+                        isDragActive && isDragReject && 'bg-red-100 dark:bg-red-900/30'
                     )}
                 >
-                    {isDragActive ? (
+                    {isDragActive ?
                         <FileText
                             className={cn(
                                 'h-8 w-8',
-                                isDragActive &&
-                                    isDragAccept &&
-                                    'text-purple-600 dark:text-purple-400',
+                                isDragActive && isDragAccept && 'text-purple-600 dark:text-purple-400',
                                 isDragActive && isDragReject && 'text-red-600',
-                                isDragActive &&
-                                    !isDragAccept &&
-                                    !isDragReject &&
-                                    'text-primary'
+                                isDragActive && !isDragAccept && !isDragReject && 'text-primary'
                             )}
                         />
-                    ) : (
-                        <Upload className='h-8 w-8 text-muted-foreground' />
-                    )}
+                    :   <Upload className='h-8 w-8 text-muted-foreground' />}
                 </div>
 
                 <div className='space-y-2 min-h-[4rem] flex flex-col justify-center'>
                     <p
                         className={cn(
                             'text-lg',
-                            isDragActive &&
-                                isDragAccept &&
-                                'text-purple-600 dark:text-purple-400',
+                            isDragActive && isDragAccept && 'text-purple-600 dark:text-purple-400',
                             isDragActive && isDragReject && 'text-red-600',
-                            isDragActive &&
-                                !isDragAccept &&
-                                !isDragReject &&
-                                'text-primary',
+                            isDragActive && !isDragAccept && !isDragReject && 'text-primary',
                             !isDragActive && 'text-foreground'
                         )}
                     >
-                        {isDragActive ? (
-                            isDragReject ? (
+                        {isDragActive ?
+                            isDragReject ?
                                 'Cannot upload these file(s)'
-                            ) : (
-                                'Drop your file here!'
-                            )
-                        ) : (
-                            <>
-                                Upload a <span className='font-mono'>.csv</span>{' '}
-                                market file
+                            :   'Drop your file here!'
+                        :   <>
+                                Upload a <span className='font-mono'>.csv</span> market file
                             </>
-                        )}
+                        }
                     </p>
-                    <p
-                        className={cn(
-                            'text-sm text-muted-foreground',
-                            isDragActive && 'opacity-0'
-                        )}
-                    >
+                    <p className={cn('text-sm text-muted-foreground', isDragActive && 'opacity-0')}>
                         Click to browse or drag and drop your file here
                     </p>
                 </div>

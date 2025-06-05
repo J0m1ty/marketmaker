@@ -1,12 +1,5 @@
 import { Button } from './ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 
 interface ClearDialogProps {
     confirmSource: 'new' | 'clear';
@@ -25,21 +18,13 @@ export const ClearDialog = ({
         <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>
-                        {confirmSource === 'new'
-                            ? 'Start new?'
-                            : 'Clear spreadsheet?'}
-                    </DialogTitle>
+                    <DialogTitle>{confirmSource === 'new' ? 'Start new?' : 'Clear spreadsheet?'}</DialogTitle>
                     <DialogDescription>
-                        This will permanently delete all your current market
-                        data and cannot be undone.
+                        This will permanently delete all your current market data and cannot be undone.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button
-                        variant='outline'
-                        onClick={() => setShowConfirmDialog(false)}
-                    >
+                    <Button variant='outline' onClick={() => setShowConfirmDialog(false)}>
                         Cancel
                     </Button>
                     <Button

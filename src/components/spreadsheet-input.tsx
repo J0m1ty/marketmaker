@@ -1,10 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
-function SpreadsheetInput({
-    className,
-    ...props
-}: React.ComponentProps<'input'>) {
+function SpreadsheetInput({ className, ...props }: React.ComponentProps<'input'>) {
     return (
         <input
             type='text'

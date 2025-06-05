@@ -7,12 +7,9 @@ export function Simulation() {
     const containerRef = useRef<HTMLDivElement>(null);
 
     return (
-        <div
-            className='w-full aspect-square min-w-0 relative lg:aspect-auto lg:h-full'
-            ref={containerRef}
-        >
+        <div className='w-full aspect-square min-w-0 relative lg:aspect-auto lg:h-full' ref={containerRef}>
             <Application
-                className="absolute inset-0"
+                className='absolute inset-0'
                 autoStart
                 antialias
                 autoDensity

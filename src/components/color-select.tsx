@@ -1,7 +1,15 @@
-
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { Dialog, DialogDescription, DialogHeader, DialogTrigger, DialogTitle, DialogContent, DialogFooter, DialogClose } from './ui/dialog';
+import {
+    Dialog,
+    DialogDescription,
+    DialogHeader,
+    DialogTrigger,
+    DialogTitle,
+    DialogContent,
+    DialogFooter,
+    DialogClose,
+} from './ui/dialog';
 import Circle from '@uiw/react-color-circle';
 
 interface ColorSelectProps {
@@ -22,29 +30,19 @@ export const ColorSelect = ({ curve, hex, setHex }: ColorSelectProps) => {
                     style={{
                         borderColor: hex,
                         color: hex,
-                        boxShadow: `inset 0 0 10px ${hex}60, 0 0 10px ${hex}30`
-                    }}>
+                        boxShadow: `inset 0 0 10px ${hex}60, 0 0 10px ${hex}30`,
+                    }}
+                >
                     <span>Color</span>
                 </Button>
             </DialogTrigger>
             <DialogContent className='w-80'>
                 <DialogHeader>
-                    <DialogTitle>
-                        {curve === 'demand' ? 'Demand Curve' : 'Supply Curve'}
-                    </DialogTitle>
-                    <DialogDescription>
-                        Pick a display color
-                    </DialogDescription>
+                    <DialogTitle>{curve === 'demand' ? 'Demand Curve' : 'Supply Curve'}</DialogTitle>
+                    <DialogDescription>Pick a display color</DialogDescription>
                     <div className='flex justify-center my-4'>
                         <Circle
-                            colors={[
-                                '#f44336',
-                                '#e91e63',
-                                '#9c27b0',
-                                '#673ab7',
-                                '#3f51b5',
-                                '#2196f3',
-                            ]}
+                            colors={['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3']}
                             color={tempHex}
                             onChange={(color) => setTempHex(color.hex)}
                             pointProps={{
@@ -59,15 +57,10 @@ export const ColorSelect = ({ curve, hex, setHex }: ColorSelectProps) => {
 
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant='outline'>
-                                Cancel
-                            </Button>
+                            <Button variant='outline'>Cancel</Button>
                         </DialogClose>
                         <DialogClose asChild>
-                            <Button
-                                type='submit'
-                                onClick={() => setHex(tempHex)}
-                            >
+                            <Button type='submit' onClick={() => setHex(tempHex)}>
                                 Apply
                             </Button>
                         </DialogClose>
@@ -75,6 +68,5 @@ export const ColorSelect = ({ curve, hex, setHex }: ColorSelectProps) => {
                 </DialogHeader>
             </DialogContent>
         </Dialog>
-
-    )
-}
+    );
+};

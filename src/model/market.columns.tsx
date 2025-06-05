@@ -29,25 +29,15 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                     <DropdownMenuSub>
                         <DropdownMenuSubTrigger>Sort</DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                            <DropdownMenuItem
-                                onClick={() => column.toggleSorting(false)}
-                            >
-                                Ascending
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => column.toggleSorting(true)}
-                            >
-                                Descending
-                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => column.toggleSorting(false)}>Ascending</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => column.toggleSorting(true)}>Descending</DropdownMenuItem>
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
                 </DropdownMenuContent>
             </DropdownMenu>
         ),
         cell: ({ row }) => {
-            return (
-                <div className='text-center text-xs'>{row.getValue('id')}</div>
-            );
+            return <div className='text-center text-xs'>{row.getValue('id')}</div>;
         },
     },
     {
@@ -69,8 +59,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                 <DropdownMenuContent align='end'>
                     <DropdownMenuItem
                         onClick={() => {
-                            const fillColumn = (table.options.meta as MetaType)
-                                ?.fillColumn;
+                            const fillColumn = (table.options.meta as MetaType)?.fillColumn;
                             if (fillColumn) {
                                 fillColumn(column.getIndex(), true, 'linear');
                             }
@@ -81,8 +70,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                     <DropdownMenuItem
                         variant='destructive'
                         onClick={() => {
-                            const clearColumn = (table.options.meta as MetaType)
-                                ?.clearColumn;
+                            const clearColumn = (table.options.meta as MetaType)?.clearColumn;
                             if (clearColumn) {
                                 clearColumn(column.getIndex());
                             }
@@ -100,24 +88,14 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
             return (
                 <SpreadsheetInput
                     value={price}
-                    onChange={event => {
+                    onChange={(event) => {
                         if (updateData) {
-                            updateData(
-                                row.index,
-                                column.getIndex(),
-                                event.target.value,
-                                false
-                            );
+                            updateData(row.index, column.getIndex(), event.target.value, false);
                         }
                     }}
-                    onBlur={event => {
+                    onBlur={(event) => {
                         if (updateData) {
-                            updateData(
-                                row.index,
-                                column.getIndex(),
-                                event.target.value,
-                                true
-                            );
+                            updateData(row.index, column.getIndex(), event.target.value, true);
                         }
                     }}
                 />
@@ -142,21 +120,13 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                 </div>
                 <DropdownMenuContent align='end'>
                     <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                            Populate
-                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubTrigger>Populate</DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
                             <DropdownMenuItem
                                 onClick={() => {
-                                    const fillColumn = (
-                                        table.options.meta as MetaType
-                                    )?.fillColumn;
+                                    const fillColumn = (table.options.meta as MetaType)?.fillColumn;
                                     if (fillColumn) {
-                                        fillColumn(
-                                            column.getIndex(),
-                                            true,
-                                            'all'
-                                        );
+                                        fillColumn(column.getIndex(), true, 'all');
                                     }
                                 }}
                             >
@@ -164,15 +134,9 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => {
-                                    const fillColumn = (
-                                        table.options.meta as MetaType
-                                    )?.fillColumn;
+                                    const fillColumn = (table.options.meta as MetaType)?.fillColumn;
                                     if (fillColumn) {
-                                        fillColumn(
-                                            column.getIndex(),
-                                            false,
-                                            'all'
-                                        );
+                                        fillColumn(column.getIndex(), false, 'all');
                                     }
                                 }}
                             >
@@ -182,8 +146,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                     </DropdownMenuSub>
                     <DropdownMenuItem
                         onClick={() => {
-                            const flipColumn = (table.options.meta as MetaType)
-                                ?.flipColumn;
+                            const flipColumn = (table.options.meta as MetaType)?.flipColumn;
                             if (flipColumn) {
                                 flipColumn(column.getIndex());
                             }
@@ -194,8 +157,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                     <DropdownMenuItem
                         variant='destructive'
                         onClick={() => {
-                            const clearColumn = (table.options.meta as MetaType)
-                                ?.clearColumn;
+                            const clearColumn = (table.options.meta as MetaType)?.clearColumn;
                             if (clearColumn) {
                                 clearColumn(column.getIndex());
                             }
@@ -213,24 +175,14 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
             return (
                 <SpreadsheetInput
                     value={qd}
-                    onChange={event => {
+                    onChange={(event) => {
                         if (updateData) {
-                            updateData(
-                                row.index,
-                                column.getIndex(),
-                                event.target.value,
-                                false
-                            );
+                            updateData(row.index, column.getIndex(), event.target.value, false);
                         }
                     }}
-                    onBlur={event => {
+                    onBlur={(event) => {
                         if (updateData) {
-                            updateData(
-                                row.index,
-                                column.getIndex(),
-                                event.target.value,
-                                true
-                            );
+                            updateData(row.index, column.getIndex(), event.target.value, true);
                         }
                     }}
                 />
@@ -255,21 +207,13 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                 </div>
                 <DropdownMenuContent align='end'>
                     <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                            Populate
-                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubTrigger>Populate</DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
                             <DropdownMenuItem
                                 onClick={() => {
-                                    const fillColumn = (
-                                        table.options.meta as MetaType
-                                    )?.fillColumn;
+                                    const fillColumn = (table.options.meta as MetaType)?.fillColumn;
                                     if (fillColumn) {
-                                        fillColumn(
-                                            column.getIndex(),
-                                            true,
-                                            'all'
-                                        );
+                                        fillColumn(column.getIndex(), true, 'all');
                                     }
                                 }}
                             >
@@ -277,15 +221,9 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => {
-                                    const fillColumn = (
-                                        table.options.meta as MetaType
-                                    )?.fillColumn;
+                                    const fillColumn = (table.options.meta as MetaType)?.fillColumn;
                                     if (fillColumn) {
-                                        fillColumn(
-                                            column.getIndex(),
-                                            false,
-                                            'all'
-                                        );
+                                        fillColumn(column.getIndex(), false, 'all');
                                     }
                                 }}
                             >
@@ -295,8 +233,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                     </DropdownMenuSub>
                     <DropdownMenuItem
                         onClick={() => {
-                            const flipColumn = (table.options.meta as MetaType)
-                                ?.flipColumn;
+                            const flipColumn = (table.options.meta as MetaType)?.flipColumn;
                             if (flipColumn) {
                                 flipColumn(column.getIndex());
                             }
@@ -307,8 +244,7 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
                     <DropdownMenuItem
                         variant='destructive'
                         onClick={() => {
-                            const clearColumn = (table.options.meta as MetaType)
-                                ?.clearColumn;
+                            const clearColumn = (table.options.meta as MetaType)?.clearColumn;
                             if (clearColumn) {
                                 clearColumn(column.getIndex());
                             }
@@ -326,24 +262,14 @@ export const columns: ColumnDef<Partial<MarketRow>>[] = [
             return (
                 <SpreadsheetInput
                     value={qs}
-                    onChange={event => {
+                    onChange={(event) => {
                         if (updateData) {
-                            updateData(
-                                row.index,
-                                column.getIndex(),
-                                event.target.value,
-                                false
-                            );
+                            updateData(row.index, column.getIndex(), event.target.value, false);
                         }
                     }}
-                    onBlur={event => {
+                    onBlur={(event) => {
                         if (updateData) {
-                            updateData(
-                                row.index,
-                                column.getIndex(),
-                                event.target.value,
-                                true
-                            );
+                            updateData(row.index, column.getIndex(), event.target.value, true);
                         }
                     }}
                 />

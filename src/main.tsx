@@ -7,16 +7,12 @@ import { Layout } from './components/layout.tsx';
 import { LoadingFallback } from './components/loading-fallback.tsx';
 
 const Interact = lazy(() =>
-    import('./pages/Interact.tsx').then(module => ({
+    import('./pages/Interact.tsx').then((module) => ({
         default: module.Interact,
     }))
 );
-const Create = lazy(() =>
-    import('./pages/Create.tsx').then(module => ({ default: module.Create }))
-);
-const Learn = lazy(() =>
-    import('./pages/Learn.tsx').then(module => ({ default: module.Learn }))
-);
+const Create = lazy(() => import('./pages/Create.tsx').then((module) => ({ default: module.Create })));
+const Learn = lazy(() => import('./pages/Learn.tsx').then((module) => ({ default: module.Learn })));
 
 createRoot(document.getElementById('root')!).render(
     <ThemeProvider defaultTheme='dark' storageKey='ui-theme'>
@@ -26,9 +22,7 @@ createRoot(document.getElementById('root')!).render(
                     <Route
                         path='/'
                         element={
-                            <Suspense
-                                fallback={<LoadingFallback variant='default' />}
-                            >
+                            <Suspense fallback={<LoadingFallback variant='default' />}>
                                 <Interact />
                             </Suspense>
                         }
@@ -36,9 +30,7 @@ createRoot(document.getElementById('root')!).render(
                     <Route
                         path='/create'
                         element={
-                            <Suspense
-                                fallback={<LoadingFallback variant='table' />}
-                            >
+                            <Suspense fallback={<LoadingFallback variant='table' />}>
                                 <Create />
                             </Suspense>
                         }
@@ -46,9 +38,7 @@ createRoot(document.getElementById('root')!).render(
                     <Route
                         path='/learn'
                         element={
-                            <Suspense
-                                fallback={<LoadingFallback variant='default' />}
-                            >
+                            <Suspense fallback={<LoadingFallback variant='default' />}>
                                 <Learn />
                             </Suspense>
                         }

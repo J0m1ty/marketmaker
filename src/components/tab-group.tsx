@@ -3,14 +3,7 @@ import { FileSpreadsheet, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { handleMarketFileUpload } from '@/lib/market-upload';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import {
-    DndContext,
-    closestCenter,
-    KeyboardSensor,
-    PointerSensor,
-    useSensor,
-    useSensors,
-} from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import {
     SortableContext,
@@ -29,26 +22,11 @@ interface SortableTabProps {
     onTabClose: (id: string) => void;
 }
 
-const SortableTab = ({
-    tab,
-    activeTabId,
-    activeCurveColor,
-    onTabClick,
-    onTabClose,
-}: SortableTabProps) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging,
-    } = useSortable({ id: tab.market.id });
+const SortableTab = ({ tab, activeTabId, activeCurveColor, onTabClick, onTabClose }: SortableTabProps) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: tab.market.id });
 
     const style = {
-        transform: transform
-            ? `translate3d(${transform.x}px, 0px, 0)`
-            : undefined,
+        transform: transform ? `translate3d(${transform.x}px, 0px, 0)` : undefined,
         transition,
         opacity: isDragging ? 0.5 : 1,
     };
@@ -73,14 +51,12 @@ const SortableTab = ({
                 ...(isActive && {
                     borderBottomColor: activeColor,
                     color: activeColor,
-                })
+                }),
             }}
             onMouseDown={() => onTabClick(tab.market.id)}
         >
             <FileSpreadsheet size='16' />
-            <span className='text-sm translate-y-[1px] select-none'>
-                {tab.market.name}.csv
-            </span>
+            <span className='text-sm translate-y-[1px] select-none'>{tab.market.name}.csv</span>
             <div
                 className={cn(
                     'p-[0.12em] rounded-xs hover:bg-neutral-200 dark:hover:bg-neutral-800',
@@ -88,10 +64,10 @@ const SortableTab = ({
                     !isActive && 'invisible group-hover:visible'
                 )}
                 style={isActive ? { color: `${activeColor}80` } : {}}
-                onMouseDown={e => {
+                onMouseDown={(e) => {
                     e.stopPropagation();
                 }}
-                onClick={e => {
+                onClick={(e) => {
                     e.stopPropagation();
                     onTabClose(tab.market.id);
                 }}
@@ -103,8 +79,7 @@ const SortableTab = ({
 };
 
 export const TabGroup = () => {
-    const { tabs, activeTabId, setActiveTab, closeTab, openTab, reorderTabs, getActiveTab } =
-        useMarketTabsStore();
+    const { tabs, activeTabId, setActiveTab, closeTab, openTab, reorderTabs, getActiveTab } = useMarketTabsStore();
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -143,12 +118,9 @@ export const TabGroup = () => {
                     onDragEnd={handleDragEnd}
                     modifiers={[restrictToParentElement]}
                 >
-                    <SortableContext
-                        items={tabs.map(tab => tab.market.id)}
-                        strategy={horizontalListSortingStrategy}
-                    >
+                    <SortableContext items={tabs.map((tab) => tab.market.id)} strategy={horizontalListSortingStrategy}>
                         <div className='flex flex-row items-center'>
-                            {tabs.map(tab => (
+                            {tabs.map((tab) => (
                                 <SortableTab
                                     key={tab.market.id}
                                     tab={tab}
@@ -161,10 +133,7 @@ export const TabGroup = () => {
                         </div>
                     </SortableContext>
                 </DndContext>
-                <ScrollBar
-                    orientation='horizontal'
-                    className='h-[5px] rounded-none translate-y-[1px]'
-                />
+                <ScrollBar orientation='horizontal' className='h-[5px] rounded-none translate-y-[1px]' />
             </ScrollArea>
             <div
                 className='mx-2 p-1 rounded-sm hover:bg-muted text-neutral-600 dark:text-neutral-300'

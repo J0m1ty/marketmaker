@@ -12,16 +12,7 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from './ui/sidebar';
-import {
-    BookOpenText,
-    ChartSpline,
-    CirclePlus,
-    CopyX,
-    ExternalLink,
-    FilePlus2,
-    FileUp,
-    SquareX,
-} from 'lucide-react';
+import { BookOpenText, ChartSpline, CirclePlus, CopyX, ExternalLink, FilePlus2, FileUp, SquareX } from 'lucide-react';
 import { useDataStore } from '@/hooks/data.store';
 import { useState } from 'react';
 import { ClearDialog } from './clear-dialog';
@@ -36,8 +27,7 @@ export const AppSidebar = () => {
     const navigate = useNavigate();
     const { state } = useSidebar();
     const { data, setFilename, setData, resetData } = useDataStore();
-    const { tabs, activeTabId, closeTab, closeAllTabs, openTab } =
-        useMarketTabsStore();
+    const { tabs, activeTabId, closeTab, closeAllTabs, openTab } = useMarketTabsStore();
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
     const handleUpload = async () => {
@@ -48,9 +38,7 @@ export const AppSidebar = () => {
 
             toast.success(`File uploaded successfully!`);
         } catch (error) {
-            toast.error(
-                error instanceof Error ? error.message : 'Failed to upload file'
-            );
+            toast.error(error instanceof Error ? error.message : 'Failed to upload file');
         }
     };
 
@@ -65,14 +53,8 @@ export const AppSidebar = () => {
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton size='lg'>
-                                <img
-                                    src='/favicon-32x32.png'
-                                    alt='Logo'
-                                    className='dark:invert-100'
-                                />
-                                <span className='translate-y-[2px] font-bold'>
-                                    Market Maker
-                                </span>
+                                <img src='/favicon-32x32.png' alt='Logo' className='dark:invert-100' />
+                                <span className='translate-y-[2px] font-bold'>Market Maker</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
@@ -88,50 +70,31 @@ export const AppSidebar = () => {
                                         isActive={location.pathname === '/'}
                                     >
                                         <ChartSpline />
-                                        <span className='translate-y-[1px]'>
-                                            Interact
-                                        </span>
+                                        <span className='translate-y-[1px]'>Interact</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton
                                         onClick={() => navigate('/create')}
-                                        isActive={
-                                            location.pathname === '/create'
-                                        }
+                                        isActive={location.pathname === '/create'}
                                     >
                                         <FilePlus2 />
-                                        <span className='translate-y-[1px]'>
-                                            Create
-                                        </span>
+                                        <span className='translate-y-[1px]'>Create</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton
                                         onClick={() => navigate('/learn')}
-                                        isActive={
-                                            location.pathname === '/learn'
-                                        }
+                                        isActive={location.pathname === '/learn'}
                                     >
                                         <BookOpenText />
-                                        <span className='translate-y-[1px]'>
-                                            Learn
-                                        </span>
+                                        <span className='translate-y-[1px]'>Learn</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton
-                                        onClick={() =>
-                                            window.open(
-                                                'https://jomity.net',
-                                                '_blank'
-                                            )
-                                        }
-                                    >
+                                    <SidebarMenuButton onClick={() => window.open('https://jomity.net', '_blank')}>
                                         <ExternalLink />
-                                        <span className='translate-y-[1px]'>
-                                            More
-                                        </span>
+                                        <span className='translate-y-[1px]'>More</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -142,13 +105,9 @@ export const AppSidebar = () => {
                             <SidebarGroupLabel>Actions</SidebarGroupLabel>
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton
-                                        onClick={handleMarketUpload}
-                                    >
+                                    <SidebarMenuButton onClick={handleMarketUpload}>
                                         <FileUp />
-                                        <span className='translate-y-[1px]'>
-                                            Upload
-                                        </span>
+                                        <span className='translate-y-[1px]'>Upload</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
@@ -161,9 +120,7 @@ export const AppSidebar = () => {
                                         }}
                                     >
                                         <SquareX />
-                                        <span className='translate-y-[1px]'>
-                                            Close
-                                        </span>
+                                        <span className='translate-y-[1px]'>Close</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
@@ -176,9 +133,7 @@ export const AppSidebar = () => {
                                         }}
                                     >
                                         <CopyX />
-                                        <span className='translate-y-[1px]'>
-                                            Close All
-                                        </span>
+                                        <span className='translate-y-[1px]'>Close All</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -191,22 +146,16 @@ export const AppSidebar = () => {
                                 <SidebarMenuItem>
                                     <SidebarMenuButton onClick={handleUpload}>
                                         <FileUp />
-                                        <span className='translate-y-[1px]'>
-                                            Upload
-                                        </span>
+                                        <span className='translate-y-[1px]'>Upload</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton
-                                        onClick={() =>
-                                            setShowConfirmDialog(true)
-                                        }
+                                        onClick={() => setShowConfirmDialog(true)}
                                         disabled={!hasUserData(data)}
                                     >
                                         <CirclePlus />
-                                        <span className='translate-y-[1px]'>
-                                            New
-                                        </span>
+                                        <span className='translate-y-[1px]'>New</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -218,9 +167,7 @@ export const AppSidebar = () => {
                         <SidebarMenuItem>
                             <SidebarMenuButton size='sm'>
                                 <span className='text-sm opacity-50'>
-                                    {state === 'expanded'
-                                        ? 'Jonathan Schultz @ RIT'
-                                        : ''}
+                                    {state === 'expanded' ? 'Jonathan Schultz @ RIT' : ''}
                                 </span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

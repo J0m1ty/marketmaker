@@ -18,18 +18,19 @@ export type Market = {
     file: MarketFile;
 };
 
-export const CurveFits = [
-    'linear',
-    'exponential',
-    'logarithmic',
-    'power',
-    'polynomial',
-] as const;
+export const CurveFits = ['linear', 'exponential', 'logarithmic', 'power', 'polynomial'] as const;
 
 export type CurveFitType = (typeof CurveFits)[number];
 
 export type AxisBounds = {
     type: 'auto' | 'manual';
+    priceMin: number;
+    priceMax: number;
+    quantityMin: number;
+    quantityMax: number;
+};
+
+export type AbsoluteBounds = {
     priceMin: number;
     priceMax: number;
     quantityMin: number;
@@ -106,9 +107,7 @@ export type Adjustment = DiscriminatedUnion<
             type: 'intervention';
             amount: number;
             side: 'supplier' | 'consumer';
-            result?: QuantityResult &
-                WelfareResult &
-                SubsidyResult;
+            result?: QuantityResult & WelfareResult & SubsidyResult;
         };
         demand_shift: {
             type: 'change';
@@ -129,35 +128,30 @@ export type Adjustment = DiscriminatedUnion<
     (typeof AdjustmentModes)[number]
 >;
 
-export const groupedAdjustments: Record<
-    string,
-    (typeof AdjustmentModes)[number][]
-> = {
+export const groupedAdjustments: Record<string, (typeof AdjustmentModes)[number][]> = {
     none: ['none'],
-    intervention: [
-        'price_floor',
-        'price_ceiling',
-        'per_unit_tax',
-        'per_unit_subsidy',
-    ],
+    intervention: ['price_floor', 'price_ceiling', 'per_unit_tax', 'per_unit_subsidy'],
     change: ['demand_shift', 'supply_shift'],
     calculation: ['point_elasticity'],
 };
 
-export type MarketData = {
-    equilibrium_price: number;
-    equilibrium_quantity: number;
-    total_revenue: number;
-    arc_price_elasticity_of_demand: number;
-    arc_price_elasticity_of_supply: number;
-    consumer_surplus: number;
-    producer_surplus: number;
-    total_surplus: number;
-};
+export type MarketData =
+    | { intersect: false }
+    | {
+          intersect: true;
+          equilibrium_price: number;
+          equilibrium_quantity: number;
+          arc_price_elasticity_of_demand: number;
+          arc_price_elasticity_of_supply: number;
+          consumer_surplus: number;
+          producer_surplus: number;
+          total_surplus: number;
+      };
 
 export type MarketTab = {
     market: Market;
     bounds: AxisBounds;
+    absoluteBounds: AbsoluteBounds;
     curves: {
         selected: 'demand' | 'supply';
         demand: { fit: CurveFitType; color: string };

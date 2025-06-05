@@ -1,31 +1,9 @@
-import {
-    flexRender,
-    getCoreRowModel,
-    getSortedRowModel,
-    useReactTable,
-    type ColumnDef,
-} from '@tanstack/react-table';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from './ui/table';
+import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
 export interface MetaType {
-    updateData?: (
-        rowIndex: number,
-        columnIndex: number,
-        value?: string,
-        submit?: boolean
-    ) => void;
-    fillColumn?: (
-        columnIndex: Number,
-        linear: boolean,
-        allowed: 'linear' | 'all'
-    ) => void;
+    updateData?: (rowIndex: number, columnIndex: number, value?: string, submit?: boolean) => void;
+    fillColumn?: (columnIndex: Number, linear: boolean, allowed: 'linear' | 'all') => void;
     flipColumn?: (columnIndex: number) => void;
     clearColumn?: (columnIndex: number) => void;
 }
@@ -33,17 +11,8 @@ export interface MetaType {
 interface DataTableProps<TData, TValue> extends MetaType {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
-    onUpdateData?: (
-        rowIndex: number,
-        columnIndex: number,
-        value?: string,
-        submit?: boolean
-    ) => void;
-    onFillColumn?: (
-        columnIndex: number,
-        linear: boolean,
-        allowed: 'linear' | 'all'
-    ) => void;
+    onUpdateData?: (rowIndex: number, columnIndex: number, value?: string, submit?: boolean) => void;
+    onFillColumn?: (columnIndex: number, linear: boolean, allowed: 'linear' | 'all') => void;
     onFlipColumn?: (columnIndex: number) => void;
     onClearColumn?: (columnIndex: number) => void;
 }
@@ -73,21 +42,14 @@ export const DataTable = <TData, TValue>({
         <div className='relative overflow-auto'>
             <Table>
                 <TableHeader className='sticky top-0 bg-neutral-200 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-800'>
-                    {table.getHeaderGroups().map(headerGroup => (
-                        <TableRow
-                            key={headerGroup.id}
-                            className='hover:bg-transparent'
-                        >
-                            {headerGroup.headers.map(header => {
+                    {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key={headerGroup.id} className='hover:bg-transparent'>
+                            {headerGroup.headers.map((header) => {
                                 return (
                                     <TableHead key={header.id}>
-                                        {header.isPlaceholder
-                                            ? null
-                                            : flexRender(
-                                                  header.column.columnDef
-                                                      .header,
-                                                  header.getContext()
-                                              )}
+                                        {header.isPlaceholder ? null : (
+                                            flexRender(header.column.columnDef.header, header.getContext())
+                                        )}
                                     </TableHead>
                                 );
                             })}
@@ -106,10 +68,7 @@ export const DataTable = <TData, TValue>({
                                     key={cell.id}
                                     className={`${x == 0 ? 'border-b-1 border-b-neutral-200 dark:border-b-neutral-800 border-r-2 border-r-neutral-400 dark:border-r-neutral-700' : ''} p-0`}
                                 >
-                                    {flexRender(
-                                        cell.column.columnDef.cell,
-                                        cell.getContext()
-                                    )}
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                 </TableCell>
                             ))}
                         </TableRow>

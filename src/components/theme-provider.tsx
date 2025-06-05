@@ -17,9 +17,7 @@ type ThemeProviderState = {
 const initialState: ThemeProviderState = {
     theme: 'system',
     setTheme: () => null,
-    resolvedTheme: window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light',
+    resolvedTheme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
@@ -30,16 +28,11 @@ export function ThemeProvider({
     storageKey = 'vite-ui-theme',
     ...props
 }: ThemeProviderProps) {
-    const [theme, setTheme] = useState<Theme>(
-        () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-    );
+    const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem(storageKey) as Theme) || defaultTheme);
     const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => {
-        const initialThemeValue =
-            (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+        const initialThemeValue = (localStorage.getItem(storageKey) as Theme) || defaultTheme;
         if (initialThemeValue === 'system') {
-            return window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light';
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
         return initialThemeValue;
     });
@@ -50,11 +43,7 @@ export function ThemeProvider({
 
         let currentAppliedTheme: 'light' | 'dark';
         if (theme === 'system') {
-            currentAppliedTheme = window.matchMedia(
-                '(prefers-color-scheme: dark)'
-            ).matches
-                ? 'dark'
-                : 'light';
+            currentAppliedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         } else {
             currentAppliedTheme = theme;
         }
@@ -98,8 +87,7 @@ export function ThemeProvider({
 export const useTheme = () => {
     const context = useContext(ThemeProviderContext);
 
-    if (context === undefined)
-        throw new Error('useTheme must be used within a ThemeProvider');
+    if (context === undefined) throw new Error('useTheme must be used within a ThemeProvider');
 
     return context;
 };
@@ -107,8 +95,7 @@ export const useTheme = () => {
 export const useResolvedTheme = () => {
     const context = useContext(ThemeProviderContext);
 
-    if (context === undefined)
-        throw new Error('useResolvedTheme must be used within a ThemeProvider');
+    if (context === undefined) throw new Error('useResolvedTheme must be used within a ThemeProvider');
 
     return context.resolvedTheme;
 };

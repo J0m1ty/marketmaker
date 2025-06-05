@@ -1,12 +1,5 @@
 import { useApplication } from '@pixi/react';
-import {
-    createContext,
-    useContext,
-    useLayoutEffect,
-    useState,
-    type ReactNode,
-    type RefObject,
-} from 'react';
+import { createContext, useContext, useLayoutEffect, useState, type ReactNode, type RefObject } from 'react';
 
 interface ResizeState {
     width: number;
@@ -22,8 +15,7 @@ const ResizeContext = createContext<ResizeState | null>(null);
 
 export const useResize = () => {
     const context = useContext(ResizeContext);
-    if (!context)
-        throw new Error('useResize must be used within a ResizeProvider');
+    if (!context) throw new Error('useResize must be used within a ResizeProvider');
     return context;
 };
 
@@ -51,7 +43,5 @@ export const ResizeProvider = ({ observe, children }: ResizeProviderProps) => {
 
     if (size.width === 0 || size.height === 0) return null;
 
-    return (
-        <ResizeContext.Provider value={size}>{children}</ResizeContext.Provider>
-    );
+    return <ResizeContext.Provider value={size}>{children}</ResizeContext.Provider>;
 };
