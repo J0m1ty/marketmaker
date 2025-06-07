@@ -1,7 +1,9 @@
-import { findIntersection } from '@/lib/economics-utils';
+import { findIntersectionAnalytical } from '@/lib/economics-utils';
 import { Container, Graphics } from 'pixi.js';
 import type { MergedUnion } from 'ts-safe-union';
 import { createDashedLine } from './dashed-line';
+import type { Result } from 'regression';
+import type { CurveFitType } from '@/lib/types';
 
 interface EquilibrumParams {
     view: {
@@ -11,8 +13,10 @@ interface EquilibrumParams {
         bottom: number;
     }
     theme: 'dark' | 'light';
-    demandEquation: (x: number) => number;
-    supplyEquation: (x: number) => number;
+    demandResult: Result;
+    supplyResult: Result;
+    demandCurveFitType: CurveFitType;
+    supplyCurveFitType: CurveFitType;
     bounds: {
         priceMin: number;
         priceMax: number;
@@ -46,15 +50,17 @@ type EquilibriumResult = MergedUnion<
 export const createEquilibrium = ({
     view: { left, right, top, bottom },
     theme,
-    demandEquation,
-    supplyEquation,
+    demandResult,
+    supplyResult,
+    demandCurveFitType,
+    supplyCurveFitType,
     bounds,
     absoluteBounds,
     render,
     passive,
     equilibriumContainer,
 }: EquilibrumParams): EquilibriumResult => {
-    const intersection = findIntersection(demandEquation, supplyEquation, absoluteBounds);
+    const intersection = findIntersectionAnalytical(demandResult, demandCurveFitType, supplyResult, supplyCurveFitType, absoluteBounds);
 
     if (intersection) {
         if (

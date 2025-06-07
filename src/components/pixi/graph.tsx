@@ -1,8 +1,8 @@
 import { useApplication } from '@pixi/react';
 import { useResolvedTheme } from '../theme-provider';
 import { useResize } from './resize-provider';
-import { useCallback, useEffect } from 'react';
-import { Container, Graphics } from 'pixi.js';
+import { useCallback, useEffect, useRef } from 'react';
+import { Container } from 'pixi.js';
 import { useMarketTabsStore } from '@/hooks/markets.store';
 import { createAxisContainer } from './axis-container';
 import { createPointsContainer } from './points-container';
@@ -11,13 +11,15 @@ import { createCurve } from './create-curve';
 import { calculateArcElasticities } from '@/lib/economics-utils';
 import { calculateSurpluses } from './calculate-surplus';
 import { createPriceFloor } from './price-floor';
-import { map } from '@/lib/utils';
+import { setupDragHandler } from '@/lib/drag-handler';
 
 export const Graph = () => {
     const { width, height } = useResize();
     const theme = useResolvedTheme();
     const { getActiveTab, updateComputed, updateAdjustmentResult, updateAdjustment } = useMarketTabsStore();
     const { app, isInitialised } = useApplication();
+    const dragCleanupRef = useRef<(() => void)[]>([]);
+    const isDraggingRef = useRef(false);
 
     if (!isInitialised) return null;
 
@@ -26,7 +28,11 @@ export const Graph = () => {
 
     const display = useCallback(() => {
         if (!app) return;
-        console.log('display');
+
+        if (!isDraggingRef.current) {
+            dragCleanupRef.current.forEach(cleanup => cleanup());
+            dragCleanupRef.current = [];
+        }
 
         app.stage.removeChildren();
 
@@ -77,10 +83,8 @@ export const Graph = () => {
         const curvesContainer = new Container();
 
         const {
-            success: demandSuccess,
-            equation: demandEquation,
-            // derivative: demandDerivative,
-            integral: demandIntegral,
+            success: demand,
+            regressionResult: demandResult,
             points: demandPoints,
         } = createCurve({
             view,
@@ -95,10 +99,8 @@ export const Graph = () => {
         });
 
         const {
-            success: supplySuccess,
-            equation: supplyEquation,
-            // derivative: supplyDerivative,
-            integral: supplyIntegral,
+            success: supply,
+            regressionResult: supplyResult,
             points: supplyPoints,
         } = createCurve({
             view,
@@ -115,16 +117,18 @@ export const Graph = () => {
         const equilibriumContainer = new Container();
         const controlContainer = new Container();
         const areaContainer = new Container();
-        
+
         app.stage.eventMode = 'static';
         app.stage.hitArea = app.screen;
 
-        if (demandSuccess && supplySuccess) {
+        if (demand && supply) {
             const { intersect, price, quantity } = createEquilibrium({
                 view,
                 theme,
-                demandEquation,
-                supplyEquation,
+                demandResult,
+                supplyResult,
+                demandCurveFitType: activeTab.curves.demand.fit,
+                supplyCurveFitType: activeTab.curves.supply.fit,
                 bounds,
                 absoluteBounds: activeTab.absoluteBounds,
                 equilibriumContainer,
@@ -135,9 +139,10 @@ export const Graph = () => {
             if (intersect) {
                 const { arcPED, arcPES } = calculateArcElasticities(
                     price,
-                    quantity,
-                    demandEquation,
-                    supplyEquation,
+                    demandResult,
+                    activeTab.curves.demand.fit,
+                    supplyResult,
+                    activeTab.curves.supply.fit,
                     activeTab.absoluteBounds
                 );
 
@@ -146,10 +151,12 @@ export const Graph = () => {
                     quantity,
                     demandPoints,
                     supplyPoints,
-                    demandIntegral,
-                    supplyIntegral,
                     demandColor: activeTab.curves.demand.color,
                     supplyColor: activeTab.curves.supply.color,
+                    demandResult,
+                    supplyResult,
+                    demandCurveFitType: activeTab.curves.demand.fit,
+                    supplyCurveFitType: activeTab.curves.supply.fit,
                     view,
                     bounds,
                     absoluteBounds: activeTab.absoluteBounds,
@@ -179,59 +186,36 @@ export const Graph = () => {
                         theme,
                         demandPoints,
                         supplyPoints,
-                        demandIntegral,
-                        supplyIntegral,
                         demandColor: activeTab.curves.demand.color,
                         supplyColor: activeTab.curves.supply.color,
+                        demandResult,
+                        supplyResult,
+                        demandCurveFitType: activeTab.curves.demand.fit,
+                        supplyCurveFitType: activeTab.curves.supply.fit,
                         origionalSurplus: total,
-                        demandEquation,
-                        supplyEquation,
                         bounds,
                         absoluteBounds: activeTab.absoluteBounds,
                         equilibriumContainer,
                         controlContainer,
                     });
 
-                    // Set up dragging for the floor line
-                    const { floorLine } = priceFloorResult;
-                    let dragTarget: Graphics | null = null;
+                    const cleanup = setupDragHandler({
+                        target: priceFloorResult.floorLine,
+                        app,
+                        direction: 'vertical',
+                        bounds: {
+                            min: bounds.priceMin,
+                            max: bounds.priceMax,
+                            screenMin: view.top,
+                            screenMax: view.bottom
+                        },
+                        onDrag: (newPrice) => updateAdjustment(activeTab.market.id, { price: newPrice }),
+                        onDragStart: () => { isDraggingRef.current = true; },
+                        onDragEnd: () => { isDraggingRef.current = false; },
+                        cursor: 'ns-resize'
+                    });
 
-                    const onDragStart = () => {
-                        floorLine.alpha = 0.7;
-                        dragTarget = floorLine;
-                        app.stage.cursor = 'ns-resize';
-                        app.stage.on('pointermove', onDragMove);
-                    };
-
-                    const onDragMove = (event: any) => {
-                        if (dragTarget) {
-                            // Convert screen Y to price value
-                            const screenY = event.global.y;
-                            const clampedY = Math.max(view.top, Math.min(view.bottom, screenY));
-                            const newPrice = bounds.priceMax - map(clampedY - view.top, 0, view.bottom - view.top, 0, bounds.priceMax - bounds.priceMin);
-                            
-                            // Clamp to bounds
-                            const clampedPrice = Math.max(bounds.priceMin, Math.min(bounds.priceMax, newPrice));
-                            
-                            // Update the store
-                            updateAdjustment(activeTab.market.id, {
-                                price: clampedPrice
-                            });
-                        }
-                    };
-
-                    const onDragEnd = () => {
-                        if (dragTarget) {
-                            app.stage.off('pointermove', onDragMove);
-                            app.stage.cursor = 'default';
-                            floorLine.alpha = 1;
-                            dragTarget = null;
-                        }
-                    };
-
-                    floorLine.on('pointerdown', onDragStart);
-                    app.stage.on('pointerup', onDragEnd);
-                    app.stage.on('pointerupoutside', onDragEnd);
+                    dragCleanupRef.current.push(cleanup);
 
                     if (priceFloorResult.intersects) {
                         const { qd, qs, cs, ps, ts, dwl } = priceFloorResult;
@@ -277,6 +261,12 @@ export const Graph = () => {
     useEffect(() => {
         display();
     }, [display]);
+
+    useEffect(() => {
+        return () => {
+            dragCleanupRef.current.forEach(cleanup => cleanup());
+        };
+    }, []);
 
     return null;
 };

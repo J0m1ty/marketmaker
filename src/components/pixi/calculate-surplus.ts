@@ -1,15 +1,20 @@
+import { createIntegrationFunction } from "@/lib/regression-utils";
+import type { CurveFitType } from "@/lib/types";
 import { map } from "@/lib/utils";
 import { Graphics, type Container } from "pixi.js";
+import type { Result } from "regression";
 
 interface SurplusParams {
     price: number;
     quantity: number;
     demandPoints: { x: number; y: number }[];
     supplyPoints: { x: number; y: number }[];
-    demandIntegral: (x1: number, x2: number) => number;
-    supplyIntegral: (x1: number, x2: number) => number;
     demandColor: string;
     supplyColor: string;
+    demandResult: Result;
+    supplyResult: Result;
+    demandCurveFitType: CurveFitType;
+    supplyCurveFitType: CurveFitType;
     view: {
         left: number;
         right: number;
@@ -43,16 +48,21 @@ export const calculateSurpluses = ({
     quantity,
     demandPoints,
     supplyPoints,
-    demandIntegral,
-    supplyIntegral,
     demandColor,
     supplyColor,
+    demandResult,
+    supplyResult,
+    demandCurveFitType,
+    supplyCurveFitType,
     view: { left, right, top, bottom },
     bounds,
     absoluteBounds,
     areaContainer,
     render
 }: SurplusParams): SurplusResult => {
+    const demandIntegral = createIntegrationFunction(demandResult, demandCurveFitType);
+    const supplyIntegral = createIntegrationFunction(supplyResult, supplyCurveFitType);
+
     const consumerSurplus = demandIntegral(0, quantity) - (price * quantity);
     const producerSurplus = (price * quantity) - supplyIntegral(0, quantity);
     const totalSurplus = consumerSurplus + producerSurplus;

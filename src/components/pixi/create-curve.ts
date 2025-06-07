@@ -1,4 +1,4 @@
-import { createDerivativeFunction, createEquationFunction, createIntegrationFunction } from '@/lib/regression-utils';
+import { createEquationFunction } from '@/lib/regression-utils';
 import type { CurveFitType } from '@/lib/types';
 import { map } from '@/lib/utils';
 import { Container, Graphics } from 'pixi.js';
@@ -47,9 +47,7 @@ type CurveResult = MergedUnion<
     },
     {
         success: true;
-        equation: (x: number) => number;
-        derivative: (x: number) => number;
-        integral: (x1: number, x2: number) => number;
+        regressionResult: Result;
         points: { x: number; y: number }[];
     }
 >;
@@ -75,17 +73,14 @@ export const createCurve = ({
         return { success: false };
     }
 
-    // Create equation functions and store them
     const equationFn = createEquationFunction(regressionResult, fitType);
-    const derivativeFn = createDerivativeFunction(regressionResult, fitType);
-    const integralFn = createIntegrationFunction(regressionResult, fitType);
 
     const curve = new Graphics();
     const curvePoints: { x: number; y: number }[] = [];
 
     // Sample points
     const pixelWidth = right - left;
-    const edgeThreshold = 0.05;
+    const edgeThreshold = 0.1;
     const fineStep = 0.5;
     const coarseStep = 1.0;
 
@@ -157,9 +152,7 @@ export const createCurve = ({
 
     return {
         success: true,
-        equation: equationFn,
-        derivative: derivativeFn,
-        integral: integralFn,
+        regressionResult,
         points: curvePoints,
     };
 };

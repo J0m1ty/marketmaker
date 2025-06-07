@@ -11,8 +11,9 @@ export function Simulation() {
             <Application
                 className='absolute inset-0'
                 autoStart
-                antialias
+                antialias={false}
                 autoDensity
+                resolution={2}
                 preference='webgpu'
                 backgroundAlpha={0}
                 resizeTo={containerRef}

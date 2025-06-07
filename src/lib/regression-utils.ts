@@ -136,26 +136,3 @@ export const createIntegrationFunction = (regressionResult: Result, fitType: Cur
             return () => 0;
     }
 };
-
-export const numericalIntegration = (
-    regressionResult: Result,
-    fitType: CurveFitType,
-    x1: number,
-    x2: number,
-    intervals: number = 1000
-) => {
-    const equationFunction = createEquationFunction(regressionResult, fitType);
-    const h = (x2 - x1) / intervals;
-
-    if (intervals % 2 !== 0) intervals++;
-
-    let sum = equationFunction(x1) + equationFunction(x2);
-
-    for (let i = 1; i < intervals; i++) {
-        const x = x1 + i * h;
-        const multiplier = i % 2 === 0 ? 2 : 4;
-        sum += multiplier * equationFunction(x);
-    }
-
-    return (h / 3) * sum;
-};

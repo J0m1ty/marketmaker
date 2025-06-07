@@ -1,8 +1,11 @@
 import { Container, Graphics } from "pixi.js";
 import type { MergedUnion } from "ts-safe-union";
 import { createDashedLine } from './dashed-line';
-import { findQuantityAtPrice } from "@/lib/economics-utils";
+import { findQuantityAtPriceAnalytical } from "@/lib/economics-utils";
 import { map } from "@/lib/utils";
+import type { Result } from "regression";
+import type { CurveFitType } from "@/lib/types";
+import { createIntegrationFunction } from "@/lib/regression-utils";
 
 interface PriceFloorParams {
     price: number;
@@ -17,12 +20,12 @@ interface PriceFloorParams {
     theme: 'light' | 'dark';
     demandPoints: { x: number; y: number }[];
     supplyPoints: { x: number; y: number }[];
-    demandIntegral: (x1: number, x2: number) => number;
-    supplyIntegral: (x1: number, x2: number) => number;
     demandColor: string;
     supplyColor: string;
-    demandEquation: (x: number) => number;
-    supplyEquation: (x: number) => number;
+    demandResult: Result;
+    supplyResult: Result;
+    demandCurveFitType: CurveFitType;
+    supplyCurveFitType: CurveFitType;
     origionalSurplus: number;
     bounds: {
         priceMin: number;
@@ -62,12 +65,12 @@ export const createPriceFloor = ({
     theme,
     demandPoints,
     supplyPoints,
-    demandIntegral,
-    supplyIntegral,
     demandColor,
     supplyColor,
-    demandEquation,
-    supplyEquation,
+    demandResult,
+    supplyResult,
+    demandCurveFitType,
+    supplyCurveFitType,
     origionalSurplus,
     bounds,
     absoluteBounds,
@@ -103,8 +106,15 @@ export const createPriceFloor = ({
         return { intersects: false, floorLine };
     }
 
-    const qd = findQuantityAtPrice(floor, quantity, demandEquation, absoluteBounds);
-    const qs = findQuantityAtPrice(floor, quantity, supplyEquation, absoluteBounds);
+    const qd = findQuantityAtPriceAnalytical(floor, demandResult, demandCurveFitType, absoluteBounds);
+    const qs = findQuantityAtPriceAnalytical(floor, supplyResult, supplyCurveFitType, absoluteBounds);
+
+    if (!qd || !qs || qd < 0 || qs < 0) {
+        return { intersects: false, floorLine };
+    }
+
+    const demandIntegral = createIntegrationFunction(demandResult, demandCurveFitType);
+    const supplyIntegral = createIntegrationFunction(supplyResult, supplyCurveFitType);
 
     const consumerSurplus = demandIntegral(0, qd) - (floor * qd);
     const producerSurplus = (floor * qd) - supplyIntegral(0, qd);
