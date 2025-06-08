@@ -9,7 +9,6 @@ import { createIntegrationFunction } from '@/lib/regression-utils';
 interface PriceCeilingParams {
     price: number;
     quantity: number;
-    ceiling: number;
     view: {
         left: number;
         right: number;
@@ -22,7 +21,7 @@ interface PriceCeilingParams {
         quantityMin: number;
         quantityMax: number;
     };
-    absoluteBounds: {
+    range: {
         priceMin: number;
         priceMax: number;
         quantityMin: number;
@@ -53,6 +52,7 @@ interface PriceCeilingParams {
             quantityMax: number;
         };
     };
+    ceiling: number;
     originalSurplus: number;
     equilibriumContainer: Container;
     controlContainer: Container;
@@ -78,7 +78,7 @@ export const createPriceCeiling = ({
     ceiling,
     view,
     bounds,
-    absoluteBounds,
+    range,
     theme,
     demand,
     supply,
@@ -111,8 +111,8 @@ export const createPriceCeiling = ({
         return { intersects: false, ceilingLine };
     }
 
-    const qd = findQuantityAtPriceAnalytical(ceiling, demand.result, demand.fit, absoluteBounds);
-    const qs = findQuantityAtPriceAnalytical(ceiling, supply.result, supply.fit, absoluteBounds);
+    const qd = findQuantityAtPriceAnalytical(ceiling, demand.result, demand.fit, range);
+    const qs = findQuantityAtPriceAnalytical(ceiling, supply.result, supply.fit, range);
 
     if (!qd || !qs || qd < 0 || qs < 0) {
         return { intersects: false, ceilingLine };

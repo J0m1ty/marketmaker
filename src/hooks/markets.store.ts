@@ -200,7 +200,8 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                                     return {
                                         mode: 'point_elasticity',
                                         type: 'calculation',
-                                        quantity: 0,
+                                        quantity: 
+                                            activeTab?.computed?.intersect ? activeTab.computed.equilibrium_quantity : 0,
                                     };
                                 default:
                                     return { mode: 'none' };

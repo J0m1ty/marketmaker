@@ -12,8 +12,11 @@ import { calculateArcElasticities } from '@/lib/economics-utils';
 import { calculateSurpluses } from './calculate-surplus';
 import { createPriceFloor } from './price-floor';
 import { createPriceCeiling } from './price-ceiling';
+import { createDemandShift } from './demand-shift';
+import { createSupplyShift } from './supply-shift';
 import { setupDragHandler } from '@/lib/drag-handler';
 import { createBorderMask } from './border-mask';
+import { calculatePointElasticity } from './point-elasticity';
 
 export const Graph = () => {
     const { width, height } = useResize();
@@ -68,7 +71,7 @@ export const Graph = () => {
             .filter((row) => activeTab.curves.supply.fit !== 'logarithmic' || row.qs > 0)
             .map((row) => [row.qs, row.price]);
 
-        const axisContainer = createAxisContainer({
+        const { gridLines, axisContainer } = createAxisContainer({
             view,
             bounds,
             theme,
@@ -139,8 +142,8 @@ export const Graph = () => {
                     fit: activeTab.curves.supply.fit,
                 },
                 container: equilibriumContainer,
-                render: activeTab.adjustment.mode !== 'demand_shift' && activeTab.adjustment.mode !== 'supply_shift',
-                passive: activeTab.adjustment.mode !== 'none' && activeTab.adjustment.mode !== 'point_elasticity',
+                render: activeTab.adjustment.mode !== 'demand_shift' && activeTab.adjustment.mode !== 'supply_shift' && activeTab.adjustment.mode !== 'point_elasticity',
+                passive: activeTab.adjustment.mode !== 'none',
             });
 
             if (intersect) {
@@ -191,10 +194,9 @@ export const Graph = () => {
                     const { intersects, floorLine } = createPriceFloor({
                         price,
                         quantity,
-                        floor: activeTab.adjustment.price,
                         view,
                         bounds,
-                        absoluteBounds: activeTab.ranges.combined,
+                        range: activeTab.ranges.combined,
                         theme,
                         demand: {
                             points: demandPoints,
@@ -210,6 +212,7 @@ export const Graph = () => {
                             color: activeTab.curves.supply.color,
                             range: activeTab.ranges.supply,
                         },
+                        floor: activeTab.adjustment.price,
                         originalSurplus: total,
                         equilibriumContainer,
                         controlContainer,
@@ -249,10 +252,9 @@ export const Graph = () => {
                     const { intersects, ceilingLine } = createPriceCeiling({
                         price,
                         quantity,
-                        ceiling: activeTab.adjustment.price,
                         view,
                         bounds,
-                        absoluteBounds: activeTab.ranges.combined,
+                        range: activeTab.ranges.combined,
                         theme,
                         demand: {
                             points: demandPoints,
@@ -268,6 +270,7 @@ export const Graph = () => {
                             color: activeTab.curves.supply.color,
                             range: activeTab.ranges.supply,
                         },
+                        ceiling: activeTab.adjustment.price,
                         originalSurplus: total,
                         equilibriumContainer,
                         controlContainer,
@@ -302,6 +305,124 @@ export const Graph = () => {
                         });
                     }
                 }
+
+                if (activeTab.adjustment.mode === 'demand_shift') {
+                    const { intersects } = createDemandShift({
+                        originalPrice: price,
+                        originalQuantity: quantity,
+                        view,
+                        bounds,
+                        range: activeTab.ranges.combined,
+                        theme,
+                        demand: {
+                            points: demandPoints,
+                            result: demandResult,
+                            fit: activeTab.curves.demand.fit,
+                            color: activeTab.curves.demand.color,
+                            range: activeTab.ranges.demand,
+                        },
+                        supply: {
+                            points: supplyPoints,
+                            result: supplyResult,
+                            fit: activeTab.curves.supply.fit,
+                            color: activeTab.curves.supply.color,
+                            range: activeTab.ranges.supply,
+                        },
+                        shiftAmount: activeTab.adjustment.amount,
+                        originalSurplus: total,
+                        equilibriumContainer,
+                        updateAdjustmentResult: (result) => updateAdjustmentResult(activeTab.market.id, result),
+                    });
+
+                    if (!intersects) {
+                        updateAdjustment(activeTab.market.id, {
+                            result: undefined,
+                        });
+                    }
+                }
+
+                if (activeTab.adjustment.mode === 'supply_shift') {
+                    const { intersects } = createSupplyShift({
+                        originalPrice: price,
+                        originalQuantity: quantity,
+                        view,
+                        bounds,
+                        range: activeTab.ranges.combined,
+                        theme,
+                        demand: {
+                            points: demandPoints,
+                            result: demandResult,
+                            fit: activeTab.curves.demand.fit,
+                            color: activeTab.curves.demand.color,
+                            range: activeTab.ranges.demand,
+                        },
+                        supply: {
+                            points: supplyPoints,
+                            result: supplyResult,
+                            fit: activeTab.curves.supply.fit,
+                            color: activeTab.curves.supply.color,
+                            range: activeTab.ranges.supply,
+                        },
+                        shiftAmount: activeTab.adjustment.amount,
+                        originalSurplus: total,
+                        equilibriumContainer,
+                        updateAdjustmentResult: (result) => updateAdjustmentResult(activeTab.market.id, result),
+                    });
+
+                    if (!intersects) {
+                        updateAdjustment(activeTab.market.id, {
+                            result: undefined,
+                        });
+                    }
+                }
+
+                if (activeTab.adjustment.mode === 'point_elasticity') {
+                    const { intersects, quantityLine } = calculatePointElasticity({
+                        quantity: activeTab.adjustment.quantity,
+                        view,
+                        bounds,
+                        range: activeTab.ranges.combined,
+                        theme,
+                        demand: {
+                            result: demandResult,
+                            fit: activeTab.curves.demand.fit,
+                        },
+                        supply: {
+                            result: supplyResult,
+                            fit: activeTab.curves.supply.fit,
+                        },
+                        container: equilibriumContainer,
+                        updateAdjustmentResult: (result) => updateAdjustmentResult(activeTab.market.id, result),
+                    });
+
+                    const cleanup = setupDragHandler({
+                        target: quantityLine,
+                        app,
+                        direction: 'horizontal',
+                        bounds: {
+                            min: bounds.quantityMin,
+                            max: bounds.quantityMax,
+                            screenMin: view.left,
+                            screenMax: view.right,
+                        },
+                        onDrag: (newQuantity) => updateAdjustment(activeTab.market.id, { quantity: newQuantity }),
+                        onDragStart: () => {
+                            isDraggingRef.current = true;
+                        },
+                        onDragEnd: () => {
+                            isDraggingRef.current = false;
+                        },
+                        cursor: 'ew-resize',
+                    });
+
+                    dragCleanupRef.current.push(cleanup);
+
+                    if (!intersects) {
+                        updateAdjustment(activeTab.market.id, {
+                            result: undefined,
+                        });
+                    }
+                }
             }
         }
 
@@ -312,6 +433,7 @@ export const Graph = () => {
             theme,
         });
 
+        app.stage.addChild(gridLines);
         app.stage.addChild(areaContainer);
         app.stage.addChild(pointsContainer);
         app.stage.addChild(curvesContainer);

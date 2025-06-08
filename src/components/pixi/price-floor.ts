@@ -1,7 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { createDashedLine } from './dashed-line';
 import { findQuantityAtPriceAnalytical } from '@/lib/economics-utils';
-import { map } from '@/lib/utils';
+import { constrain, map } from '@/lib/utils';
 import type { Result } from 'regression';
 import type { CurveFitType } from '@/lib/types';
 import { createIntegrationFunction } from '@/lib/regression-utils';
@@ -9,7 +9,6 @@ import { createIntegrationFunction } from '@/lib/regression-utils';
 interface PriceFloorParams {
     price: number;
     quantity: number;
-    floor: number;
     view: {
         left: number;
         right: number;
@@ -22,7 +21,7 @@ interface PriceFloorParams {
         quantityMin: number;
         quantityMax: number;
     };
-    absoluteBounds: {
+    range: {
         priceMin: number;
         priceMax: number;
         quantityMin: number;
@@ -53,6 +52,7 @@ interface PriceFloorParams {
             quantityMax: number;
         };
     };
+    floor: number;
     originalSurplus: number;
     equilibriumContainer: Container;
     controlContainer: Container;
@@ -76,9 +76,9 @@ export const createPriceFloor = ({
     price,
     quantity,
     floor,
-    view,
+    view: { left, right, top, bottom },
     bounds,
-    absoluteBounds,
+    range,
     theme,
     demand,
     supply,
@@ -87,20 +87,18 @@ export const createPriceFloor = ({
     controlContainer,
     updateAdjustmentResult,
 }: PriceFloorParams): PriceFloorResult => {
-    const { left, right, top, bottom } = view;
-
     const color = theme === 'dark' ? 0xffffff : 0x000000;
-    const floorScreenY = Math.max(
-        Math.min(bottom - map(floor, bounds.priceMin, bounds.priceMax, 0, bottom - top), bottom),
-        top
-    );
+    const floorScreenY = constrain(bottom - map(floor, bounds.priceMin, bounds.priceMax, 0, bottom - top), top, bottom);
 
-    const floorLine = new Graphics().moveTo(left, floorScreenY).lineTo(right, floorScreenY).stroke({
-        color,
-        width: 2,
-    }).rect(left, floorScreenY - 10, right - left, 20).fill({
-        alpha: 0
-    });
+    const floorLine = new Graphics()
+        .moveTo(left, floorScreenY)
+        .lineTo(right, floorScreenY)
+        .stroke({
+            color,
+            width: 2,
+        }).rect(left, floorScreenY - 10, right - left, 20).fill({
+            alpha: 0
+        });
 
     floorLine.eventMode = 'static';
     floorLine.cursor = 'ns-resize';
@@ -110,8 +108,8 @@ export const createPriceFloor = ({
     if (floor <= price) {
         return { intersects: false, floorLine };
     }
-    const qd = findQuantityAtPriceAnalytical(floor, demand.result, demand.fit, absoluteBounds);
-    const qs = findQuantityAtPriceAnalytical(floor, supply.result, supply.fit, absoluteBounds);
+    const qd = findQuantityAtPriceAnalytical(floor, demand.result, demand.fit, range);
+    const qs = findQuantityAtPriceAnalytical(floor, supply.result, supply.fit, range);
 
     if (!qd || !qs || qd < 0 || qs < 0) {
         return { intersects: false, floorLine };

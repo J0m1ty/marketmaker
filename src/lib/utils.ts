@@ -8,3 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 export function map(value: number, inputMin: number, inputMax: number, outputMin: number, outputMax: number) {
     return outputMin + ((value - inputMin) / (inputMax - inputMin)) * (outputMax - outputMin);
 }
+
+export function constrain(value: number, min: number, max: number) {
+    return Math.max(min, Math.min(max, value));
+}

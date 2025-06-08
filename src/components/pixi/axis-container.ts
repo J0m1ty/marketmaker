@@ -53,7 +53,7 @@ export interface AxisConfig {
     theme: string;
 }
 
-export const createAxisContainer = ({ view: { left, right, top, bottom }, bounds, theme }: AxisConfig): Container => {
+export const createAxisContainer = ({ view: { left, right, top, bottom }, bounds, theme }: AxisConfig) => {
     const axisContainer = new Container();
 
     const ticks = 9;
@@ -88,7 +88,7 @@ export const createAxisContainer = ({ view: { left, right, top, bottom }, bounds
     axisContainer.addChild(yAxis);
     axisContainer.addChild(ticksAndLabels);
 
-    return axisContainer;
+    return { gridLines, axisContainer };
 };
 
 const createGridLines = ({ left, right, top, bottom, ticks, gridColor }: any) => {
