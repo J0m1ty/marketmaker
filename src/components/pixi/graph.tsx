@@ -82,6 +82,7 @@ export const Graph = () => {
             bounds,
             demand: { data: demandData, color: activeTab.curves.demand.color },
             supply: { data: supplyData, color: activeTab.curves.supply.color },
+            render: activeTab.adjustment.mode === 'none',
         });
 
         const curvesContainer = new Container();
@@ -101,6 +102,7 @@ export const Graph = () => {
             },
             container: curvesContainer,
             render: true,
+            passive: activeTab.adjustment.mode === 'demand_shift',
         });
 
         const {
@@ -118,6 +120,7 @@ export const Graph = () => {
             },
             container: curvesContainer,
             render: true,
+            passive: activeTab.adjustment.mode === 'supply_shift',
         });
 
         const equilibriumContainer = new Container();

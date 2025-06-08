@@ -3,6 +3,7 @@ import type { CurveFitType } from "@/lib/types";
 import { constrain, map } from "@/lib/utils";
 import { Graphics, type Container } from "pixi.js";
 import type { Result } from "regression";
+import { createDashedLine } from "./dashed-line";
 
 interface PointElasticityParams {
     quantity: number;
@@ -53,18 +54,24 @@ export const calculatePointElasticity = ({
     const color = theme === 'dark' ? 0xffffff : 0x000000;
     const quantityScreenX = constrain(map(quantity, bounds.quantityMin, bounds.quantityMax, left, right), left, right);
 
-    const quantityLine = new Graphics()
-        .moveTo(quantityScreenX, top)
-        .lineTo(quantityScreenX, bottom)
-        .stroke({
-            color,
-            width: 2,
-        })
+    const quantityLine = createDashedLine({
+        startX: quantityScreenX,
+        startY: top,
+        endX: quantityScreenX,
+        endY: bottom,
+        dashLength: 5,
+        gapLength: 5,
+        color,
+        width: 2,
+        alpha: 0.7,
+    })
+
+    quantityLine
         .rect(quantityScreenX - 10, top, 20, bottom - top)
         .fill({
             alpha: 0
         });
-    
+
     quantityLine.eventMode = 'static';
     quantityLine.cursor = 'ew-resize';
 

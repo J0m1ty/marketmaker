@@ -15,6 +15,7 @@ interface PointsConfig {
     };
     demand: { data: number[][]; color: string };
     supply: { data: number[][]; color: string };
+    render: boolean;
 }
 
 export const createPointsContainer = ({
@@ -22,8 +23,13 @@ export const createPointsContainer = ({
     bounds,
     demand,
     supply,
+    render,
 }: PointsConfig): Container => {
     const container = new Container();
+
+    if (!render) {
+        return container;
+    }
 
     demand.data.forEach(([quantity, price]) => {
         if (

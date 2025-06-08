@@ -40,6 +40,7 @@ interface CurveParams {
     };
     container: Container;
     render: boolean;
+    passive: boolean;
 }
 
 type CurveResult = MergedUnion<
@@ -60,6 +61,7 @@ export const createCurve = ({
     curve: { data, fit, color },
     container,
     render,
+    passive,
 }: CurveParams): CurveResult => {
     if (data.length < 2) return { success: false };
 
@@ -78,8 +80,8 @@ export const createCurve = ({
 
     const viewportWidth = right - left;
     const edgeThreshold = 0.1;
-    const fineStepSize = 0.5;
-    const coarseStepSize = 1.0;
+    const fineStepSize = 0.2;
+    const coarseStepSize = 1;
 
     const clampedQuantityMin = Math.max(range.quantityMin, bounds.quantityMin);
     const clampedQuantityMax = Math.min(range.quantityMax, bounds.quantityMax);
@@ -139,6 +141,7 @@ export const createCurve = ({
         curveGraphics.stroke({
             color,
             width: 2,
+            alpha: passive ? 0.5 : 1,
         });
 
         container.addChild(curveGraphics);
