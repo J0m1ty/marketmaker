@@ -1,5 +1,4 @@
 import { Container, Graphics } from 'pixi.js';
-import type { MergedUnion } from 'ts-safe-union';
 import { createDashedLine } from './dashed-line';
 import { findQuantityAtPriceAnalytical } from '@/lib/economics-utils';
 import { map } from '@/lib/utils';
@@ -99,6 +98,8 @@ export const createPriceFloor = ({
     const floorLine = new Graphics().moveTo(left, floorScreenY).lineTo(right, floorScreenY).stroke({
         color,
         width: 2,
+    }).rect(left, floorScreenY - 10, right - left, 20).fill({
+        alpha: 0
     });
 
     floorLine.eventMode = 'static';
@@ -169,16 +170,12 @@ export const createPriceFloor = ({
         });
 
         if (relevantDemandPoints.length >= 2) {
-            const sortedDemandPoints = relevantDemandPoints.sort((a, b) => a.x - b.x);
-
             consumerSurplusGraphics.moveTo(Math.max(demandMinScreenX, left), floorScreenY);
-            consumerSurplusGraphics.lineTo(Math.max(demandMinScreenX, left), top);
 
-            for (const point of sortedDemandPoints) {
+            for (const point of relevantDemandPoints) {
                 consumerSurplusGraphics.lineTo(point.x, Math.max(top, point.y));
             }
 
-            consumerSurplusGraphics.lineTo(qdScreenX, floorScreenY);
             consumerSurplusGraphics.closePath();
 
             consumerSurplusGraphics.fill({
@@ -200,74 +197,61 @@ export const createPriceFloor = ({
         });
 
         if (relevantSupplyPoints.length >= 2) {
-            const sortedSupplyPoints = relevantSupplyPoints.sort((a, b) => a.x - b.x);
-
             producerSurplusGraphics.moveTo(Math.max(supplyMinScreenX, left), floorScreenY);
             producerSurplusGraphics.lineTo(qdScreenX, floorScreenY);
 
-            for (let i = sortedSupplyPoints.length - 1; i >= 0; i--) {
-                const point = sortedSupplyPoints[i];
+            for (let i = relevantSupplyPoints.length - 1; i >= 0; i--) {
+                const point = relevantSupplyPoints[i];
                 producerSurplusGraphics.lineTo(point.x, Math.min(bottom, point.y));
             }
 
-            producerSurplusGraphics.lineTo(Math.max(supplyMinScreenX, left), bottom);
             producerSurplusGraphics.closePath();
-        } else {
-            producerSurplusGraphics.moveTo(Math.max(supplyMinScreenX, left), floorScreenY);
-            producerSurplusGraphics.lineTo(Math.max(qdScreenX, supplyMinScreenX), floorScreenY);
-            producerSurplusGraphics.lineTo(Math.max(qdScreenX, supplyMinScreenX), bottom);
-            producerSurplusGraphics.lineTo(Math.max(supplyMinScreenX, left), bottom);
-            producerSurplusGraphics.closePath();
-        }
 
-        producerSurplusGraphics.fill({
-            color: supply.color,
-            alpha: 0.3,
+            producerSurplusGraphics.fill({
+                color: supply.color,
+                alpha: 0.3,
+            });
+
+            equilibriumContainer.addChild(producerSurplusGraphics);
+        }
+    }
+
+    if (qd !== qs && qd < quantity) {
+        const dwlGraphics = new Graphics();
+
+        const demandPointsInDWL = demand.points.filter((point) => {
+            const dataX =
+                ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) +
+                bounds.quantityMin;
+            return dataX >= qd && dataX <= quantity;
         });
 
-        equilibriumContainer.addChild(producerSurplusGraphics);
-        if (qd !== qs && qd < quantity) {
-            const dwlGraphics = new Graphics();
+        const supplyPointsInDWL = supply.points.filter((point) => {
+            const dataX =
+                ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) +
+                bounds.quantityMin;
+            return dataX >= qd && dataX <= quantity;
+        });
 
-            const demandPointsInDWL = demand.points.filter((point) => {
-                const dataX =
-                    ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) +
-                    bounds.quantityMin;
-                return dataX >= qd && dataX <= quantity;
-            });
+        if (demandPointsInDWL.length >= 2 && supplyPointsInDWL.length >= 2) {
+            dwlGraphics.moveTo(qdScreenX, floorScreenY);
 
-            const supplyPointsInDWL = supply.points.filter((point) => {
-                const dataX =
-                    ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) +
-                    bounds.quantityMin;
-                return dataX >= qd && dataX <= quantity;
-            });
-
-            if (demandPointsInDWL.length >= 2 && supplyPointsInDWL.length >= 2) {
-                const sortedDemandPoints = demandPointsInDWL.sort((a, b) => a.x - b.x);
-                const sortedSupplyPoints = supplyPointsInDWL.sort((a, b) => a.x - b.x);
-
-                dwlGraphics.moveTo(qdScreenX, floorScreenY);
-
-                // Follow demand curve
-                for (const point of sortedDemandPoints) {
-                    dwlGraphics.lineTo(point.x, point.y);
-                }
-
-                // Follow supply curve back
-                for (let i = sortedSupplyPoints.length - 1; i >= 0; i--) {
-                    const point = sortedSupplyPoints[i];
-                    dwlGraphics.lineTo(point.x, point.y);
-                }
-
-                dwlGraphics.closePath();
-
-                dwlGraphics.fill({
-                    color,
-                    alpha: 0.2,
-                });
-                equilibriumContainer.addChild(dwlGraphics);
+            for (const point of demandPointsInDWL) {
+                dwlGraphics.lineTo(point.x, Math.min(bottom, Math.max(top, point.y)));
             }
+
+            for (let i = supplyPointsInDWL.length - 1; i >= 0; i--) {
+                const point = supplyPointsInDWL[i];
+                dwlGraphics.lineTo(point.x, Math.min(bottom, Math.max(top, point.y)));
+            }
+
+            dwlGraphics.closePath();
+
+            dwlGraphics.fill({
+                color,
+                alpha: 0.2,
+            });
+            equilibriumContainer.addChild(dwlGraphics);
         }
     }
 

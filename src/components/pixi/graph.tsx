@@ -11,6 +11,7 @@ import { createCurve } from './create-curve';
 import { calculateArcElasticities } from '@/lib/economics-utils';
 import { calculateSurpluses } from './calculate-surplus';
 import { createPriceFloor } from './price-floor';
+import { createPriceCeiling } from './price-ceiling';
 import { setupDragHandler } from '@/lib/drag-handler';
 import { createBorderMask } from './border-mask';
 
@@ -217,6 +218,64 @@ export const Graph = () => {
 
                     const cleanup = setupDragHandler({
                         target: floorLine,
+                        app,
+                        direction: 'vertical',
+                        bounds: {
+                            min: bounds.priceMin,
+                            max: bounds.priceMax,
+                            screenMin: view.top,
+                            screenMax: view.bottom,
+                        },
+                        onDrag: (newPrice) => updateAdjustment(activeTab.market.id, { price: newPrice }),
+                        onDragStart: () => {
+                            isDraggingRef.current = true;
+                        },
+                        onDragEnd: () => {
+                            isDraggingRef.current = false;
+                        },
+                        cursor: 'ns-resize',
+                    });
+
+                    dragCleanupRef.current.push(cleanup);
+
+                    if (!intersects) {
+                        updateAdjustment(activeTab.market.id, {
+                            result: undefined,
+                        });
+                    }
+                }
+
+                if (activeTab.adjustment.mode === 'price_ceiling') {
+                    const { intersects, ceilingLine } = createPriceCeiling({
+                        price,
+                        quantity,
+                        ceiling: activeTab.adjustment.price,
+                        view,
+                        bounds,
+                        absoluteBounds: activeTab.ranges.combined,
+                        theme,
+                        demand: {
+                            points: demandPoints,
+                            result: demandResult,
+                            fit: activeTab.curves.demand.fit,
+                            color: activeTab.curves.demand.color,
+                            range: activeTab.ranges.demand,
+                        },
+                        supply: {
+                            points: supplyPoints,
+                            result: supplyResult,
+                            fit: activeTab.curves.supply.fit,
+                            color: activeTab.curves.supply.color,
+                            range: activeTab.ranges.supply,
+                        },
+                        originalSurplus: total,
+                        equilibriumContainer,
+                        controlContainer,
+                        updateAdjustmentResult: (result) => updateAdjustmentResult(activeTab.market.id, result),
+                    });
+
+                    const cleanup = setupDragHandler({
+                        target: ceilingLine,
                         app,
                         direction: 'vertical',
                         bounds: {

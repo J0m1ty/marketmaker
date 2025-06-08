@@ -83,10 +83,8 @@ export const calculateSurpluses = ({
             const consumerSurplusGraphics = new Graphics();
 
             consumerSurplusGraphics.moveTo(Math.max(demandMinScreenX, left), equilibriumScreenY);
-            consumerSurplusGraphics.lineTo(Math.max(demandMinScreenX, left), top);
 
-            const sortedDemandPoints = relevantDemandPoints.sort((a, b) => a.x - b.x);
-            for (const point of sortedDemandPoints) {
+            for (const point of relevantDemandPoints) {
                 consumerSurplusGraphics.lineTo(point.x, Math.max(top, point.y));
             }
 
@@ -106,17 +104,14 @@ export const calculateSurpluses = ({
         if (relevantSupplyPoints.length >= 2) {
             const producerSurplusGraphics = new Graphics();
 
-            const sortedSupplyPoints = relevantSupplyPoints.sort((a, b) => a.x - b.x);
-
             producerSurplusGraphics.moveTo(Math.max(supplyMinScreenX, left), equilibriumScreenY);
             producerSurplusGraphics.lineTo(equilibriumScreenX, equilibriumScreenY);
 
-            for (let i = sortedSupplyPoints.length - 1; i >= 0; i--) {
-                const point = sortedSupplyPoints[i];
+            for (let i = relevantSupplyPoints.length - 1; i >= 0; i--) {
+                const point = relevantSupplyPoints[i];
                 producerSurplusGraphics.lineTo(point.x, Math.min(bottom, point.y));
             }
 
-            producerSurplusGraphics.lineTo(Math.max(supplyMinScreenX, left), bottom);
             producerSurplusGraphics.closePath();
 
             producerSurplusGraphics.fill({
