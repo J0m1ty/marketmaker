@@ -22,7 +22,11 @@ export const ColorSelect = ({ curve, hex, setHex }: ColorSelectProps) => {
     const [tempHex, setTempHex] = useState(hex);
 
     return (
-        <Dialog>
+        <Dialog
+        onOpenChange={() => {
+            setTempHex(hex);
+        }}
+        >
             <DialogTrigger asChild>
                 <Button
                     variant={'outline'}
