@@ -23,9 +23,9 @@ export const ColorSelect = ({ curve, hex, setHex }: ColorSelectProps) => {
 
     return (
         <Dialog
-        onOpenChange={() => {
-            setTempHex(hex);
-        }}
+            onOpenChange={() => {
+                setTempHex(hex);
+            }}
         >
             <DialogTrigger asChild>
                 <Button

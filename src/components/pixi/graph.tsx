@@ -31,7 +31,7 @@ export const Graph = () => {
         if (!app) return;
 
         if (!isDraggingRef.current) {
-            dragCleanupRef.current.forEach(cleanup => cleanup());
+            dragCleanupRef.current.forEach((cleanup) => cleanup());
             dragCleanupRef.current = [];
         }
 
@@ -77,19 +77,23 @@ export const Graph = () => {
             view,
             bounds,
             demand: { data: demandData, color: activeTab.curves.demand.color },
-            supply: { data: supplyData, color: activeTab.curves.supply.color }
+            supply: { data: supplyData, color: activeTab.curves.supply.color },
         });
 
         const curvesContainer = new Container();
 
-        const { success: demand, result: demandResult, points: demandPoints } = createCurve({
+        const {
+            success: demand,
+            result: demandResult,
+            points: demandPoints,
+        } = createCurve({
             view,
             bounds,
             range: activeTab.ranges.demand,
             curve: {
                 data: demandData,
                 fit: activeTab.curves.demand.fit,
-                color: activeTab.curves.demand.color
+                color: activeTab.curves.demand.color,
             },
             container: curvesContainer,
             render: true,
@@ -127,11 +131,11 @@ export const Graph = () => {
                 theme,
                 demand: {
                     result: demandResult,
-                    fit: activeTab.curves.demand.fit
+                    fit: activeTab.curves.demand.fit,
                 },
                 supply: {
                     result: supplyResult,
-                    fit: activeTab.curves.supply.fit
+                    fit: activeTab.curves.supply.fit,
                 },
                 container: equilibriumContainer,
                 render: activeTab.adjustment.mode !== 'demand_shift' && activeTab.adjustment.mode !== 'supply_shift',
@@ -156,14 +160,14 @@ export const Graph = () => {
                         result: demandResult,
                         fit: activeTab.curves.demand.fit,
                         color: activeTab.curves.demand.color,
-                        range: activeTab.ranges.demand
+                        range: activeTab.ranges.demand,
                     },
                     supply: {
                         points: supplyPoints,
                         result: supplyResult,
                         fit: activeTab.curves.supply.fit,
                         color: activeTab.curves.supply.color,
-                        range: activeTab.ranges.supply
+                        range: activeTab.ranges.supply,
                     },
                     container: areaContainer,
                     render: activeTab.adjustment.mode === 'none',
@@ -183,61 +187,61 @@ export const Graph = () => {
                 });
 
                 if (activeTab.adjustment.mode === 'price_floor') {
-                    // const priceFloorResult = createPriceFloor({
-                    //     price,
-                    //     quantity,
-                    //     floor: activeTab.adjustment.price,
-                    //     view,
-                    //     theme,
-                    //     demandPoints,
-                    //     supplyPoints,
-                    //     demandColor: activeTab.curves.demand.color,
-                    //     supplyColor: activeTab.curves.supply.color,
-                    //     demandResult,
-                    //     supplyResult,
-                    //     demandCurveFitType: activeTab.curves.demand.fit,
-                    //     supplyCurveFitType: activeTab.curves.supply.fit,
-                    //     origionalSurplus: total,
-                    //     bounds,
-                    //     absoluteBounds: activeTab.absoluteBounds,
-                    //     equilibriumContainer,
-                    //     controlContainer,
-                    // });
+                    const { intersects, floorLine } = createPriceFloor({
+                        price,
+                        quantity,
+                        floor: activeTab.adjustment.price,
+                        view,
+                        bounds,
+                        absoluteBounds: activeTab.ranges.combined,
+                        theme,
+                        demand: {
+                            points: demandPoints,
+                            result: demandResult,
+                            fit: activeTab.curves.demand.fit,
+                            color: activeTab.curves.demand.color,
+                            range: activeTab.ranges.demand,
+                        },
+                        supply: {
+                            points: supplyPoints,
+                            result: supplyResult,
+                            fit: activeTab.curves.supply.fit,
+                            color: activeTab.curves.supply.color,
+                            range: activeTab.ranges.supply,
+                        },
+                        originalSurplus: total,
+                        equilibriumContainer,
+                        controlContainer,
+                        updateAdjustmentResult: (result) => updateAdjustmentResult(activeTab.market.id, result),
+                    });
 
-                    // const cleanup = setupDragHandler({
-                    //     target: priceFloorResult.floorLine,
-                    //     app,
-                    //     direction: 'vertical',
-                    //     bounds: {
-                    //         min: bounds.priceMin,
-                    //         max: bounds.priceMax,
-                    //         screenMin: view.top,
-                    //         screenMax: view.bottom
-                    //     },
-                    //     onDrag: (newPrice) => updateAdjustment(activeTab.market.id, { price: newPrice }),
-                    //     onDragStart: () => { isDraggingRef.current = true; },
-                    //     onDragEnd: () => { isDraggingRef.current = false; },
-                    //     cursor: 'ns-resize'
-                    // });
+                    const cleanup = setupDragHandler({
+                        target: floorLine,
+                        app,
+                        direction: 'vertical',
+                        bounds: {
+                            min: bounds.priceMin,
+                            max: bounds.priceMax,
+                            screenMin: view.top,
+                            screenMax: view.bottom,
+                        },
+                        onDrag: (newPrice) => updateAdjustment(activeTab.market.id, { price: newPrice }),
+                        onDragStart: () => {
+                            isDraggingRef.current = true;
+                        },
+                        onDragEnd: () => {
+                            isDraggingRef.current = false;
+                        },
+                        cursor: 'ns-resize',
+                    });
 
-                    // dragCleanupRef.current.push(cleanup);
+                    dragCleanupRef.current.push(cleanup);
 
-                    // if (priceFloorResult.intersects) {
-                    //     const { qd, qs, cs, ps, ts, dwl } = priceFloorResult;
-                    //     updateAdjustmentResult(activeTab.market.id, {
-                    //         price: activeTab.adjustment.price,
-                    //         quantity_demanded: qd,
-                    //         quantity_supplied: qs,
-                    //         consumer_surplus: cs,
-                    //         producer_surplus: ps,
-                    //         total_surplus: ts,
-                    //         deadweight_loss: dwl,
-                    //     });
-                    // } else {
-                    //     updateAdjustment(activeTab.market.id, {
-                    //         result: undefined,
-                    //     });
-                    // }
+                    if (!intersects) {
+                        updateAdjustment(activeTab.market.id, {
+                            result: undefined,
+                        });
+                    }
                 }
             }
         }
@@ -277,7 +281,7 @@ export const Graph = () => {
 
     useEffect(() => {
         return () => {
-            dragCleanupRef.current.forEach(cleanup => cleanup());
+            dragCleanupRef.current.forEach((cleanup) => cleanup());
         };
     }, []);
 

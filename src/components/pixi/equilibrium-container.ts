@@ -12,7 +12,7 @@ interface EquilibrumParams {
         right: number;
         top: number;
         bottom: number;
-    }
+    };
     bounds: {
         priceMin: number;
         priceMax: number;
@@ -26,8 +26,8 @@ interface EquilibrumParams {
         quantityMax: number;
     };
     theme: 'dark' | 'light';
-    demand: { result: Result, fit: CurveFitType };
-    supply: { result: Result, fit: CurveFitType };
+    demand: { result: Result; fit: CurveFitType };
+    supply: { result: Result; fit: CurveFitType };
     container: Container;
     render: boolean;
     passive: boolean;
@@ -74,7 +74,7 @@ export const createEquilibrium = ({
                 endX: screenX,
                 endY: screenY,
                 color,
-                alpha: 0.5
+                alpha: 0.5,
             });
             container.addChild(priceLine);
 
@@ -84,15 +84,12 @@ export const createEquilibrium = ({
                 endX: screenX,
                 endY: bottom,
                 color,
-                alpha: 0.5
+                alpha: 0.5,
             });
             container.addChild(quantityLine);
         } else {
             const equilibriumPriceLine = new Graphics();
-            equilibriumPriceLine
-                .moveTo(left, screenY)
-                .lineTo(screenX, screenY)
-                .stroke({ color, width: 2, alpha: 0.5 });
+            equilibriumPriceLine.moveTo(left, screenY).lineTo(screenX, screenY).stroke({ color, width: 2, alpha: 0.5 });
             container.addChild(equilibriumPriceLine);
 
             const equilibriumQuantityLine = new Graphics();

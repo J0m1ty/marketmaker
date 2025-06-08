@@ -6,5 +6,5 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function map(value: number, inputMin: number, inputMax: number, outputMin: number, outputMax: number) {
-  return outputMin + ((value - inputMin) / (inputMax - inputMin)) * (outputMax - outputMin);
+    return outputMin + ((value - inputMin) / (inputMax - inputMin)) * (outputMax - outputMin);
 }

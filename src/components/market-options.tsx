@@ -64,7 +64,11 @@ export const MarketOptions = () => {
                         </Label>
                         <Input
                             id='price_input'
-                            value={`$${editingOption && price === 0 ? '' : (editingOption ? price : price.toFixed(2))}`}
+                            value={`$${
+                                editingOption && price === 0 ? ''
+                                : editingOption ? price
+                                : price.toFixed(2)
+                            }`}
                             onChange={(e) => {
                                 const value = parseFloat(e.currentTarget.value.replace('$', ''));
                                 const clean = isNaN(value) ? 0 : value;

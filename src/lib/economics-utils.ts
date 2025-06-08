@@ -1,12 +1,12 @@
-import type { Result } from "regression";
-import type { CurveFitType } from "./types";
-import { createDerivativeFunction, createEquationFunction } from "./regression-utils";
+import type { Result } from 'regression';
+import type { CurveFitType } from './types';
+import { createDerivativeFunction, createEquationFunction } from './regression-utils';
 
 export const findQuantityAtPriceAnalytical = (
     targetPrice: number,
     regressionResult: Result,
     fitType: CurveFitType,
-    bounds: { priceMin: number, priceMax: number, quantityMin: number, quantityMax: number }
+    bounds: { priceMin: number; priceMax: number; quantityMin: number; quantityMax: number }
 ) => {
     const coefficients = regressionResult.equation;
 
@@ -45,7 +45,6 @@ export const findQuantityAtPriceAnalytical = (
             return quantity;
         }
         return null;
-
     } catch (error) {
         return null;
     }
@@ -55,27 +54,27 @@ const findQuantityAtPriceNumerical = (
     targetPrice: number,
     regressionResult: Result,
     fitType: CurveFitType,
-    bounds: { priceMin: number, priceMax: number, quantityMin: number, quantityMax: number }
+    bounds: { priceMin: number; priceMax: number; quantityMin: number; quantityMax: number }
 ) => {
     const equation = createEquationFunction(regressionResult, fitType);
     const derivative = createDerivativeFunction(regressionResult, fitType);
-    
+
     let x = (bounds.quantityMin + bounds.quantityMax) / 2;
-    
+
     for (let i = 0; i < 25; i++) {
         const fx = equation(x) - targetPrice;
         const fpx = derivative(x);
-        
+
         if (Math.abs(fx) < 1e-10) break;
         if (Math.abs(fpx) < 1e-10) break;
-        
+
         const newX = x - fx / fpx;
         if (newX < bounds.quantityMin || newX > bounds.quantityMax) break;
-        
+
         x = newX;
     }
-    
-    return (x >= bounds.quantityMin && x <= bounds.quantityMax) ? x : null;
+
+    return x >= bounds.quantityMin && x <= bounds.quantityMax ? x : null;
 };
 
 interface ArcElasticityParams {
@@ -85,17 +84,12 @@ interface ArcElasticityParams {
         priceMax: number;
         quantityMin: number;
         quantityMax: number;
-    }
-    demand: { result: Result, fit: CurveFitType };
-    supply: { result: Result, fit: CurveFitType };
+    };
+    demand: { result: Result; fit: CurveFitType };
+    supply: { result: Result; fit: CurveFitType };
 }
 
-export const calculateArcElasticities = ({
-    price,
-    range,
-    demand,
-    supply
-}: ArcElasticityParams) => {
+export const calculateArcElasticities = ({ price, range, demand, supply }: ArcElasticityParams) => {
     const priceRange = price * 0.1;
     const p1 = price - priceRange;
     const p2 = price + priceRange;
@@ -148,35 +142,32 @@ export const findIntersectionAnalytical = (
         if (demandFitType === 'linear' && supplyFitType === 'linear') {
             if (d[0] === s[0]) return null;
             intersectionX = (s[1] - d[1]) / (d[0] - s[0]);
-        }
-        
-        else if (demandFitType === 'exponential' && supplyFitType === 'exponential') {
+        } else if (demandFitType === 'exponential' && supplyFitType === 'exponential') {
             if (d[1] === s[1]) {
                 if (d[1] === 0 || d[0] <= 0 || s[0] <= 0) return null;
                 intersectionX = Math.log(s[0] / d[0]) / d[1];
             } else {
                 return findIntersectionNumerical(demandResult, demandFitType, supplyResult, supplyFitType, bounds);
             }
-        }
-        
-        else if (demandFitType === 'power' && supplyFitType === 'power' && d[1] === s[1]) {
+        } else if (demandFitType === 'power' && supplyFitType === 'power' && d[1] === s[1]) {
             if (d[1] === 0 || d[0] === 0) return null;
             intersectionX = Math.pow(s[0] / d[0], 1 / d[1]);
-        }
-        
-        else {
+        } else {
             return findIntersectionNumerical(demandResult, demandFitType, supplyResult, supplyFitType, bounds);
         }
-        
+
         const demandEquation = createEquationFunction(demandResult, demandFitType);
         const intersectionY = demandEquation(intersectionX);
 
-        if (intersectionX >= bounds.quantityMin && intersectionX <= bounds.quantityMax &&
-            intersectionY >= bounds.priceMin && intersectionY <= bounds.priceMax) {
+        if (
+            intersectionX >= bounds.quantityMin &&
+            intersectionX <= bounds.quantityMax &&
+            intersectionY >= bounds.priceMin &&
+            intersectionY <= bounds.priceMax
+        ) {
             return { x: intersectionX, y: intersectionY };
         }
         return null;
-
     } catch (error) {
         return null;
     }
@@ -191,33 +182,37 @@ const findIntersectionNumerical = (
 ) => {
     const demandEquation = createEquationFunction(demandResult, demandFitType);
     const supplyEquation = createEquationFunction(supplyResult, supplyFitType);
-    
+
     let x = (bounds.quantityMin + bounds.quantityMax) / 2;
-    
+
     for (let i = 0; i < 25; i++) {
         const demandY = demandEquation(x);
         const supplyY = supplyEquation(x);
         const fx = demandY - supplyY;
-        
+
         if (Math.abs(fx) < 1e-10) break;
-        
+
         const h = 0.0001;
         const demandDeriv = (demandEquation(x + h) - demandEquation(x - h)) / (2 * h);
         const supplyDeriv = (supplyEquation(x + h) - supplyEquation(x - h)) / (2 * h);
         const fpx = demandDeriv - supplyDeriv;
-        
+
         if (Math.abs(fpx) < 1e-10) break;
-        
+
         const newX = x - fx / fpx;
         if (newX < bounds.quantityMin || newX > bounds.quantityMax) break;
-        
+
         x = newX;
     }
-    
+
     const intersectionY = demandEquation(x);
-    
-    if (x >= bounds.quantityMin && x <= bounds.quantityMax &&
-        intersectionY >= bounds.priceMin && intersectionY <= bounds.priceMax) {
+
+    if (
+        x >= bounds.quantityMin &&
+        x <= bounds.quantityMax &&
+        intersectionY >= bounds.priceMin &&
+        intersectionY <= bounds.priceMax
+    ) {
         return { x, y: intersectionY };
     }
     return null;

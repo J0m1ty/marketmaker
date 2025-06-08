@@ -20,7 +20,7 @@ interface CurveParams {
         right: number;
         top: number;
         bottom: number;
-    }
+    };
     bounds: {
         priceMin: number;
         priceMax: number;
@@ -32,12 +32,12 @@ interface CurveParams {
         priceMax: number;
         quantityMin: number;
         quantityMax: number;
-    }
+    };
     curve: {
         data: number[][];
         fit: CurveFitType;
         color: string;
-    }
+    };
     container: Container;
     render: boolean;
 }
@@ -59,7 +59,7 @@ export const createCurve = ({
     range,
     curve: { data, fit, color },
     container,
-    render
+    render,
 }: CurveParams): CurveResult => {
     if (data.length < 2) return { success: false };
 
@@ -75,7 +75,7 @@ export const createCurve = ({
     const equationFunction = createEquationFunction(regressionResult, fit);
 
     const curvePoints: { x: number; y: number }[] = [];
-    
+
     const viewportWidth = right - left;
     const edgeThreshold = 0.1;
     const fineStepSize = 0.5;
@@ -102,28 +102,26 @@ export const createCurve = ({
             currentPixelX += stepDelta;
             continue;
         }
-        
+
         const normalizedViewportX = currentPixelX / viewportWidth;
         const normalizedViewportY = (dataPrice - bounds.priceMin) / (bounds.priceMax - bounds.priceMin);
-        const nearViewportEdge = normalizedViewportX <= edgeThreshold ||
-            normalizedViewportX >= (1 - edgeThreshold) ||
+        const nearViewportEdge =
+            normalizedViewportX <= edgeThreshold ||
+            normalizedViewportX >= 1 - edgeThreshold ||
             normalizedViewportY <= edgeThreshold ||
-            normalizedViewportY >= (1 - edgeThreshold);
+            normalizedViewportY >= 1 - edgeThreshold;
 
         const normalizedClampedX = (dataQuantity - clampedQuantityMin) / clampedQuantityRange;
         const normalizedClampedY = (dataPrice - clampedPriceMin) / clampedPriceRangeUsed;
-        const nearClampedBounds = normalizedClampedX <= edgeThreshold ||
-            normalizedClampedX >= (1 - edgeThreshold) ||
+        const nearClampedBounds =
+            normalizedClampedX <= edgeThreshold ||
+            normalizedClampedX >= 1 - edgeThreshold ||
             normalizedClampedY <= edgeThreshold ||
-            normalizedClampedY >= (1 - edgeThreshold);
-            
-        const stepDelta = (nearViewportEdge || nearClampedBounds) ? fineStepSize : coarseStepSize;
+            normalizedClampedY >= 1 - edgeThreshold;
 
-        if (
-            isFinite(dataPrice) &&
-            dataQuantity >= clampedQuantityMin &&
-            dataQuantity <= clampedQuantityMax
-        ) {
+        const stepDelta = nearViewportEdge || nearClampedBounds ? fineStepSize : coarseStepSize;
+
+        if (isFinite(dataPrice) && dataQuantity >= clampedQuantityMin && dataQuantity <= clampedQuantityMax) {
             const screenY = map(dataPrice, bounds.priceMin, bounds.priceMax, bottom, top);
             curvePoints.push({ x: screenX, y: screenY });
         }
@@ -142,7 +140,7 @@ export const createCurve = ({
             color,
             width: 2,
         });
-        
+
         container.addChild(curveGraphics);
     }
 

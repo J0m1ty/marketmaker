@@ -25,12 +25,13 @@ export const setupDragHandler = (config: DragConfig) => {
 
         const coord = direction === 'vertical' ? event.global.y : event.global.x;
         const clampedCoord = Math.max(bounds.screenMin, Math.min(bounds.screenMax, coord));
-        
+
         const normalizedPos = (clampedCoord - bounds.screenMin) / (bounds.screenMax - bounds.screenMin);
-        const value = direction === 'vertical' 
-            ? bounds.max - (normalizedPos * (bounds.max - bounds.min))
-            : bounds.min + (normalizedPos * (bounds.max - bounds.min));
-        
+        const value =
+            direction === 'vertical' ?
+                bounds.max - normalizedPos * (bounds.max - bounds.min)
+            :   bounds.min + normalizedPos * (bounds.max - bounds.min);
+
         const clampedValue = Math.max(bounds.min, Math.min(bounds.max, value));
         onDrag(clampedValue);
     };
@@ -56,7 +57,7 @@ export const setupDragHandler = (config: DragConfig) => {
     app.stage.on('pointermove', onDragMove);
     app.stage.on('pointerup', handleDragEnd);
     app.stage.on('pointerupoutside', handleDragEnd);
-    
+
     return () => {
         target.off('pointerdown', handleDragStart);
         app.stage.off('pointermove', onDragMove);

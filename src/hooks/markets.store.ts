@@ -140,7 +140,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             result: { ...(t.adjustment.result || {}), ...result },
                         } as MarketTab['adjustment'],
                     }
-                    : t
+                :   t
             ),
         })),
 
@@ -160,13 +160,15 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                                     return {
                                         mode: 'price_floor',
                                         type: 'intervention',
-                                        price: activeTab?.computed?.intersect ? activeTab.computed.equilibrium_price : 0,
+                                        price:
+                                            activeTab?.computed?.intersect ? activeTab.computed.equilibrium_price : 0,
                                     };
                                 case 'price_ceiling':
                                     return {
                                         mode: 'price_ceiling',
                                         type: 'intervention',
-                                        price: activeTab?.computed?.intersect ? activeTab.computed.equilibrium_price : 0,
+                                        price:
+                                            activeTab?.computed?.intersect ? activeTab.computed.equilibrium_price : 0,
                                     };
                                 case 'per_unit_tax':
                                     return {
@@ -205,7 +207,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             }
                         })(),
                     }
-                    : t
+                :   t
             ),
         })),
 
@@ -213,7 +215,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
         set(({ tabs }) => ({
             tabs: tabs.map((t) => {
                 if (t.market.id !== id) return t;
-                
+
                 if (b.type === 'auto' && t.bounds.type !== 'auto') {
                     return {
                         ...t,
@@ -244,7 +246,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             [side]: { ...t.curves[side], fit },
                         },
                     }
-                    : t
+                :   t
             ),
         })),
 
@@ -259,7 +261,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             [side]: { ...t.curves[side], color },
                         },
                     }
-                    : t
+                :   t
             ),
         })),
 
@@ -274,7 +276,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             ...computed,
                         } as MarketData,
                     }
-                    : t
+                :   t
             ),
         })),
 

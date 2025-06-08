@@ -1,8 +1,8 @@
-import { createIntegrationFunction } from "@/lib/regression-utils";
-import type { CurveFitType } from "@/lib/types";
-import { map } from "@/lib/utils";
-import { Graphics, type Container } from "pixi.js";
-import type { Result } from "regression";
+import { createIntegrationFunction } from '@/lib/regression-utils';
+import type { CurveFitType } from '@/lib/types';
+import { map } from '@/lib/utils';
+import { Graphics, type Container } from 'pixi.js';
+import type { Result } from 'regression';
 
 interface SurplusParams {
     price: number;
@@ -12,13 +12,13 @@ interface SurplusParams {
         right: number;
         top: number;
         bottom: number;
-    }
+    };
     bounds: {
         priceMin: number;
         priceMax: number;
         quantityMin: number;
         quantityMax: number;
-    }
+    };
     demand: {
         points: { x: number; y: number }[];
         result: Result;
@@ -29,8 +29,8 @@ interface SurplusParams {
             priceMax: number;
             quantityMin: number;
             quantityMax: number;
-        }
-    }
+        };
+    };
     supply: {
         points: { x: number; y: number }[];
         result: Result;
@@ -41,8 +41,8 @@ interface SurplusParams {
             priceMax: number;
             quantityMin: number;
             quantityMax: number;
-        }
-    }
+        };
+    };
     container: Container;
     render: boolean;
 }
@@ -51,7 +51,7 @@ type SurplusResult = {
     consumerSurplus: number;
     producerSurplus: number;
     totalSurplus: number;
-}
+};
 
 export const calculateSurpluses = ({
     price,
@@ -61,13 +61,13 @@ export const calculateSurpluses = ({
     demand,
     supply,
     container,
-    render
+    render,
 }: SurplusParams): SurplusResult => {
     const demandIntegral = createIntegrationFunction(demand.result, demand.fit);
     const supplyIntegral = createIntegrationFunction(supply.result, supply.fit);
 
-    const consumerSurplus = demandIntegral(0, quantity) - (price * quantity);
-    const producerSurplus = (price * quantity) - supplyIntegral(0, quantity);
+    const consumerSurplus = demandIntegral(0, quantity) - price * quantity;
+    const producerSurplus = price * quantity - supplyIntegral(0, quantity);
     const totalSurplus = consumerSurplus + producerSurplus;
 
     if (render) {
@@ -77,7 +77,7 @@ export const calculateSurpluses = ({
         const demandMinScreenX = map(demand.range.quantityMin, bounds.quantityMin, bounds.quantityMax, left, right);
         const supplyMinScreenX = map(supply.range.quantityMin, bounds.quantityMin, bounds.quantityMax, left, right);
 
-        const relevantDemandPoints = demand.points.filter(point => point.x <= equilibriumScreenX);
+        const relevantDemandPoints = demand.points.filter((point) => point.x <= equilibriumScreenX);
 
         if (relevantDemandPoints.length >= 2) {
             const consumerSurplusGraphics = new Graphics();
@@ -101,7 +101,7 @@ export const calculateSurpluses = ({
             container.addChild(consumerSurplusGraphics);
         }
 
-        const relevantSupplyPoints = supply.points.filter(point => point.x <= equilibriumScreenX);
+        const relevantSupplyPoints = supply.points.filter((point) => point.x <= equilibriumScreenX);
 
         if (relevantSupplyPoints.length >= 2) {
             const producerSurplusGraphics = new Graphics();
@@ -131,6 +131,6 @@ export const calculateSurpluses = ({
     return {
         consumerSurplus,
         producerSurplus,
-        totalSurplus
+        totalSurplus,
     };
-}
+};

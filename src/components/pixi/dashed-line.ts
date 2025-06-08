@@ -21,7 +21,7 @@ export const createDashedLine = ({
     gapLength = 4,
     color,
     width = 2,
-    alpha = 0.5
+    alpha = 0.5,
 }: DashedLineParams): Graphics => {
     const graphics = new Graphics();
 
@@ -40,10 +40,7 @@ export const createDashedLine = ({
         const x2 = startX + deltaX * dashEnd;
         const y2 = startY + deltaY * dashEnd;
 
-        graphics
-            .moveTo(x1, y1)
-            .lineTo(x2, y2)
-            .stroke({ color, width, alpha });
+        graphics.moveTo(x1, y1).lineTo(x2, y2).stroke({ color, width, alpha });
     }
 
     return graphics;
