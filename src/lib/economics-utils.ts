@@ -15,31 +15,26 @@ export const findQuantityAtPriceAnalytical = (
 
         switch (fitType) {
             case 'linear':
-                // p = ax + b -> x = (p - b) / a
                 if (coefficients[0] === 0) return null;
                 quantity = (targetPrice - coefficients[1]) / coefficients[0];
                 break;
 
             case 'exponential':
-                // p = ae^(bx) -> x = ln(p/a) / b
                 if (coefficients[0] <= 0 || coefficients[1] === 0 || targetPrice <= 0) return null;
                 quantity = Math.log(targetPrice / coefficients[0]) / coefficients[1];
                 break;
 
             case 'logarithmic':
-                // p = a + b*ln(x) -> x = e^((p - a) / b)
                 if (coefficients[1] === 0) return null;
                 quantity = Math.exp((targetPrice - coefficients[0]) / coefficients[1]);
                 break;
 
             case 'power':
-                // p = ax^b -> x = (p/a)^(1/b)
                 if (coefficients[0] === 0 || coefficients[1] === 0 || targetPrice <= 0) return null;
                 quantity = Math.pow(targetPrice / coefficients[0], 1 / coefficients[1]);
                 break;
 
             case 'polynomial':
-                // For polynomials, we need numerical methods (Newton-Raphson or binary search)
                 return findQuantityAtPriceNumerical(targetPrice, regressionResult, fitType, bounds);
 
             default:
@@ -83,29 +78,38 @@ const findQuantityAtPriceNumerical = (
     return (x >= bounds.quantityMin && x <= bounds.quantityMax) ? x : null;
 };
 
-export const calculateArcElasticities = (
-    price: number,
-    demandResult: Result,
-    demandFitType: CurveFitType,
-    supplyResult: Result,
-    supplyFitType: CurveFitType,
-    bounds: { priceMin: number; priceMax: number; quantityMin: number; quantityMax: number }
-) => {
+interface ArcElasticityParams {
+    price: number;
+    range: {
+        priceMin: number;
+        priceMax: number;
+        quantityMin: number;
+        quantityMax: number;
+    }
+    demand: { result: Result, fit: CurveFitType };
+    supply: { result: Result, fit: CurveFitType };
+}
+
+export const calculateArcElasticities = ({
+    price,
+    range,
+    demand,
+    supply
+}: ArcElasticityParams) => {
     const priceRange = price * 0.1;
     const p1 = price - priceRange;
     const p2 = price + priceRange;
 
-    const minPrice = Math.max(p1, bounds.priceMin);
-    const maxPrice = Math.min(p2, bounds.priceMax);
+    const minPrice = Math.max(p1, range.priceMin);
+    const maxPrice = Math.min(p2, range.priceMax);
 
     if (minPrice >= maxPrice) return { arcPED: 0, arcPES: 0 };
 
     try {
-        // Use analytical methods instead of sampling
-        const demandQ1 = findQuantityAtPriceAnalytical(minPrice, demandResult, demandFitType, bounds);
-        const demandQ2 = findQuantityAtPriceAnalytical(maxPrice, demandResult, demandFitType, bounds);
-        const supplyQ1 = findQuantityAtPriceAnalytical(minPrice, supplyResult, supplyFitType, bounds);
-        const supplyQ2 = findQuantityAtPriceAnalytical(maxPrice, supplyResult, supplyFitType, bounds);
+        const demandQ1 = findQuantityAtPriceAnalytical(minPrice, demand.result, demand.fit, range);
+        const demandQ2 = findQuantityAtPriceAnalytical(maxPrice, demand.result, demand.fit, range);
+        const supplyQ1 = findQuantityAtPriceAnalytical(minPrice, supply.result, supply.fit, range);
+        const supplyQ2 = findQuantityAtPriceAnalytical(maxPrice, supply.result, supply.fit, range);
 
         if (!demandQ1 || !demandQ2 || !supplyQ1 || !supplyQ2) {
             return { arcPED: 0, arcPES: 0 };

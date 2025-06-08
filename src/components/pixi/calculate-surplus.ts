@@ -7,14 +7,6 @@ import type { Result } from "regression";
 interface SurplusParams {
     price: number;
     quantity: number;
-    demandPoints: { x: number; y: number }[];
-    supplyPoints: { x: number; y: number }[];
-    demandColor: string;
-    supplyColor: string;
-    demandResult: Result;
-    supplyResult: Result;
-    demandCurveFitType: CurveFitType;
-    supplyCurveFitType: CurveFitType;
     view: {
         left: number;
         right: number;
@@ -27,13 +19,31 @@ interface SurplusParams {
         quantityMin: number;
         quantityMax: number;
     }
-    absoluteBounds: {
-        priceMin: number;
-        priceMax: number;
-        quantityMin: number;
-        quantityMax: number;
+    demand: {
+        points: { x: number; y: number }[];
+        result: Result;
+        fit: CurveFitType;
+        color: string;
+        range: {
+            priceMin: number;
+            priceMax: number;
+            quantityMin: number;
+            quantityMax: number;
+        }
     }
-    areaContainer: Container;
+    supply: {
+        points: { x: number; y: number }[];
+        result: Result;
+        fit: CurveFitType;
+        color: string;
+        range: {
+            priceMin: number;
+            priceMax: number;
+            quantityMin: number;
+            quantityMax: number;
+        }
+    }
+    container: Container;
     render: boolean;
 }
 
@@ -46,22 +56,15 @@ type SurplusResult = {
 export const calculateSurpluses = ({
     price,
     quantity,
-    demandPoints,
-    supplyPoints,
-    demandColor,
-    supplyColor,
-    demandResult,
-    supplyResult,
-    demandCurveFitType,
-    supplyCurveFitType,
     view: { left, right, top, bottom },
     bounds,
-    absoluteBounds,
-    areaContainer,
+    demand,
+    supply,
+    container,
     render
 }: SurplusParams): SurplusResult => {
-    const demandIntegral = createIntegrationFunction(demandResult, demandCurveFitType);
-    const supplyIntegral = createIntegrationFunction(supplyResult, supplyCurveFitType);
+    const demandIntegral = createIntegrationFunction(demand.result, demand.fit);
+    const supplyIntegral = createIntegrationFunction(supply.result, supply.fit);
 
     const consumerSurplus = demandIntegral(0, quantity) - (price * quantity);
     const producerSurplus = (price * quantity) - supplyIntegral(0, quantity);
@@ -70,73 +73,58 @@ export const calculateSurpluses = ({
     if (render) {
         const equilibriumScreenX = map(quantity, bounds.quantityMin, bounds.quantityMax, left, right);
         const equilibriumScreenY = map(price, bounds.priceMin, bounds.priceMax, bottom, top);
-        
-        const effectiveQuantityMin = Math.max(bounds.quantityMin, absoluteBounds.quantityMin);
-        const effectiveLeftX = map(effectiveQuantityMin, bounds.quantityMin, bounds.quantityMax, left, right);
 
-        if (demandPoints.length >= 2) {
+        const demandMinScreenX = map(demand.range.quantityMin, bounds.quantityMin, bounds.quantityMax, left, right);
+        const supplyMinScreenX = map(supply.range.quantityMin, bounds.quantityMin, bounds.quantityMax, left, right);
+
+        const relevantDemandPoints = demand.points.filter(point => point.x <= equilibriumScreenX);
+
+        if (relevantDemandPoints.length >= 2) {
             const consumerSurplusGraphics = new Graphics();
-            
-            const relevantDemandPoints = demandPoints.filter(point => {
-                const dataX = map(point.x, left, right, bounds.quantityMin, bounds.quantityMax);
-                return dataX <= quantity;
+
+            consumerSurplusGraphics.moveTo(Math.max(demandMinScreenX, left), equilibriumScreenY);
+            consumerSurplusGraphics.lineTo(Math.max(demandMinScreenX, left), top);
+
+            const sortedDemandPoints = relevantDemandPoints.sort((a, b) => a.x - b.x);
+            for (const point of sortedDemandPoints) {
+                consumerSurplusGraphics.lineTo(point.x, Math.max(top, point.y));
+            }
+
+            consumerSurplusGraphics.lineTo(equilibriumScreenX, equilibriumScreenY);
+            consumerSurplusGraphics.closePath();
+
+            consumerSurplusGraphics.fill({
+                color: demand.color,
+                alpha: 0.3,
             });
 
-            if (relevantDemandPoints.length >= 2) {
-                consumerSurplusGraphics.moveTo(effectiveLeftX, equilibriumScreenY);
-                
-                consumerSurplusGraphics.lineTo(effectiveLeftX, Math.max(top, relevantDemandPoints[0].y));
-                
-                const firstPoint = relevantDemandPoints[0];
-                consumerSurplusGraphics.lineTo(firstPoint.x, Math.max(top, relevantDemandPoints[0].y));
-                
-                for (const point of relevantDemandPoints) {
-                    consumerSurplusGraphics.lineTo(point.x, point.y);
-                }
-
-                consumerSurplusGraphics.lineTo(equilibriumScreenX, equilibriumScreenY);
-                consumerSurplusGraphics.closePath();
-                
-                consumerSurplusGraphics.fill({
-                    color: demandColor,
-                    alpha: 0.3,
-                });
-                
-                areaContainer.addChild(consumerSurplusGraphics);
-            }
+            container.addChild(consumerSurplusGraphics);
         }
-        
-        if (supplyPoints.length >= 2) {
+
+        const relevantSupplyPoints = supply.points.filter(point => point.x <= equilibriumScreenX);
+
+        if (relevantSupplyPoints.length >= 2) {
             const producerSurplusGraphics = new Graphics();
-            
-            const relevantSupplyPoints = supplyPoints.filter(point => {
-                const dataX = map(point.x, left, right, bounds.quantityMin, bounds.quantityMax);
-                return dataX <= quantity;
+
+            const sortedSupplyPoints = relevantSupplyPoints.sort((a, b) => a.x - b.x);
+
+            producerSurplusGraphics.moveTo(Math.max(supplyMinScreenX, left), equilibriumScreenY);
+            producerSurplusGraphics.lineTo(equilibriumScreenX, equilibriumScreenY);
+
+            for (let i = sortedSupplyPoints.length - 1; i >= 0; i--) {
+                const point = sortedSupplyPoints[i];
+                producerSurplusGraphics.lineTo(point.x, Math.min(bottom, point.y));
+            }
+
+            producerSurplusGraphics.lineTo(Math.max(supplyMinScreenX, left), bottom);
+            producerSurplusGraphics.closePath();
+
+            producerSurplusGraphics.fill({
+                color: supply.color,
+                alpha: 0.3,
             });
 
-            if (relevantSupplyPoints.length >= 2) {
-                producerSurplusGraphics.moveTo(effectiveLeftX, equilibriumScreenY);
-                
-                producerSurplusGraphics.lineTo(effectiveLeftX, equilibriumScreenY);
-                
-                for (let i = relevantSupplyPoints.length - 1; i >= 0; i--) {
-                    producerSurplusGraphics.lineTo(relevantSupplyPoints[i].x, relevantSupplyPoints[i].y);
-                }
-                
-                const firstPoint = relevantSupplyPoints[0];
-                producerSurplusGraphics.lineTo(firstPoint.x, Math.min(bottom, firstPoint.y));
-                
-                producerSurplusGraphics.lineTo(effectiveLeftX, Math.min(bottom, firstPoint.y));
-                
-                producerSurplusGraphics.closePath();
-                
-                producerSurplusGraphics.fill({
-                    color: supplyColor,
-                    alpha: 0.3,
-                });
-                
-                areaContainer.addChild(producerSurplusGraphics);
-            }
+            container.addChild(producerSurplusGraphics);
         }
     }
 

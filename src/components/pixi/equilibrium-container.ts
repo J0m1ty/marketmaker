@@ -1,4 +1,5 @@
 import { findIntersectionAnalytical } from '@/lib/economics-utils';
+import { map } from '@/lib/utils';
 import { Container, Graphics } from 'pixi.js';
 import type { MergedUnion } from 'ts-safe-union';
 import { createDashedLine } from './dashed-line';
@@ -12,26 +13,24 @@ interface EquilibrumParams {
         top: number;
         bottom: number;
     }
-    theme: 'dark' | 'light';
-    demandResult: Result;
-    supplyResult: Result;
-    demandCurveFitType: CurveFitType;
-    supplyCurveFitType: CurveFitType;
     bounds: {
         priceMin: number;
         priceMax: number;
         quantityMin: number;
         quantityMax: number;
     };
-    absoluteBounds: {
+    range: {
         priceMin: number;
         priceMax: number;
         quantityMin: number;
         quantityMax: number;
     };
+    theme: 'dark' | 'light';
+    demand: { result: Result, fit: CurveFitType };
+    supply: { result: Result, fit: CurveFitType };
+    container: Container;
     render: boolean;
     passive: boolean;
-    equilibriumContainer: Container;
 }
 
 type EquilibriumResult = MergedUnion<
@@ -45,80 +44,67 @@ type EquilibriumResult = MergedUnion<
     }
 >;
 
-
-
 export const createEquilibrium = ({
     view: { left, right, top, bottom },
-    theme,
-    demandResult,
-    supplyResult,
-    demandCurveFitType,
-    supplyCurveFitType,
     bounds,
-    absoluteBounds,
+    range,
+    theme,
+    demand,
+    supply,
+    container,
     render,
     passive,
-    equilibriumContainer,
 }: EquilibrumParams): EquilibriumResult => {
-    const intersection = findIntersectionAnalytical(demandResult, demandCurveFitType, supplyResult, supplyCurveFitType, absoluteBounds);
+    const intersection = findIntersectionAnalytical(demand.result, demand.fit, supply.result, supply.fit, range);
+
+    if (intersection && render) {
+        const color = theme === 'dark' ? 0xffffff : 0x000000;
+
+        const screenX = map(intersection.x, bounds.quantityMin, bounds.quantityMax, left, right);
+        const screenY = map(intersection.y, bounds.priceMin, bounds.priceMax, bottom, top);
+
+        const intersectionGraphic = new Graphics();
+        intersectionGraphic.circle(screenX, screenY, 4).fill({ color, alpha: passive ? 0.6 : 1 });
+        container.addChild(intersectionGraphic);
+
+        if (passive) {
+            const priceLine = createDashedLine({
+                startX: left,
+                startY: screenY,
+                endX: screenX,
+                endY: screenY,
+                color,
+                alpha: 0.5
+            });
+            container.addChild(priceLine);
+
+            const quantityLine = createDashedLine({
+                startX: screenX,
+                startY: screenY,
+                endX: screenX,
+                endY: bottom,
+                color,
+                alpha: 0.5
+            });
+            container.addChild(quantityLine);
+        } else {
+            const equilibriumPriceLine = new Graphics();
+            equilibriumPriceLine
+                .moveTo(left, screenY)
+                .lineTo(screenX, screenY)
+                .stroke({ color, width: 2, alpha: 0.5 });
+            container.addChild(equilibriumPriceLine);
+
+            const equilibriumQuantityLine = new Graphics();
+            equilibriumQuantityLine
+                .moveTo(screenX, screenY)
+                .lineTo(screenX, bottom)
+                .stroke({ color, width: 2, alpha: 0.5 });
+            container.addChild(equilibriumQuantityLine);
+        }
+    }
 
     if (intersection) {
-        if (
-            render
-            && intersection.x >= bounds.quantityMin
-            && intersection.x <= bounds.quantityMax
-            && intersection.y >= bounds.priceMin
-            && intersection.y <= bounds.priceMax
-        ) {
-            const color = theme === 'dark' ? 0xffffff : 0x000000;
-
-            const intersectionGraphic = new Graphics();
-            const screenX =
-                left + ((intersection.x - bounds.quantityMin) / (bounds.quantityMax - bounds.quantityMin)) * (right - left);
-            const screenY =
-                bottom - ((intersection.y - bounds.priceMin) / (bounds.priceMax - bounds.priceMin)) * (bottom - top);
-
-            intersectionGraphic.circle(screenX, screenY, 4).fill({ color, alpha: passive ? 0.6 : 1 });
-            equilibriumContainer.addChild(intersectionGraphic);
-
-            if (passive) {
-                const priceLine = createDashedLine({
-                    startX: left,
-                    startY: screenY,
-                    endX: screenX,
-                    endY: screenY,
-                    color,
-                    alpha: 0.5
-                });
-                equilibriumContainer.addChild(priceLine);
-                
-                const quantityLine = createDashedLine({
-                    startX: screenX,
-                    startY: screenY,
-                    endX: screenX,
-                    endY: bottom,
-                    color,
-                    alpha: 0.5
-                });
-                equilibriumContainer.addChild(quantityLine);
-            } else {
-
-                const equilibriumPriceLine = new Graphics();
-                equilibriumPriceLine
-                    .moveTo(left, screenY)
-                    .lineTo(screenX, screenY)
-                    .stroke({ color, width: 2, alpha: 0.5 });
-                equilibriumContainer.addChild(equilibriumPriceLine);
-
-                const equilibriumQuantityLine = new Graphics();
-                equilibriumQuantityLine
-                    .moveTo(screenX, screenY)
-                    .lineTo(screenX, bottom)
-                    .stroke({ color, width: 2, alpha: 0.5 });
-                equilibriumContainer.addChild(equilibriumQuantityLine);
-            }
-        }
-
         return {
             intersect: true,
             price: intersection.y,

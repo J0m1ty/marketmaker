@@ -30,12 +30,26 @@ export type AxisBounds = {
     quantityMax: number;
 };
 
-export type AbsoluteBounds = {
-    priceMin: number;
-    priceMax: number;
-    quantityMin: number;
-    quantityMax: number;
-};
+export type CurveBounds = {
+    supply: {
+        priceMin: number;
+        priceMax: number;
+        quantityMin: number;
+        quantityMax: number;
+    }
+    demand: {
+        priceMin: number;
+        priceMax: number;
+        quantityMin: number;
+        quantityMax: number;
+    }
+    combined: {
+        priceMin: number;
+        priceMax: number;
+        quantityMin: number;
+        quantityMax: number;
+    }
+}
 
 export type EquilibriumResult = {
     equilibrium_price: number;
@@ -138,20 +152,20 @@ export const groupedAdjustments: Record<string, (typeof AdjustmentModes)[number]
 export type MarketData =
     | { intersect: false }
     | {
-          intersect: true;
-          equilibrium_price: number;
-          equilibrium_quantity: number;
-          arc_price_elasticity_of_demand: number;
-          arc_price_elasticity_of_supply: number;
-          consumer_surplus: number;
-          producer_surplus: number;
-          total_surplus: number;
-      };
+        intersect: true;
+        equilibrium_price: number;
+        equilibrium_quantity: number;
+        arc_price_elasticity_of_demand: number;
+        arc_price_elasticity_of_supply: number;
+        consumer_surplus: number;
+        producer_surplus: number;
+        total_surplus: number;
+    };
 
 export type MarketTab = {
     market: Market;
     bounds: AxisBounds;
-    absoluteBounds: AbsoluteBounds;
+    ranges: CurveBounds;
     curves: {
         selected: 'demand' | 'supply';
         demand: { fit: CurveFitType; color: string };

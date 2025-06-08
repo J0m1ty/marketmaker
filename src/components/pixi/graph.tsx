@@ -12,6 +12,7 @@ import { calculateArcElasticities } from '@/lib/economics-utils';
 import { calculateSurpluses } from './calculate-surplus';
 import { createPriceFloor } from './price-floor';
 import { setupDragHandler } from '@/lib/drag-handler';
+import { createBorderMask } from './border-mask';
 
 export const Graph = () => {
     const { width, height } = useResize();
@@ -58,20 +59,6 @@ export const Graph = () => {
 
         const rows = activeTab.market.file.rows;
 
-        const axisContainer = createAxisContainer({
-            view,
-            bounds,
-            theme,
-        });
-
-        const pointsContainer = createPointsContainer({
-            view,
-            demandColor: activeTab.curves.demand.color,
-            supplyColor: activeTab.curves.supply.color,
-            bounds,
-            rows,
-        });
-
         const demandData = rows
             .filter((row) => activeTab.curves.demand.fit !== 'logarithmic' || row.qd > 0)
             .map((row) => [row.qd, row.price]);
@@ -80,38 +67,49 @@ export const Graph = () => {
             .filter((row) => activeTab.curves.supply.fit !== 'logarithmic' || row.qs > 0)
             .map((row) => [row.qs, row.price]);
 
-        const curvesContainer = new Container();
-
-        const {
-            success: demand,
-            regressionResult: demandResult,
-            points: demandPoints,
-        } = createCurve({
+        const axisContainer = createAxisContainer({
             view,
             bounds,
-            absoluteBounds: activeTab.absoluteBounds,
-            data: demandData,
-            fitType: activeTab.curves.demand.fit,
-            color: activeTab.curves.demand.color,
-            curveType: 'demand',
+            theme,
+        });
+
+        const pointsContainer = createPointsContainer({
+            view,
+            bounds,
+            demand: { data: demandData, color: activeTab.curves.demand.color },
+            supply: { data: supplyData, color: activeTab.curves.supply.color }
+        });
+
+        const curvesContainer = new Container();
+
+        const { success: demand, result: demandResult, points: demandPoints } = createCurve({
+            view,
+            bounds,
+            range: activeTab.ranges.demand,
+            curve: {
+                data: demandData,
+                fit: activeTab.curves.demand.fit,
+                color: activeTab.curves.demand.color
+            },
+            container: curvesContainer,
             render: true,
-            curvesContainer,
         });
 
         const {
             success: supply,
-            regressionResult: supplyResult,
+            result: supplyResult,
             points: supplyPoints,
         } = createCurve({
             view,
             bounds,
-            absoluteBounds: activeTab.absoluteBounds,
-            data: supplyData,
-            fitType: activeTab.curves.supply.fit,
-            color: activeTab.curves.supply.color,
-            curveType: 'supply',
+            range: activeTab.ranges.supply,
+            curve: {
+                data: supplyData,
+                fit: activeTab.curves.supply.fit,
+                color: activeTab.curves.supply.color,
+            },
+            container: curvesContainer,
             render: true,
-            curvesContainer,
         });
 
         const equilibriumContainer = new Container();
@@ -124,43 +122,50 @@ export const Graph = () => {
         if (demand && supply) {
             const { intersect, price, quantity } = createEquilibrium({
                 view,
-                theme,
-                demandResult,
-                supplyResult,
-                demandCurveFitType: activeTab.curves.demand.fit,
-                supplyCurveFitType: activeTab.curves.supply.fit,
                 bounds,
-                absoluteBounds: activeTab.absoluteBounds,
-                equilibriumContainer,
+                range: activeTab.ranges.combined,
+                theme,
+                demand: {
+                    result: demandResult,
+                    fit: activeTab.curves.demand.fit
+                },
+                supply: {
+                    result: supplyResult,
+                    fit: activeTab.curves.supply.fit
+                },
+                container: equilibriumContainer,
                 render: activeTab.adjustment.mode !== 'demand_shift' && activeTab.adjustment.mode !== 'supply_shift',
                 passive: activeTab.adjustment.mode !== 'none' && activeTab.adjustment.mode !== 'point_elasticity',
             });
 
             if (intersect) {
-                const { arcPED, arcPES } = calculateArcElasticities(
+                const { arcPED, arcPES } = calculateArcElasticities({
                     price,
-                    demandResult,
-                    activeTab.curves.demand.fit,
-                    supplyResult,
-                    activeTab.curves.supply.fit,
-                    activeTab.absoluteBounds
-                );
+                    range: activeTab.ranges.combined,
+                    demand: { result: demandResult, fit: activeTab.curves.demand.fit },
+                    supply: { result: supplyResult, fit: activeTab.curves.supply.fit },
+                });
 
                 const { consumerSurplus, producerSurplus } = calculateSurpluses({
                     price,
                     quantity,
-                    demandPoints,
-                    supplyPoints,
-                    demandColor: activeTab.curves.demand.color,
-                    supplyColor: activeTab.curves.supply.color,
-                    demandResult,
-                    supplyResult,
-                    demandCurveFitType: activeTab.curves.demand.fit,
-                    supplyCurveFitType: activeTab.curves.supply.fit,
                     view,
                     bounds,
-                    absoluteBounds: activeTab.absoluteBounds,
-                    areaContainer,
+                    demand: {
+                        points: demandPoints,
+                        result: demandResult,
+                        fit: activeTab.curves.demand.fit,
+                        color: activeTab.curves.demand.color,
+                        range: activeTab.ranges.demand
+                    },
+                    supply: {
+                        points: supplyPoints,
+                        result: supplyResult,
+                        fit: activeTab.curves.supply.fit,
+                        color: activeTab.curves.supply.color,
+                        range: activeTab.ranges.supply
+                    },
+                    container: areaContainer,
                     render: activeTab.adjustment.mode === 'none',
                 });
 
@@ -178,70 +183,78 @@ export const Graph = () => {
                 });
 
                 if (activeTab.adjustment.mode === 'price_floor') {
-                    const priceFloorResult = createPriceFloor({
-                        price,
-                        quantity,
-                        floor: activeTab.adjustment.price,
-                        view,
-                        theme,
-                        demandPoints,
-                        supplyPoints,
-                        demandColor: activeTab.curves.demand.color,
-                        supplyColor: activeTab.curves.supply.color,
-                        demandResult,
-                        supplyResult,
-                        demandCurveFitType: activeTab.curves.demand.fit,
-                        supplyCurveFitType: activeTab.curves.supply.fit,
-                        origionalSurplus: total,
-                        bounds,
-                        absoluteBounds: activeTab.absoluteBounds,
-                        equilibriumContainer,
-                        controlContainer,
-                    });
+                    // const priceFloorResult = createPriceFloor({
+                    //     price,
+                    //     quantity,
+                    //     floor: activeTab.adjustment.price,
+                    //     view,
+                    //     theme,
+                    //     demandPoints,
+                    //     supplyPoints,
+                    //     demandColor: activeTab.curves.demand.color,
+                    //     supplyColor: activeTab.curves.supply.color,
+                    //     demandResult,
+                    //     supplyResult,
+                    //     demandCurveFitType: activeTab.curves.demand.fit,
+                    //     supplyCurveFitType: activeTab.curves.supply.fit,
+                    //     origionalSurplus: total,
+                    //     bounds,
+                    //     absoluteBounds: activeTab.absoluteBounds,
+                    //     equilibriumContainer,
+                    //     controlContainer,
+                    // });
 
-                    const cleanup = setupDragHandler({
-                        target: priceFloorResult.floorLine,
-                        app,
-                        direction: 'vertical',
-                        bounds: {
-                            min: bounds.priceMin,
-                            max: bounds.priceMax,
-                            screenMin: view.top,
-                            screenMax: view.bottom
-                        },
-                        onDrag: (newPrice) => updateAdjustment(activeTab.market.id, { price: newPrice }),
-                        onDragStart: () => { isDraggingRef.current = true; },
-                        onDragEnd: () => { isDraggingRef.current = false; },
-                        cursor: 'ns-resize'
-                    });
+                    // const cleanup = setupDragHandler({
+                    //     target: priceFloorResult.floorLine,
+                    //     app,
+                    //     direction: 'vertical',
+                    //     bounds: {
+                    //         min: bounds.priceMin,
+                    //         max: bounds.priceMax,
+                    //         screenMin: view.top,
+                    //         screenMax: view.bottom
+                    //     },
+                    //     onDrag: (newPrice) => updateAdjustment(activeTab.market.id, { price: newPrice }),
+                    //     onDragStart: () => { isDraggingRef.current = true; },
+                    //     onDragEnd: () => { isDraggingRef.current = false; },
+                    //     cursor: 'ns-resize'
+                    // });
 
-                    dragCleanupRef.current.push(cleanup);
+                    // dragCleanupRef.current.push(cleanup);
 
-                    if (priceFloorResult.intersects) {
-                        const { qd, qs, cs, ps, ts, dwl } = priceFloorResult;
-                        updateAdjustmentResult(activeTab.market.id, {
-                            price: activeTab.adjustment.price,
-                            quantity_demanded: qd,
-                            quantity_supplied: qs,
-                            consumer_surplus: cs,
-                            producer_surplus: ps,
-                            total_surplus: ts,
-                            deadweight_loss: dwl,
-                        });
-                    } else {
-                        updateAdjustment(activeTab.market.id, {
-                            result: undefined,
-                        });
-                    }
+                    // if (priceFloorResult.intersects) {
+                    //     const { qd, qs, cs, ps, ts, dwl } = priceFloorResult;
+                    //     updateAdjustmentResult(activeTab.market.id, {
+                    //         price: activeTab.adjustment.price,
+                    //         quantity_demanded: qd,
+                    //         quantity_supplied: qs,
+                    //         consumer_surplus: cs,
+                    //         producer_surplus: ps,
+                    //         total_surplus: ts,
+                    //         deadweight_loss: dwl,
+                    //     });
+                    // } else {
+                    //     updateAdjustment(activeTab.market.id, {
+                    //         result: undefined,
+                    //     });
+                    // }
                 }
             }
         }
+
+        const borderMask = createBorderMask({
+            view,
+            canvasWidth: width,
+            canvasHeight: height,
+            theme,
+        });
 
         app.stage.addChild(areaContainer);
         app.stage.addChild(pointsContainer);
         app.stage.addChild(curvesContainer);
         app.stage.addChild(equilibriumContainer);
         app.stage.addChild(controlContainer);
+        app.stage.addChild(borderMask);
         app.stage.addChild(axisContainer);
     }, [
         app,

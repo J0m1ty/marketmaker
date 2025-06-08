@@ -27,18 +27,19 @@ interface CurveParams {
         quantityMin: number;
         quantityMax: number;
     };
-    absoluteBounds: {
+    range: {
         priceMin: number;
         priceMax: number;
         quantityMin: number;
         quantityMax: number;
     }
-    data: number[][];
-    fitType: CurveFitType;
-    color: string;
-    curveType: 'demand' | 'supply';
+    curve: {
+        data: number[][];
+        fit: CurveFitType;
+        color: string;
+    }
+    container: Container;
     render: boolean;
-    curvesContainer: Container;
 }
 
 type CurveResult = MergedUnion<
@@ -47,7 +48,7 @@ type CurveResult = MergedUnion<
     },
     {
         success: true;
-        regressionResult: Result;
+        result: Result;
         points: { x: number; y: number }[];
     }
 >;
@@ -55,104 +56,99 @@ type CurveResult = MergedUnion<
 export const createCurve = ({
     view: { left, right, top, bottom },
     bounds,
-    absoluteBounds,
-    data,
-    fitType,
-    color,
-    render,
-    curvesContainer,
+    range,
+    curve: { data, fit, color },
+    container,
+    render
 }: CurveParams): CurveResult => {
     if (data.length < 2) return { success: false };
 
     let regressionResult;
     try {
-        const options = getRegressionOptions(fitType);
-        regressionResult = regression[fitType](data as DataPoint[], options) as Result;
+        const regressionOptions = getRegressionOptions(fit);
+        regressionResult = regression[fit](data as DataPoint[], regressionOptions) as Result;
     } catch (error) {
-        console.warn(`Regression failed for ${fitType}:`, error);
+        console.warn(`Regression failed for ${fit}:`, error);
         return { success: false };
     }
 
-    const equationFn = createEquationFunction(regressionResult, fitType);
+    const equationFunction = createEquationFunction(regressionResult, fit);
 
-    const curve = new Graphics();
     const curvePoints: { x: number; y: number }[] = [];
-
-    // Sample points
-    const pixelWidth = right - left;
+    
+    const viewportWidth = right - left;
     const edgeThreshold = 0.1;
-    const fineStep = 0.5;
-    const coarseStep = 1.0;
+    const fineStepSize = 0.5;
+    const coarseStepSize = 1.0;
 
-    const usedQuantityMin = Math.max(absoluteBounds.quantityMin, bounds.quantityMin);
-    const usedQuantityMax = Math.min(absoluteBounds.quantityMax, bounds.quantityMax);
-    const usedPriceMin = Math.max(absoluteBounds.priceMin, bounds.priceMin);
-    const usedPriceMax = Math.min(absoluteBounds.priceMax, bounds.priceMax);
-    const xRangeUsed = usedQuantityMax - usedQuantityMin;
-    const yRangeUsed = usedPriceMax - usedPriceMin;
+    const clampedQuantityMin = Math.max(range.quantityMin, bounds.quantityMin);
+    const clampedQuantityMax = Math.min(range.quantityMax, bounds.quantityMax);
+    const clampedPriceMin = Math.max(range.priceMin, bounds.priceMin);
+    const clampedPriceMax = Math.min(range.priceMax, bounds.priceMax);
 
-    let pixelX = 0;
-    while (pixelX <= pixelWidth) {
-        const screenX = left + pixelX;
-        const dataX = map(pixelX, 0, pixelWidth, bounds.quantityMin, bounds.quantityMax);
-        let dataY: number;
+    const clampedQuantityRange = clampedQuantityMax - clampedQuantityMin;
+    const clampedPriceRangeUsed = clampedPriceMax - clampedPriceMin;
+
+    let currentPixelX = 0;
+    while (currentPixelX <= viewportWidth) {
+        const screenX = left + currentPixelX;
+        const dataQuantity = map(currentPixelX, 0, viewportWidth, bounds.quantityMin, bounds.quantityMax);
+        let dataPrice: number;
 
         try {
-            dataY = equationFn(dataX);
+            dataPrice = equationFunction(dataQuantity);
         } catch (error) {
-            const stepDelta = coarseStep;
-            pixelX += stepDelta;
+            const stepDelta = coarseStepSize;
+            currentPixelX += stepDelta;
             continue;
         }
         
-        const normalizedX = pixelX / pixelWidth;
-        const normalizedY = (dataY - bounds.priceMin) / (bounds.priceMax - bounds.priceMin);
-        const nearViewEdge = normalizedX <= edgeThreshold ||
-            normalizedX >= (1 - edgeThreshold) ||
-            normalizedY <= edgeThreshold ||
-            normalizedY >= (1 - edgeThreshold);
+        const normalizedViewportX = currentPixelX / viewportWidth;
+        const normalizedViewportY = (dataPrice - bounds.priceMin) / (bounds.priceMax - bounds.priceMin);
+        const nearViewportEdge = normalizedViewportX <= edgeThreshold ||
+            normalizedViewportX >= (1 - edgeThreshold) ||
+            normalizedViewportY <= edgeThreshold ||
+            normalizedViewportY >= (1 - edgeThreshold);
 
-        const normalizedAbsX = (dataX - usedQuantityMin) / xRangeUsed;
-        const normalizedAbsY = (dataY - usedPriceMin) / yRangeUsed;
-        const nearAbsoluteBounds = normalizedAbsX <= edgeThreshold ||
-            normalizedAbsX >= (1 - edgeThreshold) ||
-            normalizedAbsY <= edgeThreshold ||
-            normalizedAbsY >= (1 - edgeThreshold);
+        const normalizedClampedX = (dataQuantity - clampedQuantityMin) / clampedQuantityRange;
+        const normalizedClampedY = (dataPrice - clampedPriceMin) / clampedPriceRangeUsed;
+        const nearClampedBounds = normalizedClampedX <= edgeThreshold ||
+            normalizedClampedX >= (1 - edgeThreshold) ||
+            normalizedClampedY <= edgeThreshold ||
+            normalizedClampedY >= (1 - edgeThreshold);
             
-        const stepDelta = (nearViewEdge || nearAbsoluteBounds) ? fineStep : coarseStep;
+        const stepDelta = (nearViewportEdge || nearClampedBounds) ? fineStepSize : coarseStepSize;
 
         if (
-            isFinite(dataY) &&
-            dataX >= usedQuantityMin &&
-            dataX <= usedQuantityMax &&
-            dataY >= usedPriceMin &&
-            dataY <= usedPriceMax
+            isFinite(dataPrice) &&
+            dataQuantity >= clampedQuantityMin &&
+            dataQuantity <= clampedQuantityMax
         ) {
-            const screenY = map(dataY, bounds.priceMin, bounds.priceMax, bottom, top);
+            const screenY = map(dataPrice, bounds.priceMin, bounds.priceMax, bottom, top);
             curvePoints.push({ x: screenX, y: screenY });
         }
 
-        pixelX += stepDelta;
+        currentPixelX += stepDelta;
     }
 
-    if (curvePoints.length >= 2) {
-        curve.moveTo(curvePoints[0].x, curvePoints[0].y);
+    if (curvePoints.length >= 2 && render) {
+        const curveGraphics = new Graphics();
+
+        curveGraphics.moveTo(curvePoints[0].x, curvePoints[0].y);
         for (let i = 1; i < curvePoints.length; i++) {
-            curve.lineTo(curvePoints[i].x, curvePoints[i].y);
+            curveGraphics.lineTo(curvePoints[i].x, curvePoints[i].y);
         }
-        curve.stroke({
+        curveGraphics.stroke({
             color,
             width: 2,
         });
-
-        if (render) {
-            curvesContainer.addChild(curve);
-        }
+        
+        container.addChild(curveGraphics);
     }
 
     return {
         success: true,
-        regressionResult,
+        result: regressionResult,
         points: curvePoints,
     };
 };

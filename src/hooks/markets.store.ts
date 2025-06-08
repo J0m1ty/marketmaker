@@ -40,23 +40,37 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
 
             const rows = market.file.rows;
             const prices = rows.map((row) => row.price);
-            const quantities = [...rows.map((row) => row.qd), ...rows.map((row) => row.qs)];
+            const demandQuantities = rows.map((row) => row.qd);
+            const supplyQuantities = rows.map((row) => row.qs);
+            const allQuantities = [...demandQuantities, ...supplyQuantities];
 
-            const dataBounds = {
+            const combinedBounds = {
                 priceMin: Math.min(...prices),
                 priceMax: Math.max(...prices),
-                quantityMin: Math.min(...quantities),
-                quantityMax: Math.max(...quantities),
+                quantityMin: Math.min(...allQuantities),
+                quantityMax: Math.max(...allQuantities),
             };
 
             const newTab: MarketTab = {
                 market,
                 bounds: {
                     type: 'auto',
-                    ...dataBounds,
+                    ...combinedBounds,
                 },
-                absoluteBounds: {
-                    ...dataBounds,
+                ranges: {
+                    demand: {
+                        priceMin: Math.min(...prices),
+                        priceMax: Math.max(...prices),
+                        quantityMin: Math.min(...demandQuantities),
+                        quantityMax: Math.max(...demandQuantities),
+                    },
+                    supply: {
+                        priceMin: Math.min(...prices),
+                        priceMax: Math.max(...prices),
+                        quantityMin: Math.min(...supplyQuantities),
+                        quantityMax: Math.max(...supplyQuantities),
+                    },
+                    combined: combinedBounds,
                 },
                 curves: {
                     selected: 'demand',
@@ -205,7 +219,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                         ...t,
                         bounds: {
                             type: 'auto',
-                            ...t.absoluteBounds,
+                            ...t.ranges.combined,
                         },
                     };
                 }
