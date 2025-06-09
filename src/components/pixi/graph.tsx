@@ -18,6 +18,7 @@ import { setupDragHandler } from '@/lib/drag-handler';
 import { createBorderMask } from './border-mask';
 import { calculatePointElasticity } from './point-elasticity';
 import { createExciseTax } from './excise-tax';
+import { createExciseSubsidy } from './excise-subsidy';
 
 export const Graph = () => {
     const { width, height } = useResize();
@@ -335,8 +336,43 @@ export const Graph = () => {
                         tax: activeTab.adjustment.amount,
                         side: activeTab.adjustment.side,
                         originalSurplus: total,
-                        equilibriumContainer,
-                        controlContainer,
+                        container: equilibriumContainer,
+                        updateAdjustmentResult: (result) => updateAdjustmentResult(activeTab.market.id, result),
+                    });
+
+                    if (!intersects) {
+                        updateAdjustment(activeTab.market.id, {
+                            result: undefined,
+                        });
+                    }
+                }
+
+                if (activeTab.adjustment.mode === 'per_unit_subsidy') {
+                    const { intersects } = createExciseSubsidy({
+                        price,
+                        quantity,
+                        view,
+                        bounds,
+                        range: activeTab.ranges.combined,
+                        theme,
+                        demand: {
+                            points: demandPoints,
+                            result: demandResult,
+                            fit: activeTab.curves.demand.fit,
+                            color: activeTab.curves.demand.color,
+                            range: activeTab.ranges.demand,
+                        },
+                        supply: {
+                            points: supplyPoints,
+                            result: supplyResult,
+                            fit: activeTab.curves.supply.fit,
+                            color: activeTab.curves.supply.color,
+                            range: activeTab.ranges.supply,
+                        },
+                        subsidy: activeTab.adjustment.amount,
+                        side: activeTab.adjustment.side,
+                        originalSurplus: total,
+                        container: equilibriumContainer,
                         updateAdjustmentResult: (result) => updateAdjustmentResult(activeTab.market.id, result),
                     });
 

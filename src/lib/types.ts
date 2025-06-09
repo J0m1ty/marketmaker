@@ -62,6 +62,12 @@ export type QuantityResult = {
     quantity_supplied: number;
 };
 
+export type InterventionResult = {
+    buyer_price: number;
+    seller_price: number;
+    quantity_traded: number;
+}
+
 export type WelfareResult = {
     consumer_surplus: number;
     producer_surplus: number;
@@ -115,13 +121,13 @@ export type Adjustment = DiscriminatedUnion<
             type: 'intervention';
             amount: number;
             side: 'supplier' | 'consumer';
-            result?: QuantityResult & WelfareResult & TaxResult;
+            result?: InterventionResult & WelfareResult & TaxResult;
         };
         per_unit_subsidy: {
             type: 'intervention';
             amount: number;
             side: 'supplier' | 'consumer';
-            result?: QuantityResult & WelfareResult & SubsidyResult;
+            result?: InterventionResult & WelfareResult & SubsidyResult;
         };
         demand_shift: {
             type: 'change';

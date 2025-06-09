@@ -140,7 +140,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             result: { ...(t.adjustment.result || {}), ...result },
                         } as MarketTab['adjustment'],
                     }
-                :   t
+                    : t
             ),
         })),
 
@@ -200,7 +200,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                                     return {
                                         mode: 'point_elasticity',
                                         type: 'calculation',
-                                        quantity: 
+                                        quantity:
                                             activeTab?.computed?.intersect ? activeTab.computed.equilibrium_quantity : 0,
                                     };
                                 default:
@@ -208,7 +208,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             }
                         })(),
                     }
-                :   t
+                    : t
             ),
         })),
 
@@ -247,7 +247,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             [side]: { ...t.curves[side], fit },
                         },
                     }
-                :   t
+                    : t
             ),
         })),
 
@@ -262,7 +262,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             [side]: { ...t.curves[side], color },
                         },
                     }
-                :   t
+                    : t
             ),
         })),
 
@@ -277,7 +277,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             ...computed,
                         } as MarketData,
                     }
-                :   t
+                    : t
             ),
         })),
 

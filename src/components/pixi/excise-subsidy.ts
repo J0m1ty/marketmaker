@@ -7,7 +7,7 @@ import type { Result } from "regression";
 import { createCurve } from "./create-curve";
 import { createDashedLine } from "./dashed-line";
 
-interface ExciseTaxParams {
+interface ExciseSubsidyParams {
     price: number;
     quantity: number;
     view: {
@@ -53,7 +53,7 @@ interface ExciseTaxParams {
             quantityMax: number;
         };
     };
-    tax: number;
+    subsidy: number;
     side: 'supplier' | 'consumer';
     originalSurplus: number;
     container: Container;
@@ -65,17 +65,17 @@ interface ExciseTaxParams {
         producer_surplus: number;
         total_surplus: number;
         deadweight_loss: number;
-        tax_revenue: number;
-        consumer_tax_burden: number;
-        producer_tax_burden: number;
+        subsidy_cost: number;
+        consumer_subsidy_benefit: number;
+        producer_subsidy_benefit: number;
     }) => void;
 }
 
-type ExciseTaxResult = {
+type ExciseSubsidyResult = {
     intersects: boolean;
 }
 
-export const createExciseTax = ({
+export const createExciseSubsidy = ({
     price,
     quantity,
     view: { left, right, top, bottom },
@@ -84,12 +84,12 @@ export const createExciseTax = ({
     theme,
     demand,
     supply,
-    tax,
+    subsidy,
     side,
     originalSurplus,
     container,
     updateAdjustmentResult
-}: ExciseTaxParams): ExciseTaxResult => {
+}: ExciseSubsidyParams): ExciseSubsidyResult => {
     const color = theme === 'dark' ? 0xffffff : 0x000000;
 
     const basicEquation = createEquationFunction(
@@ -99,7 +99,7 @@ export const createExciseTax = ({
 
     const originalPoints = side === 'supplier' ? supply.result.points : demand.result.points;
     const shiftedData = originalPoints.map(([x, y]) =>
-        [x, y + (side === 'supplier' ? tax : -tax)]
+        [x, y + (side === 'supplier' ? -subsidy : subsidy)]
     ) as [number, number][];
 
     const { success, result } = createCurve({
@@ -140,7 +140,7 @@ export const createExciseTax = ({
 
     const { x: quantityTraded, y: intersectionPrice } = intersection;
 
-    if (quantityTraded < range.quantityMin || quantityTraded > quantity) {
+    if (quantityTraded < quantity || quantityTraded < range.quantityMin) {
         return { intersects: false };
     }
 
@@ -158,14 +158,14 @@ export const createExciseTax = ({
     const demandIntegral = createIntegrationFunction(demand.result, demand.fit);
     const supplyIntegral = createIntegrationFunction(supply.result, supply.fit);
 
-    const taxRevenue = tax * quantityTraded;
-    const consumerTaxBurden = (buyerPrice - price) * quantityTraded;
-    const producerTaxBurden = (price - sellerPrice) * quantityTraded;
+    const subsidyCost = subsidy * quantityTraded;
+    const consumerBenefit = (price - buyerPrice) * quantityTraded;
+    const producerBenefit = (sellerPrice - price) * quantityTraded;
 
     const consumerSurplus = demandIntegral(0, quantityTraded) - buyerPrice * quantityTraded;
     const producerSurplus = sellerPrice * quantityTraded - supplyIntegral(0, quantityTraded);
     const totalSurplus = consumerSurplus + producerSurplus;
-    const deadweightLoss = originalSurplus - (totalSurplus + taxRevenue);
+    const deadweightLoss = originalSurplus - (totalSurplus - subsidyCost);
 
     const quantityTradedScreenX = map(quantityTraded, bounds.quantityMin, bounds.quantityMax, left, right);
     const buyerPriceScreenY = map(buyerPrice, bounds.priceMin, bounds.priceMax, bottom, top);
@@ -228,9 +228,9 @@ export const createExciseTax = ({
         producer_surplus: producerSurplus,
         total_surplus: totalSurplus,
         deadweight_loss: deadweightLoss,
-        tax_revenue: taxRevenue,
-        consumer_tax_burden: consumerTaxBurden,
-        producer_tax_burden: producerTaxBurden
+        subsidy_cost: subsidyCost,
+        consumer_subsidy_benefit: consumerBenefit,
+        producer_subsidy_benefit: producerBenefit
     });
 
     return { intersects: true };
