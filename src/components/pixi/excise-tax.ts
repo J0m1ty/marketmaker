@@ -1,0 +1,199 @@
+import { findIntersectionAnalytical } from "@/lib/economics-utils";
+import { createEquationFunction, createIntegrationFunction } from "@/lib/regression-utils";
+import type { CurveFitType } from "@/lib/types";
+import { map } from "@/lib/utils";
+import { Container, Graphics } from "pixi.js";
+import type { Result } from "regression";
+import { createCurve } from "./create-curve";
+
+interface ExciseTaxParams {
+    price: number;
+    quantity: number;
+    view: {
+        left: number;
+        right: number;
+        top: number;
+        bottom: number;
+    };
+    bounds: {
+        priceMin: number;
+        priceMax: number;
+        quantityMin: number;
+        quantityMax: number;
+    };
+    range: {
+        priceMin: number;
+        priceMax: number;
+        quantityMin: number;
+        quantityMax: number;
+    };
+    theme: 'light' | 'dark';
+    demand: {
+        points: { x: number; y: number }[];
+        result: Result;
+        fit: CurveFitType;
+        color: string;
+        range: {
+            priceMin: number;
+            priceMax: number;
+            quantityMin: number;
+            quantityMax: number;
+        };
+    };
+    supply: {
+        points: { x: number; y: number }[];
+        result: Result;
+        fit: CurveFitType;
+        color: string;
+        range: {
+            priceMin: number;
+            priceMax: number;
+            quantityMin: number;
+            quantityMax: number;
+        };
+    };
+    tax: number;
+    side: 'supplier' | 'consumer';
+    originalSurplus: number;
+    equilibriumContainer: Container;
+    controlContainer: Container;
+    updateAdjustmentResult: (result: {
+        price: number;
+        quantity_demanded: number;
+        quantity_supplied: number;
+        consumer_surplus: number;
+        producer_surplus: number;
+        total_surplus: number;
+        deadweight_loss: number;
+        tax_revenue: number;
+        consumer_tax_burden: number;
+        producer_tax_burden: number;
+    }) => void;
+}
+
+type ExciseTaxResult = {
+    intersects: boolean;
+}
+
+const createShiftedEquation = (originalResult: Result, fitType: CurveFitType, shiftAmount: number, up: boolean) => {
+    const originalEquation = createEquationFunction(originalResult, fitType);
+    return (x: number) => originalEquation(x) + shiftAmount * (up ? 1 : -1);
+};
+
+export const createExciseTax = ({
+    price,
+    quantity,
+    view,
+    bounds,
+    range,
+    theme,
+    demand,
+    supply,
+    tax,
+    side,
+    originalSurplus,
+    equilibriumContainer,
+    controlContainer,
+    updateAdjustmentResult
+}: ExciseTaxParams): ExciseTaxResult => {
+    const color = theme === 'dark' ? 0xffffff : 0x000000;
+
+    const basicEquation = createEquationFunction(
+        side === 'supplier' ? supply.result : demand.result,
+        side === 'supplier' ? supply.fit : demand.fit
+    );
+
+    const originalPoints = side === 'supplier' ? supply.result.points : demand.result.points;
+    const shiftedData = originalPoints.map(([x, y]) => 
+        [x, y + (side === 'supplier' ? tax : -tax)]
+    ) as [number, number][];
+
+    const { success, result } = createCurve({
+        view,
+        bounds,
+        range,
+        curve: {
+            data: shiftedData,
+            fit: side === 'supplier' ? supply.fit : demand.fit,
+            color: side === 'supplier' ? supply.color : demand.color
+        },
+        container: equilibriumContainer,
+        render: true,
+        passive: false
+    });
+
+    if (!success) {
+        return { intersects: false };
+    }
+
+    const intersection = side === 'supplier' ? findIntersectionAnalytical(
+        demand.result,
+        demand.fit,
+        result,
+        supply.fit,
+        range
+    ) : findIntersectionAnalytical(
+        result,
+        demand.fit,
+        supply.result,
+        supply.fit,
+        range
+    );
+
+    if (!intersection) {
+        return { intersects: false };
+    }
+
+    const { x: quantityTraded, y: intersectionPrice } = intersection;
+
+    let buyerPrice: number;
+    let sellerPrice: number;
+
+    if (side === 'supplier') {
+        buyerPrice = intersectionPrice;
+        sellerPrice = basicEquation(quantityTraded);
+    } else {
+        sellerPrice = intersectionPrice;
+        buyerPrice = basicEquation(quantityTraded);
+    }
+
+    const demandIntegral = createIntegrationFunction(demand.result, demand.fit);
+    const supplyIntegral = createIntegrationFunction(supply.result, supply.fit);
+
+    const consumerSurplus = demandIntegral(0, quantityTraded) - buyerPrice * quantityTraded;
+    const producerSurplus = sellerPrice * quantityTraded - supplyIntegral(0, quantityTraded);
+    const totalSurplus = consumerSurplus + producerSurplus;
+    const deadweightLoss = originalSurplus - totalSurplus;
+
+    const taxRevenue = tax * quantityTraded;
+    const consumerTaxBurden = (buyerPrice - price) * quantityTraded;
+    const producerTaxBurden = (price - sellerPrice) * quantityTraded;
+
+    const graphics = new Graphics();
+    graphics.circle(
+        map(quantityTraded, bounds.quantityMin, bounds.quantityMax, view.left, view.right),
+        map(buyerPrice, bounds.priceMin, bounds.priceMax, view.top, view.bottom),
+        4
+    ).fill(color);
+    graphics.circle(
+        map(quantityTraded, bounds.quantityMin, bounds.quantityMax, view.left, view.right),
+        map(sellerPrice, bounds.priceMin, bounds.priceMax, view.top, view.bottom),
+        4
+    ).fill(color);
+    equilibriumContainer.addChild(graphics);
+
+    updateAdjustmentResult({
+        price: buyerPrice,
+        quantity_demanded: quantityTraded,
+        quantity_supplied: quantityTraded,
+        consumer_surplus: consumerSurplus,
+        producer_surplus: producerSurplus,
+        total_surplus: totalSurplus,
+        deadweight_loss: deadweightLoss,
+        tax_revenue: taxRevenue,
+        consumer_tax_burden: consumerTaxBurden,
+        producer_tax_burden: producerTaxBurden
+    });
+
+    return { intersects: true };
+}

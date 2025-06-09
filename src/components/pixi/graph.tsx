@@ -17,6 +17,7 @@ import { createSupplyShift } from './supply-shift';
 import { setupDragHandler } from '@/lib/drag-handler';
 import { createBorderMask } from './border-mask';
 import { calculatePointElasticity } from './point-elasticity';
+import { createExciseTax } from './excise-tax';
 
 export const Graph = () => {
     const { width, height } = useResize();
@@ -102,7 +103,7 @@ export const Graph = () => {
             },
             container: curvesContainer,
             render: true,
-            passive: activeTab.adjustment.mode === 'demand_shift',
+            passive: activeTab.adjustment.mode === 'demand_shift' || (activeTab.adjustment.mode === 'per_unit_tax' && activeTab.adjustment.side === 'consumer') || (activeTab.adjustment.mode === 'per_unit_subsidy' && activeTab.adjustment.side === 'consumer'),
         });
 
         const {
@@ -120,7 +121,7 @@ export const Graph = () => {
             },
             container: curvesContainer,
             render: true,
-            passive: activeTab.adjustment.mode === 'supply_shift',
+            passive: activeTab.adjustment.mode === 'supply_shift' || (activeTab.adjustment.mode === 'per_unit_tax' && activeTab.adjustment.side === 'supplier') || (activeTab.adjustment.mode === 'per_unit_subsidy' && activeTab.adjustment.side === 'supplier'),
         });
 
         const equilibriumContainer = new Container();
@@ -301,6 +302,43 @@ export const Graph = () => {
                     });
 
                     dragCleanupRef.current.push(cleanup);
+
+                    if (!intersects) {
+                        updateAdjustment(activeTab.market.id, {
+                            result: undefined,
+                        });
+                    }
+                }
+
+                if (activeTab.adjustment.mode === 'per_unit_tax') {
+                    const { intersects } = createExciseTax({
+                        price,
+                        quantity,
+                        view,
+                        bounds,
+                        range: activeTab.ranges.combined,
+                        theme,
+                        demand: {
+                            points: demandPoints,
+                            result: demandResult,
+                            fit: activeTab.curves.demand.fit,
+                            color: activeTab.curves.demand.color,
+                            range: activeTab.ranges.demand,
+                        },
+                        supply: {
+                            points: supplyPoints,
+                            result: supplyResult,
+                            fit: activeTab.curves.supply.fit,
+                            color: activeTab.curves.supply.color,
+                            range: activeTab.ranges.supply,
+                        },
+                        tax: activeTab.adjustment.amount,
+                        side: activeTab.adjustment.side,
+                        originalSurplus: total,
+                        equilibriumContainer,
+                        controlContainer,
+                        updateAdjustmentResult: (result) => updateAdjustmentResult(activeTab.market.id, result),
+                    });
 
                     if (!intersects) {
                         updateAdjustment(activeTab.market.id, {
