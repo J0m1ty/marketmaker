@@ -66,11 +66,11 @@ export const Graph = () => {
         const rows = activeTab.market.file.rows;
 
         const demandData = rows
-            .filter((row) => activeTab.curves.demand.fit !== 'logarithmic' || row.qd > 0)
+            .filter((row) => row.qd > 0)
             .map((row) => [row.qd, row.price]);
 
         const supplyData = rows
-            .filter((row) => activeTab.curves.supply.fit !== 'logarithmic' || row.qs > 0)
+            .filter((row) => row.qs > 0)
             .map((row) => [row.qs, row.price]);
 
         const { gridLines, axisContainer } = createAxisContainer({

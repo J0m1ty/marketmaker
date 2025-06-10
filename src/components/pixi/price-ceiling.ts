@@ -121,8 +121,8 @@ export const createPriceCeiling = ({
     const demandIntegral = createIntegrationFunction(demand.result, demand.fit);
     const supplyIntegral = createIntegrationFunction(supply.result, supply.fit);
 
-    const consumerSurplus = demandIntegral(0, qs) - ceiling * qs;
-    const producerSurplus = ceiling * qs - supplyIntegral(0, qs);
+    const consumerSurplus = demandIntegral(demand.range.quantityMin, qd) - ceiling * (qd - demand.range.quantityMin);
+    const producerSurplus = ceiling * (qd - supply.range.quantityMin) - supplyIntegral(supply.range.quantityMin, qd);
     const totalSurplus = consumerSurplus + producerSurplus;
     const deadweightLoss = originalSurplus - totalSurplus;
 
@@ -200,7 +200,7 @@ export const createPriceCeiling = ({
 
         if (relevantSupplyPoints.length >= 2) {
             const quantityTransactedScreenX = map(qs, bounds.quantityMin, bounds.quantityMax, left, right);
-            
+
             producerSurplusGraphics.moveTo(Math.max(supplyMinScreenX, left), ceilingScreenY);
             producerSurplusGraphics.lineTo(quantityTransactedScreenX, ceilingScreenY);
 

@@ -24,6 +24,7 @@ export type CurveFitType = (typeof CurveFits)[number];
 
 export type AxisBounds = {
     type: 'auto' | 'manual';
+    clip: boolean;
     priceMin: number;
     priceMax: number;
     quantityMin: number;

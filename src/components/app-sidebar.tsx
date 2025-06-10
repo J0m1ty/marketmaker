@@ -12,7 +12,7 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from './ui/sidebar';
-import { BookOpenText, ChartSpline, CirclePlus, CopyX, ExternalLink, FilePlus2, FileUp, SquareX } from 'lucide-react';
+import { BookOpenText, ChartSpline, CirclePlus, CopyX, ExternalLink, FilePlus2, FileUp, FolderOpen, SquareX } from 'lucide-react';
 import { useDataStore } from '@/hooks/data.store';
 import { useState } from 'react';
 import { ClearDialog } from './clear-dialog';
@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { hasUserData } from '@/lib/sheet';
 import { useMarketTabsStore } from '@/hooks/markets.store';
 import { handleMarketFileUpload } from '@/lib/market-upload';
+import { PresetSelector } from './preset-selector';
 
 export const AppSidebar = () => {
     const location = useLocation();
@@ -104,6 +105,14 @@ export const AppSidebar = () => {
                         <SidebarGroup>
                             <SidebarGroupLabel>Actions</SidebarGroupLabel>
                             <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <PresetSelector onPresetLoad={openTab}>
+                                        <SidebarMenuButton>
+                                            <FolderOpen />
+                                            <span className='translate-y-[1px]'>Open Preset</span>
+                                        </SidebarMenuButton>
+                                    </PresetSelector>
+                                </SidebarMenuItem>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton onClick={handleMarketUpload}>
                                         <FileUp />

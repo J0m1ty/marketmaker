@@ -66,8 +66,8 @@ export const calculateSurpluses = ({
     const demandIntegral = createIntegrationFunction(demand.result, demand.fit);
     const supplyIntegral = createIntegrationFunction(supply.result, supply.fit);
 
-    const consumerSurplus = demandIntegral(0, quantity) - price * quantity;
-    const producerSurplus = price * quantity - supplyIntegral(0, quantity);
+    const consumerSurplus = demandIntegral(demand.range.quantityMin, quantity) - price * (quantity - demand.range.quantityMin);
+    const producerSurplus = price * (quantity - supply.range.quantityMin) - supplyIntegral(supply.range.quantityMin, quantity);
     const totalSurplus = consumerSurplus + producerSurplus;
 
     if (render) {

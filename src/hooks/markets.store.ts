@@ -22,11 +22,58 @@ interface MarketTabsStore {
 
     getTab: (id: string) => MarketTab | undefined;
     getActiveTab: () => MarketTab | undefined;
+    updateClippedBounds: (id: string) => void;
 }
+
+const getClippedBounds = (ranges: MarketTab['ranges']) => {
+    const { demand, supply, combined } = ranges;
+    
+    const priceMin = Math.min(demand.priceMin, supply.priceMin, combined.priceMin);
+    const priceMax = Math.max(demand.priceMax, supply.priceMax, combined.priceMax);
+    const quantityMin = Math.min(demand.quantityMin, supply.quantityMin, combined.quantityMin);
+    const quantityMax = Math.max(demand.quantityMax, supply.quantityMax, combined.quantityMax);
+    
+    const priceRange = priceMax - priceMin;
+    const quantityRange = quantityMax - quantityMin;
+    
+    const squareRange = Math.min(priceRange, quantityRange);
+    
+    return {
+        priceMin: priceMin, 
+        priceMax: priceMin + squareRange,
+        quantityMin: quantityMin,
+        quantityMax: quantityMin + squareRange, 
+    };
+};
 
 export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
     tabs: [],
     activeTabId: null,
+
+    updateClippedBounds: (id) => {
+        set((state) => {
+            const tab = state.tabs.find((t) => t.market.id === id);
+            if (!tab) return state;
+
+            const clippedBounds = tab.bounds.clip 
+                ? getClippedBounds(tab.ranges)
+                : tab.ranges.combined;
+
+            return {
+                tabs: state.tabs.map((t) =>
+                    t.market.id === id
+                        ? {
+                              ...t,
+                              bounds: {
+                                  ...t.bounds,
+                                  ...clippedBounds,
+                              },
+                          }
+                        : t
+                ),
+            };
+        });
+    },
 
     openTab: (market) => {
         let wasAlreadyOpen = false;
@@ -39,10 +86,20 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
             }
 
             const rows = market.file.rows;
+            
             const prices = rows.map((row) => row.price);
             const demandQuantities = rows.map((row) => row.qd);
             const supplyQuantities = rows.map((row) => row.qs);
             const allQuantities = [...demandQuantities, ...supplyQuantities];
+            
+            const nonZeroDemand = rows.filter((row) => row.qd > 0);
+            const nonZeroSupply = rows.filter((row) => row.qs > 0);
+
+            const demandPrices = nonZeroDemand.map((row) => row.price);
+            const demandQs = nonZeroDemand.map((row) => row.qd);
+            
+            const supplyPrices = nonZeroSupply.map((row) => row.price);
+            const supplyQs = nonZeroSupply.map((row) => row.qs);
 
             const combinedBounds = {
                 priceMin: Math.min(...prices),
@@ -51,27 +108,32 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                 quantityMax: Math.max(...allQuantities),
             };
 
+            const ranges = {
+                demand: {
+                    priceMin: demandPrices.length > 0 ? Math.min(...demandPrices) : combinedBounds.priceMin,
+                    priceMax: demandPrices.length > 0 ? Math.max(...demandPrices) : combinedBounds.priceMax,
+                    quantityMin: demandQs.length > 0 ? Math.min(...demandQs) : 0,
+                    quantityMax: demandQs.length > 0 ? Math.max(...demandQs) : 0,
+                },
+                supply: {
+                    priceMin: supplyPrices.length > 0 ? Math.min(...supplyPrices) : combinedBounds.priceMin,
+                    priceMax: supplyPrices.length > 0 ? Math.max(...supplyPrices) : combinedBounds.priceMax,
+                    quantityMin: supplyQs.length > 0 ? Math.min(...supplyQs) : 0,
+                    quantityMax: supplyQs.length > 0 ? Math.max(...supplyQs) : 0,
+                },
+                combined: combinedBounds,
+            };
+
+            const clippedBounds = getClippedBounds(ranges);
+
             const newTab: MarketTab = {
                 market,
                 bounds: {
                     type: 'auto',
-                    ...combinedBounds,
+                    clip: true,
+                    ...clippedBounds,
                 },
-                ranges: {
-                    demand: {
-                        priceMin: Math.min(...prices),
-                        priceMax: Math.max(...prices),
-                        quantityMin: Math.min(...demandQuantities),
-                        quantityMax: Math.max(...demandQuantities),
-                    },
-                    supply: {
-                        priceMin: Math.min(...prices),
-                        priceMax: Math.max(...prices),
-                        quantityMin: Math.min(...supplyQuantities),
-                        quantityMax: Math.max(...supplyQuantities),
-                    },
-                    combined: combinedBounds,
-                },
+                ranges,
                 curves: {
                     selected: 'demand',
                     demand: { fit: 'linear', color: '#e91e63' },
@@ -218,11 +280,30 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                 if (t.market.id !== id) return t;
 
                 if (b.type === 'auto' && t.bounds.type !== 'auto') {
+                    const boundsToUse = b.clip 
+                        ? getClippedBounds(t.ranges)
+                        : t.ranges.combined;
+                    
                     return {
                         ...t,
                         bounds: {
                             type: 'auto',
-                            ...t.ranges.combined,
+                            clip: b.clip,
+                            ...boundsToUse,
+                        },
+                    };
+                }
+
+                if (b.clip !== t.bounds.clip) {
+                    const boundsToUse = b.clip 
+                        ? getClippedBounds(t.ranges)
+                        : t.ranges.combined;
+                    
+                    return {
+                        ...t,
+                        bounds: {
+                            ...b,
+                            ...boundsToUse,
                         },
                     };
                 }

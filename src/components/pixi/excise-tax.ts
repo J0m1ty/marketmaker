@@ -97,10 +97,15 @@ export const createExciseTax = ({
         side === 'supplier' ? supply.fit : demand.fit
     );
 
+    const taxAdjustedEquation = (q: number) => {
+        const originalPrice = basicEquation(q);
+        return side === 'supplier' ? originalPrice + tax : originalPrice - tax;
+    };
+
     const originalPoints = side === 'supplier' ? supply.result.points : demand.result.points;
-    const shiftedData = originalPoints.map(([x, y]) =>
-        [x, y + (side === 'supplier' ? tax : -tax)]
-    ) as [number, number][];
+    const shiftedData = originalPoints.map(([x, _]) => {
+        return [x, taxAdjustedEquation(x)] as [number, number];
+    });
 
     const { success, result } = createCurve({
         view: { left, right, top, bottom },
@@ -162,8 +167,8 @@ export const createExciseTax = ({
     const consumerTaxBurden = (buyerPrice - price) * quantityTraded;
     const producerTaxBurden = (price - sellerPrice) * quantityTraded;
 
-    const consumerSurplus = demandIntegral(0, quantityTraded) - buyerPrice * quantityTraded;
-    const producerSurplus = sellerPrice * quantityTraded - supplyIntegral(0, quantityTraded);
+    const consumerSurplus = demandIntegral(demand.range.quantityMin, quantityTraded) - buyerPrice * (quantityTraded - demand.range.quantityMin);
+    const producerSurplus = sellerPrice * (quantityTraded - supply.range.quantityMin) - supplyIntegral(supply.range.quantityMin, quantityTraded);
     const totalSurplus = consumerSurplus + producerSurplus;
     const deadweightLoss = originalSurplus - (totalSurplus + taxRevenue);
 

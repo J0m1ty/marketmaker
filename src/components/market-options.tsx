@@ -274,18 +274,38 @@ export const MarketOptions = () => {
                             />
                         </div>
                     </div>
-                    <div className='flex flex-row items-center gap-2 justify-center sm:justify-start'>
-                        <Checkbox
-                            className='bg-neutral-200 border-neutral-400'
-                            checked={activeTab.bounds.type === 'auto'}
-                            onCheckedChange={(checked) =>
-                                updateBounds(activeTab.market.id, {
-                                    ...activeTab.bounds,
-                                    type: checked ? 'auto' : 'manual',
-                                })
-                            }
-                        />
-                        <span className='text-sm translate-y-[1px]'>Auto scale</span>
+                    <div className='flex flex-col sm:flex-row gap-4'>
+                        <div className='flex flex-row items-center gap-2 justify-center sm:justify-start'>
+                            <Checkbox
+                                className='bg-neutral-200 border-neutral-400'
+                                checked={activeTab.bounds.type === 'auto'}
+                                onCheckedChange={(checked) =>
+                                    updateBounds(activeTab.market.id, {
+                                        ...activeTab.bounds,
+                                        type: checked ? 'auto' : 'manual',
+                                    })
+                                }
+                            />
+                            <span className='text-sm translate-y-[1px]'>Auto scale</span>
+                        </div>
+                        <div className='flex flex-row items-center gap-2 justify-center sm:justify-start'>
+                            <Checkbox
+                                className='bg-neutral-200 border-neutral-400'
+                                checked={activeTab.bounds.clip}
+                                disabled={activeTab.bounds.type === 'manual'}
+                                onCheckedChange={(checked) =>
+                                    updateBounds(activeTab.market.id, {
+                                        ...activeTab.bounds,
+                                        clip: checked ? true : false,
+                                    })
+                                }
+                            />
+                            <span
+                                className={`text-sm translate-y-[1px] ${activeTab.bounds.type === 'manual' ? 'text-muted-foreground' : ''}`}
+                            >
+                                Clip to square
+                            </span>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

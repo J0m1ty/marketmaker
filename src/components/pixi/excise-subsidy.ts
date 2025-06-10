@@ -162,8 +162,8 @@ export const createExciseSubsidy = ({
     const consumerBenefit = (price - buyerPrice) * quantityTraded;
     const producerBenefit = (sellerPrice - price) * quantityTraded;
 
-    const consumerSurplus = demandIntegral(0, quantityTraded) - buyerPrice * quantityTraded;
-    const producerSurplus = sellerPrice * quantityTraded - supplyIntegral(0, quantityTraded);
+    const consumerSurplus = demandIntegral(demand.range.quantityMin, quantityTraded) - buyerPrice * (quantityTraded - demand.range.quantityMin);
+    const producerSurplus = sellerPrice * (quantityTraded - supply.range.quantityMin) - supplyIntegral(supply.range.quantityMin, quantityTraded);
     const totalSurplus = consumerSurplus + producerSurplus;
     const deadweightLoss = originalSurplus - (totalSurplus - subsidyCost);
 

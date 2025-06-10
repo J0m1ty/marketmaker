@@ -118,8 +118,8 @@ export const createPriceFloor = ({
     const demandIntegral = createIntegrationFunction(demand.result, demand.fit);
     const supplyIntegral = createIntegrationFunction(supply.result, supply.fit);
 
-    const consumerSurplus = demandIntegral(0, qd) - floor * qd;
-    const producerSurplus = floor * qd - supplyIntegral(0, qd);
+    const consumerSurplus = demandIntegral(demand.range.quantityMin, qd) - floor * (qd - demand.range.quantityMin);
+    const producerSurplus = floor * (qd - supply.range.quantityMin) - supplyIntegral(supply.range.quantityMin, qd);
     const totalSurplus = consumerSurplus + producerSurplus;
     const deadweightLoss = originalSurplus - totalSurplus;
 

@@ -4,6 +4,7 @@ import type { CurveFitType } from '@/lib/types';
 import { map } from '@/lib/utils';
 import { Graphics, type Container } from 'pixi.js';
 import type { Result } from 'regression';
+import { createCurve } from './create-curve';
 
 interface DemandShiftParams {
     originalPrice: number;
@@ -91,25 +92,30 @@ export const createDemandShift = ({
 
     const shiftedEquation = createShiftedDemandEquation(demand.result, demand.fit, shiftAmount);
 
-    const shiftedData: [number, number][] = [];
-    const quantityStep = (range.quantityMax - range.quantityMin) / 20;
+    const shiftedData = demand.result.points.map(([x, _]) => {
+        return [x, shiftedEquation(x)] as [number, number];
+    });
 
-    for (let q = range.quantityMin; q <= range.quantityMax; q += quantityStep) {
-        try {
-            const price = shiftedEquation(q);
-            if (isFinite(price) && price >= range.priceMin && price <= range.priceMax) {
-                shiftedData.push([q, price]);
-            }
-        } catch (ignored) { };
+    const { success, result, points } = createCurve({
+        view: { left, right, top, bottom },
+        bounds,
+        range,
+        curve: {
+            data: shiftedData,
+            fit: demand.fit,
+            color: demand.color
+        },
+        container: equilibriumContainer,
+        render: true,
+        passive: false
+    });
+
+    if (!success) {
+        return { intersects: false };
     }
 
-    const shiftedDemandResult = {
-        ...demand.result,
-        points: shiftedData,
-    };
-
     const newEquilibrium = findIntersectionAnalytical(
-        shiftedDemandResult,
+        result,
         demand.fit,
         supply.result,
         supply.fit,
@@ -143,39 +149,6 @@ export const createDemandShift = ({
             alpha: 0.7
         });
     equilibriumContainer.addChild(newQuantityLine);
-
-    const shiftedDemandCurve = new Graphics();
-    const viewportWidth = right - left;
-    const stepSize = 2;
-    const shiftedDemandPoints: { x: number; y: number }[] = [];
-
-    for (let pixelX = 0; pixelX <= viewportWidth; pixelX += stepSize) {
-        const screenX = left + pixelX;
-        const dataQuantity = map(pixelX, 0, viewportWidth, bounds.quantityMin, bounds.quantityMax);
-
-        try {
-            const shiftedEquation = createShiftedDemandEquation(demand.result, demand.fit, shiftAmount);
-            const dataPrice = shiftedEquation(dataQuantity);
-
-            if (isFinite(dataPrice) && dataQuantity >= demand.range.quantityMin && dataQuantity <= demand.range.quantityMax && dataPrice >= bounds.priceMin && dataPrice <= bounds.priceMax) {
-                const screenY = map(dataPrice, bounds.priceMin, bounds.priceMax, bottom, top);
-                shiftedDemandPoints.push({ x: screenX, y: screenY });
-            }
-        } catch (ignored) {}
-    }
-
-    if (shiftedDemandPoints.length >= 2) {
-        shiftedDemandCurve.moveTo(shiftedDemandPoints[0].x, shiftedDemandPoints[0].y);
-        for (let i = 1; i < shiftedDemandPoints.length; i++) {
-            shiftedDemandCurve.lineTo(shiftedDemandPoints[i].x, shiftedDemandPoints[i].y);
-        }
-        shiftedDemandCurve.stroke({
-            color: demand.color,
-            width: 2,
-            alpha: 0.8,
-        });
-        equilibriumContainer.addChild(shiftedDemandCurve);
-    }
     
     const newEquilibriumPoint = new Graphics()
         .circle(newEquilibriumScreenX, newEquilibriumScreenY, 5)
@@ -190,38 +163,19 @@ export const createDemandShift = ({
         .fill({ color, alpha: 0.3 });
     equilibriumContainer.addChild(originalEquilibriumPoint);
     
-    const demandIntegral = createIntegrationFunction(shiftedDemandResult, demand.fit);
+    const demandIntegral = createIntegrationFunction(result, demand.fit);
     const supplyIntegral = createIntegrationFunction(supply.result, supply.fit);
 
-    const newConsumerSurplus = demandIntegral(0, newQuantity) - newPrice * newQuantity;
-    const newProducerSurplus = newPrice * newQuantity - supplyIntegral(0, newQuantity);
+    const newConsumerSurplus = demandIntegral(demand.range.quantityMin, newQuantity) - newPrice * (newQuantity - demand.range.quantityMin);
+    const newProducerSurplus = newPrice * (newQuantity - supply.range.quantityMin) - supplyIntegral(supply.range.quantityMin, newQuantity);
     const newTotalSurplus = newConsumerSurplus + newProducerSurplus;
     const deadweightLoss = originalSurplus - newTotalSurplus;
     
     if (demand.points.length >= 2 && supply.points.length >= 2) {
         const newConsumerSurplusGraphics = new Graphics();
         const demandMinScreenX = map(demand.range.quantityMin, bounds.quantityMin, bounds.quantityMax, left, right);
-        
-        const shiftedDemandPoints: { x: number; y: number }[] = [];
-        const viewportWidth = right - left;
-        const stepSize = 2;
 
-        for (let pixelX = 0; pixelX <= viewportWidth; pixelX += stepSize) {
-            const screenX = left + pixelX;
-            const dataQuantity = map(pixelX, 0, viewportWidth, bounds.quantityMin, bounds.quantityMax);
-
-            try {
-                const shiftedEquation = createShiftedDemandEquation(demand.result, demand.fit, shiftAmount);
-                const dataPrice = shiftedEquation(dataQuantity);
-
-                if (isFinite(dataPrice) && dataQuantity >= demand.range.quantityMin && dataQuantity <= demand.range.quantityMax) {
-                    const screenY = map(dataPrice, bounds.priceMin, bounds.priceMax, bottom, top);
-                    shiftedDemandPoints.push({ x: screenX, y: screenY });
-                }
-            } catch (ignored) {}
-        }
-
-        const relevantShiftedDemandPoints = shiftedDemandPoints.filter((point) => point.x <= newEquilibriumScreenX);
+        const relevantShiftedDemandPoints = points.filter((point) => point.x <= newEquilibriumScreenX);
 
         if (relevantShiftedDemandPoints.length >= 2) {
             newConsumerSurplusGraphics.moveTo(Math.max(demandMinScreenX, left), newEquilibriumScreenY);

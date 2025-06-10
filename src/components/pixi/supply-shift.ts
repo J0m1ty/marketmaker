@@ -193,8 +193,8 @@ export const createSupplyShift = ({
     const demandIntegral = createIntegrationFunction(demand.result, demand.fit);
     const supplyIntegral = createIntegrationFunction(shiftedSupplyResult, supply.fit);
 
-    const newConsumerSurplus = demandIntegral(0, newQuantity) - newPrice * newQuantity;
-    const newProducerSurplus = newPrice * newQuantity - supplyIntegral(0, newQuantity);
+    const newConsumerSurplus = demandIntegral(demand.range.quantityMin, newQuantity) - newPrice * (newQuantity - demand.range.quantityMin);
+    const newProducerSurplus = newPrice * (newQuantity - supply.range.quantityMin) - supplyIntegral(supply.range.quantityMin, newQuantity);
     const newTotalSurplus = newConsumerSurplus + newProducerSurplus;
     const deadweightLoss = originalSurplus - newTotalSurplus;
     
