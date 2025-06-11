@@ -65,13 +65,9 @@ export const Graph = () => {
 
         const rows = activeTab.market.file.rows;
 
-        const demandData = rows
-            .filter((row) => row.qd > 0)
-            .map((row) => [row.qd, row.price]);
+        const demandData = rows.filter((row) => row.qd > 0).map((row) => [row.qd, row.price]);
 
-        const supplyData = rows
-            .filter((row) => row.qs > 0)
-            .map((row) => [row.qs, row.price]);
+        const supplyData = rows.filter((row) => row.qs > 0).map((row) => [row.qs, row.price]);
 
         const { gridLines, axisContainer } = createAxisContainer({
             view,
@@ -104,7 +100,10 @@ export const Graph = () => {
             },
             container: curvesContainer,
             render: true,
-            passive: activeTab.adjustment.mode === 'demand_shift' || (activeTab.adjustment.mode === 'per_unit_tax' && activeTab.adjustment.side === 'consumer') || (activeTab.adjustment.mode === 'per_unit_subsidy' && activeTab.adjustment.side === 'consumer'),
+            passive:
+                activeTab.adjustment.mode === 'demand_shift' ||
+                (activeTab.adjustment.mode === 'per_unit_tax' && activeTab.adjustment.side === 'consumer') ||
+                (activeTab.adjustment.mode === 'per_unit_subsidy' && activeTab.adjustment.side === 'consumer'),
         });
 
         const {
@@ -122,7 +121,10 @@ export const Graph = () => {
             },
             container: curvesContainer,
             render: true,
-            passive: activeTab.adjustment.mode === 'supply_shift' || (activeTab.adjustment.mode === 'per_unit_tax' && activeTab.adjustment.side === 'supplier') || (activeTab.adjustment.mode === 'per_unit_subsidy' && activeTab.adjustment.side === 'supplier'),
+            passive:
+                activeTab.adjustment.mode === 'supply_shift' ||
+                (activeTab.adjustment.mode === 'per_unit_tax' && activeTab.adjustment.side === 'supplier') ||
+                (activeTab.adjustment.mode === 'per_unit_subsidy' && activeTab.adjustment.side === 'supplier'),
         });
 
         const equilibriumContainer = new Container();
@@ -147,7 +149,10 @@ export const Graph = () => {
                     fit: activeTab.curves.supply.fit,
                 },
                 container: equilibriumContainer,
-                render: activeTab.adjustment.mode !== 'demand_shift' && activeTab.adjustment.mode !== 'supply_shift' && activeTab.adjustment.mode !== 'point_elasticity',
+                render:
+                    activeTab.adjustment.mode !== 'demand_shift' &&
+                    activeTab.adjustment.mode !== 'supply_shift' &&
+                    activeTab.adjustment.mode !== 'point_elasticity',
                 passive: activeTab.adjustment.mode !== 'none',
             });
 
@@ -503,9 +508,7 @@ export const Graph = () => {
             }
         }
 
-        const background = new Graphics()
-            .rect(0, 0, width, height)
-            .fill(theme === 'dark' ? 0x0a0a0a : 0xffffff);
+        const background = new Graphics().rect(0, 0, width, height).fill(theme === 'dark' ? 0x0a0a0a : 0xffffff);
 
         const borderMask = createBorderMask({
             view,

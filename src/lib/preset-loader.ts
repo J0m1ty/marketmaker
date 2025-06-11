@@ -14,7 +14,7 @@ export const PRESET_FILES = [
     'Noisy (Linear).csv',
 ] as const;
 
-export type PresetFile = typeof PRESET_FILES[number];
+export type PresetFile = (typeof PRESET_FILES)[number];
 
 export const loadPreset = async (presetName: PresetFile): Promise<Market> => {
     try {
@@ -22,11 +22,11 @@ export const loadPreset = async (presetName: PresetFile): Promise<Market> => {
         if (!response.ok) {
             throw new Error(`Failed to load preset: ${response.statusText}`);
         }
-        
+
         const content = await response.text();
         const data = parseFileContent(content) as any[];
         const filename = presetName.replace(/\.[^/.]+$/, '') || 'Untitled';
-        
+
         return {
             id: hashFileContent(filename, data),
             name: filename,
@@ -48,7 +48,7 @@ export const handlePresetLoad = async (
     try {
         const market = await loadPreset(presetName);
         const wasAlreadyOpen = onSuccess(market);
-        
+
         if (wasAlreadyOpen) {
             toast.info(`Preset "${presetName}" is already open`);
         } else {

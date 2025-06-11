@@ -67,7 +67,7 @@ export type InterventionResult = {
     buyer_price: number;
     seller_price: number;
     quantity_traded: number;
-}
+};
 
 export type WelfareResult = {
     consumer_surplus: number;

@@ -103,31 +103,25 @@ export const createDemandShift = ({
         curve: {
             data: shiftedData,
             fit: demand.fit,
-            color: demand.color
+            color: demand.color,
         },
         container: equilibriumContainer,
         render: true,
-        passive: false
+        passive: false,
     });
 
     if (!success) {
         return { intersects: false };
     }
 
-    const newEquilibrium = findIntersectionAnalytical(
-        result,
-        demand.fit,
-        supply.result,
-        supply.fit,
-        range
-    );
+    const newEquilibrium = findIntersectionAnalytical(result, demand.fit, supply.result, supply.fit, range);
 
     if (!newEquilibrium) {
         return { intersects: false };
     }
 
     const { x: newQuantity, y: newPrice } = newEquilibrium;
-    
+
     const newEquilibriumScreenX = map(newQuantity, bounds.quantityMin, bounds.quantityMax, left, right);
     const newEquilibriumScreenY = map(newPrice, bounds.priceMin, bounds.priceMax, bottom, top);
     const newPriceLine = new Graphics()
@@ -136,7 +130,7 @@ export const createDemandShift = ({
         .stroke({
             color,
             width: 2,
-            alpha: 0.7
+            alpha: 0.7,
         });
     equilibriumContainer.addChild(newPriceLine);
 
@@ -146,15 +140,15 @@ export const createDemandShift = ({
         .stroke({
             color,
             width: 2,
-            alpha: 0.7
+            alpha: 0.7,
         });
     equilibriumContainer.addChild(newQuantityLine);
-    
+
     const newEquilibriumPoint = new Graphics()
         .circle(newEquilibriumScreenX, newEquilibriumScreenY, 5)
         .fill({ color: demand.color });
     equilibriumContainer.addChild(newEquilibriumPoint);
-    
+
     const originalEquilibriumScreenX = map(originalQuantity, bounds.quantityMin, bounds.quantityMax, left, right);
     const originalEquilibriumScreenY = map(originalPrice, bounds.priceMin, bounds.priceMax, bottom, top);
 
@@ -162,15 +156,17 @@ export const createDemandShift = ({
         .circle(originalEquilibriumScreenX, originalEquilibriumScreenY, 4)
         .fill({ color, alpha: 0.3 });
     equilibriumContainer.addChild(originalEquilibriumPoint);
-    
+
     const demandIntegral = createIntegrationFunction(result, demand.fit);
     const supplyIntegral = createIntegrationFunction(supply.result, supply.fit);
 
-    const newConsumerSurplus = demandIntegral(demand.range.quantityMin, newQuantity) - newPrice * (newQuantity - demand.range.quantityMin);
-    const newProducerSurplus = newPrice * (newQuantity - supply.range.quantityMin) - supplyIntegral(supply.range.quantityMin, newQuantity);
+    const newConsumerSurplus =
+        demandIntegral(demand.range.quantityMin, newQuantity) - newPrice * (newQuantity - demand.range.quantityMin);
+    const newProducerSurplus =
+        newPrice * (newQuantity - supply.range.quantityMin) - supplyIntegral(supply.range.quantityMin, newQuantity);
     const newTotalSurplus = newConsumerSurplus + newProducerSurplus;
     const deadweightLoss = originalSurplus - newTotalSurplus;
-    
+
     if (demand.points.length >= 2 && supply.points.length >= 2) {
         const newConsumerSurplusGraphics = new Graphics();
         const demandMinScreenX = map(demand.range.quantityMin, bounds.quantityMin, bounds.quantityMax, left, right);

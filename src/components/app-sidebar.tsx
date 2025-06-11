@@ -12,7 +12,17 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from './ui/sidebar';
-import { BookOpenText, ChartSpline, CirclePlus, CopyX, ExternalLink, FilePlus2, FileUp, FolderOpen, SquareX } from 'lucide-react';
+import {
+    BookOpenText,
+    ChartSpline,
+    CirclePlus,
+    CopyX,
+    ExternalLink,
+    FilePlus2,
+    FileUp,
+    FolderOpen,
+    SquareX,
+} from 'lucide-react';
 import { useDataStore } from '@/hooks/data.store';
 import { useState } from 'react';
 import { ClearDialog } from './clear-dialog';

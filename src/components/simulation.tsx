@@ -31,8 +31,8 @@ export function Simulation() {
     };
 
     return (
-        <div 
-            className='w-full aspect-square min-w-0 relative lg:aspect-auto lg:h-full' 
+        <div
+            className='w-full aspect-square min-w-0 relative lg:aspect-auto lg:h-full'
             ref={containerRef}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -58,16 +58,16 @@ export function Simulation() {
                     <Graph />
                 </ResizeProvider>
             </Application>
-            
+
             {isHovered && (
-                <div className="absolute top-5 right-5 z-10">
+                <div className='absolute top-5 right-5 z-10'>
                     <Button
-                        variant="secondary"
-                        size="sm"
+                        variant='secondary'
+                        size='sm'
                         onClick={handleSaveImage}
-                        className="size-10 bg-muted/10 backdrop-blur-sm border shadow-lg hover:bg-background/100 transition-all duration-200"
+                        className='size-10 bg-muted/10 backdrop-blur-sm border shadow-lg hover:bg-background/100 transition-all duration-200'
                     >
-                        <Camera className="h-4 w-4" />
+                        <Camera className='h-4 w-4' />
                     </Button>
                 </div>
             )}

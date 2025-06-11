@@ -95,12 +95,17 @@ export const createPriceCeiling = ({
         top
     );
 
-    const ceilingLine = new Graphics().moveTo(left, ceilingScreenY).lineTo(right, ceilingScreenY).stroke({
-        color,
-        width: 2,
-    }).rect(left, ceilingScreenY - 10, right - left, 20).fill({
-        alpha: 0
-    });
+    const ceilingLine = new Graphics()
+        .moveTo(left, ceilingScreenY)
+        .lineTo(right, ceilingScreenY)
+        .stroke({
+            color,
+            width: 2,
+        })
+        .rect(left, ceilingScreenY - 10, right - left, 20)
+        .fill({
+            alpha: 0,
+        });
 
     ceilingLine.eventMode = 'static';
     ceilingLine.cursor = 'ns-resize';
@@ -226,15 +231,13 @@ export const createPriceCeiling = ({
 
         const demandPointsInDWL = demand.points.filter((point) => {
             const dataX =
-                ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) +
-                bounds.quantityMin;
+                ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) + bounds.quantityMin;
             return dataX >= qs && dataX <= quantity;
         });
 
         const supplyPointsInDWL = supply.points.filter((point) => {
             const dataX =
-                ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) +
-                bounds.quantityMin;
+                ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) + bounds.quantityMin;
             return dataX >= qs && dataX <= quantity;
         });
 

@@ -1,9 +1,9 @@
-import { createDerivativeFunction, createEquationFunction } from "@/lib/regression-utils";
-import type { CurveFitType } from "@/lib/types";
-import { constrain, map } from "@/lib/utils";
-import { Graphics, type Container } from "pixi.js";
-import type { Result } from "regression";
-import { createDashedLine } from "./dashed-line";
+import { createDerivativeFunction, createEquationFunction } from '@/lib/regression-utils';
+import type { CurveFitType } from '@/lib/types';
+import { constrain, map } from '@/lib/utils';
+import { Graphics, type Container } from 'pixi.js';
+import type { Result } from 'regression';
+import { createDashedLine } from './dashed-line';
 
 interface PointElasticityParams {
     quantity: number;
@@ -38,7 +38,7 @@ interface PointElasticityParams {
 type PointElasticityResult = {
     intersects: boolean;
     quantityLine: Graphics;
-}
+};
 
 export const calculatePointElasticity = ({
     quantity,
@@ -49,7 +49,7 @@ export const calculatePointElasticity = ({
     demand,
     supply,
     container,
-    updateAdjustmentResult
+    updateAdjustmentResult,
 }: PointElasticityParams): PointElasticityResult => {
     const color = theme === 'dark' ? 0xffffff : 0x000000;
     const quantityScreenX = constrain(map(quantity, bounds.quantityMin, bounds.quantityMax, left, right), left, right);
@@ -64,13 +64,11 @@ export const calculatePointElasticity = ({
         color,
         width: 2,
         alpha: 0.7,
-    })
+    });
 
-    quantityLine
-        .rect(quantityScreenX - 10, top, 20, bottom - top)
-        .fill({
-            alpha: 0
-        });
+    quantityLine.rect(quantityScreenX - 10, top, 20, bottom - top).fill({
+        alpha: 0,
+    });
 
     quantityLine.eventMode = 'static';
     quantityLine.cursor = 'ew-resize';
@@ -87,36 +85,38 @@ export const calculatePointElasticity = ({
     const consumerPrice = demandEquation(quantity);
     const producerPrice = supplyEquation(quantity);
 
-    const consumerPriceScreenY = constrain(bottom - map(consumerPrice, bounds.priceMin, bounds.priceMax, 0, bottom - top), top, bottom);
-    const producerPriceScreenY = constrain(bottom - map(producerPrice, bounds.priceMin, bounds.priceMax, 0, bottom - top), top, bottom);
+    const consumerPriceScreenY = constrain(
+        bottom - map(consumerPrice, bounds.priceMin, bounds.priceMax, 0, bottom - top),
+        top,
+        bottom
+    );
+    const producerPriceScreenY = constrain(
+        bottom - map(producerPrice, bounds.priceMin, bounds.priceMax, 0, bottom - top),
+        top,
+        bottom
+    );
 
-    const demandPoint = new Graphics()
-        .circle(quantityScreenX, consumerPriceScreenY, 4)
-        .fill({
-            color
-        })
+    const demandPoint = new Graphics().circle(quantityScreenX, consumerPriceScreenY, 4).fill({
+        color,
+    });
     container.addChild(demandPoint);
 
-    const supplyPoint = new Graphics()
-        .circle(quantityScreenX, producerPriceScreenY, 4)
-        .fill({
-            color
-        });
+    const supplyPoint = new Graphics().circle(quantityScreenX, producerPriceScreenY, 4).fill({
+        color,
+    });
     container.addChild(supplyPoint);
 
     const demandDerivative = createDerivativeFunction(demand.result, demand.fit);
     const supplyDerivative = createDerivativeFunction(supply.result, supply.fit);
 
-    const demandElasticity = consumerPrice !== 0 ?
-        (demandDerivative(quantity) * quantity) / consumerPrice : 0;
+    const demandElasticity = consumerPrice !== 0 ? (demandDerivative(quantity) * quantity) / consumerPrice : 0;
 
-    const supplyElasticity = producerPrice !== 0 ?
-        (supplyDerivative(quantity) * quantity) / producerPrice : 0;
+    const supplyElasticity = producerPrice !== 0 ? (supplyDerivative(quantity) * quantity) / producerPrice : 0;
 
     updateAdjustmentResult({
         point_price_elasticity_of_demand: demandElasticity,
-        point_price_elasticity_of_supply: supplyElasticity
+        point_price_elasticity_of_supply: supplyElasticity,
     });
 
     return { intersects: true, quantityLine };
-}
+};

@@ -9,14 +9,7 @@ import { ColorSelect } from './color-select';
 import { AdjustmentModes, CurveFits, groupedAdjustments, type CurveFitType } from '@/lib/types';
 import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
 import { Label } from './ui/label';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 
@@ -24,17 +17,15 @@ const HelpIcon = ({ title, children }: { title: string; children: React.ReactNod
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 ml-2 opacity-85 hover:opacity-100">
-                    <HelpCircle className="h-3 w-3" />
+                <Button variant='ghost' size='sm' className='h-4 w-4 p-0 ml-2 opacity-85 hover:opacity-100'>
+                    <HelpCircle className='h-3 w-3' />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className='sm:max-w-md'>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>
-                <DialogDescription className="text-sm">
-                    {children}
-                </DialogDescription>
+                <DialogDescription className='text-sm'>{children}</DialogDescription>
             </DialogContent>
         </Dialog>
     );
@@ -210,13 +201,14 @@ export const MarketOptions = () => {
             <Card className='gap-1 flex-1 dark:bg-neutral-900'>
                 <CardHeader className='text-center text-sm flex flex-row items-center justify-center mb-2'>
                     <span className='translate-y-[1px]'>Window Options</span>
-                    <HelpIcon title='Window Options' >
-                        This section allows you to control the display boundaries of your market graph. 
-                        Adjust the x-axis (quantity) and y-axis (price) ranges to zoom in on specific 
-                        areas of interest or to better fit your data visualization needs.
+                    <HelpIcon title='Window Options'>
+                        This section allows you to control the display boundaries of your market graph. Adjust the
+                        x-axis (quantity) and y-axis (price) ranges to zoom in on specific areas of interest or to
+                        better fit your data visualization needs.
                         <Separator className='my-2' />
-                        <span className='font-bold text-primary/80'>Usage:</span> Toggle 'auto' on or off to switch between automatic scaling
-                        and manual input. When 'auto' is off, you can set the minimum and maximum values for both axes.
+                        <span className='font-bold text-primary/80'>Usage:</span> Toggle 'auto' on or off to switch
+                        between automatic scaling and manual input. When 'auto' is off, you can set the minimum and
+                        maximum values for both axes.
                     </HelpIcon>
                 </CardHeader>
                 <CardContent className='flex flex-col gap-4 h-full px-2 sm:px-6'>
@@ -352,14 +344,13 @@ export const MarketOptions = () => {
             <Card className='gap-1 flex-1 dark:bg-neutral-900'>
                 <CardHeader className='text-center text-sm flex flex-row items-center justify-center'>
                     <span>Market Analysis</span>
-                    <HelpIcon title="Market Analysis">
-                        Use these tools to analyze various market scenarios including 
-                        government interventions (price floors, ceilings, taxes), 
-                        market shocks (supply/demand shifts), 
-                        and economic calculations (consumer surplus, producer surplus, elasticity).
+                    <HelpIcon title='Market Analysis'>
+                        Use these tools to analyze various market scenarios including government interventions (price
+                        floors, ceilings, taxes), market shocks (supply/demand shifts), and economic calculations
+                        (consumer surplus, producer surplus, elasticity).
                         <Separator className='my-2' />
-                        <span className='font-bold text-primary/80'>Usage:</span> Select a scenario type and input the relevant parameters. 
-                        Sometimes you can drag the effect on the graph to adjust it.
+                        <span className='font-bold text-primary/80'>Usage:</span> Select a scenario type and input the
+                        relevant parameters. Sometimes you can drag the effect on the graph to adjust it.
                     </HelpIcon>
                 </CardHeader>
                 <CardContent className='px-2 sm:px-6 flex flex-col gap-2 h-full'>
@@ -391,12 +382,13 @@ export const MarketOptions = () => {
             <Card className='gap-1 flex-1 dark:bg-neutral-900'>
                 <CardHeader className='text-center text-sm flex flex-row items-center justify-center'>
                     <span>Curve Options</span>
-                    <HelpIcon title="Curve Options">
-                        Customize the appearance and behavior of your supply and demand curves. 
-                        Switch between curve types, choose different fitting methods (linear, logarithmic, power, etc.), and adjust colors 
-                        to create the better visualization for your market analysis.
+                    <HelpIcon title='Curve Options'>
+                        Customize the appearance and behavior of your supply and demand curves. Switch between curve
+                        types, choose different fitting methods (linear, logarithmic, power, etc.), and adjust colors to
+                        create the better visualization for your market analysis.
                         <Separator className='my-2' />
-                        <span className='font-bold text-primary/80'>Usage:</span> Select the curve type (demand or supply) and adjust the fitting method and color as needed.
+                        <span className='font-bold text-primary/80'>Usage:</span> Select the curve type (demand or
+                        supply) and adjust the fitting method and color as needed.
                     </HelpIcon>
                 </CardHeader>
                 <CardContent className='px-2 sm:px-6'>

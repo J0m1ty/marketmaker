@@ -100,14 +100,14 @@ export const createSupplyShift = ({
             if (isFinite(price) && price >= range.priceMin && price <= range.priceMax) {
                 shiftedData.push([q, price]);
             }
-        } catch (ignored) { }
+        } catch (ignored) {}
     }
 
     const shiftedSupplyResult = {
         ...supply.result,
         points: shiftedData,
     };
-    
+
     const newEquilibrium = findIntersectionAnalytical(
         demand.result,
         demand.fit,
@@ -123,14 +123,14 @@ export const createSupplyShift = ({
     const { x: newQuantity, y: newPrice } = newEquilibrium;
 
     const newEquilibriumScreenX = map(newQuantity, bounds.quantityMin, bounds.quantityMax, left, right);
-    const newEquilibriumScreenY = map(newPrice, bounds.priceMin, bounds.priceMax, bottom, top);    // Draw solid lines to new equilibrium
+    const newEquilibriumScreenY = map(newPrice, bounds.priceMin, bounds.priceMax, bottom, top); // Draw solid lines to new equilibrium
     const newPriceLine = new Graphics()
         .moveTo(left, newEquilibriumScreenY)
         .lineTo(newEquilibriumScreenX, newEquilibriumScreenY)
         .stroke({
             color,
             width: 2,
-            alpha: 0.7
+            alpha: 0.7,
         });
     equilibriumContainer.addChild(newPriceLine);
 
@@ -140,7 +140,7 @@ export const createSupplyShift = ({
         .stroke({
             color,
             width: 2,
-            alpha: 0.7
+            alpha: 0.7,
         });
     equilibriumContainer.addChild(newQuantityLine);
 
@@ -157,7 +157,13 @@ export const createSupplyShift = ({
             const shiftedEquation = createShiftedSupplyEquation(supply.result, supply.fit, shiftAmount);
             const dataPrice = shiftedEquation(dataQuantity);
 
-            if (isFinite(dataPrice) && dataQuantity >= supply.range.quantityMin && dataQuantity <= supply.range.quantityMax && dataPrice >= bounds.priceMin && dataPrice <= bounds.priceMax) {
+            if (
+                isFinite(dataPrice) &&
+                dataQuantity >= supply.range.quantityMin &&
+                dataQuantity <= supply.range.quantityMax &&
+                dataPrice >= bounds.priceMin &&
+                dataPrice <= bounds.priceMax
+            ) {
                 const screenY = map(dataPrice, bounds.priceMin, bounds.priceMax, bottom, top);
                 shiftedSupplyPoints.push({ x: screenX, y: screenY });
             }
@@ -176,12 +182,12 @@ export const createSupplyShift = ({
         });
         equilibriumContainer.addChild(shiftedSupplyCurve);
     }
-    
+
     const newEquilibriumPoint = new Graphics()
         .circle(newEquilibriumScreenX, newEquilibriumScreenY, 5)
         .fill({ color: supply.color });
     equilibriumContainer.addChild(newEquilibriumPoint);
-    
+
     const originalEquilibriumScreenX = map(originalQuantity, bounds.quantityMin, bounds.quantityMax, left, right);
     const originalEquilibriumScreenY = map(originalPrice, bounds.priceMin, bounds.priceMax, bottom, top);
 
@@ -189,15 +195,17 @@ export const createSupplyShift = ({
         .circle(originalEquilibriumScreenX, originalEquilibriumScreenY, 4)
         .fill({ color, alpha: 0.3 });
     equilibriumContainer.addChild(originalEquilibriumPoint);
-    
+
     const demandIntegral = createIntegrationFunction(demand.result, demand.fit);
     const supplyIntegral = createIntegrationFunction(shiftedSupplyResult, supply.fit);
 
-    const newConsumerSurplus = demandIntegral(demand.range.quantityMin, newQuantity) - newPrice * (newQuantity - demand.range.quantityMin);
-    const newProducerSurplus = newPrice * (newQuantity - supply.range.quantityMin) - supplyIntegral(supply.range.quantityMin, newQuantity);
+    const newConsumerSurplus =
+        demandIntegral(demand.range.quantityMin, newQuantity) - newPrice * (newQuantity - demand.range.quantityMin);
+    const newProducerSurplus =
+        newPrice * (newQuantity - supply.range.quantityMin) - supplyIntegral(supply.range.quantityMin, newQuantity);
     const newTotalSurplus = newConsumerSurplus + newProducerSurplus;
     const deadweightLoss = originalSurplus - newTotalSurplus;
-    
+
     if (demand.points.length >= 2 && supply.points.length >= 2) {
         const newConsumerSurplusGraphics = new Graphics();
         const demandMinScreenX = map(demand.range.quantityMin, bounds.quantityMin, bounds.quantityMax, left, right);
@@ -221,7 +229,7 @@ export const createSupplyShift = ({
 
             equilibriumContainer.addChild(newConsumerSurplusGraphics);
         }
-        
+
         const newProducerSurplusGraphics = new Graphics();
         const supplyMinScreenX = map(supply.range.quantityMin, bounds.quantityMin, bounds.quantityMax, left, right);
 
@@ -237,7 +245,11 @@ export const createSupplyShift = ({
                 const shiftedEquation = createShiftedSupplyEquation(supply.result, supply.fit, shiftAmount);
                 const dataPrice = shiftedEquation(dataQuantity);
 
-                if (isFinite(dataPrice) && dataQuantity >= supply.range.quantityMin && dataQuantity <= supply.range.quantityMax) {
+                if (
+                    isFinite(dataPrice) &&
+                    dataQuantity >= supply.range.quantityMin &&
+                    dataQuantity <= supply.range.quantityMax
+                ) {
                     const screenY = map(dataPrice, bounds.priceMin, bounds.priceMax, bottom, top);
                     shiftedSupplyPoints.push({ x: screenX, y: screenY });
                 }

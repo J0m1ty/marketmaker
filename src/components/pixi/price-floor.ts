@@ -96,8 +96,10 @@ export const createPriceFloor = ({
         .stroke({
             color,
             width: 2,
-        }).rect(left, floorScreenY - 10, right - left, 20).fill({
-            alpha: 0
+        })
+        .rect(left, floorScreenY - 10, right - left, 20)
+        .fill({
+            alpha: 0,
         });
 
     floorLine.eventMode = 'static';
@@ -219,15 +221,13 @@ export const createPriceFloor = ({
 
         const demandPointsInDWL = demand.points.filter((point) => {
             const dataX =
-                ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) +
-                bounds.quantityMin;
+                ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) + bounds.quantityMin;
             return dataX >= qd && dataX <= quantity;
         });
 
         const supplyPointsInDWL = supply.points.filter((point) => {
             const dataX =
-                ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) +
-                bounds.quantityMin;
+                ((point.x - left) / (right - left)) * (bounds.quantityMax - bounds.quantityMin) + bounds.quantityMin;
             return dataX >= qd && dataX <= quantity;
         });
 

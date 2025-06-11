@@ -27,22 +27,22 @@ interface MarketTabsStore {
 
 const getClippedBounds = (ranges: MarketTab['ranges']) => {
     const { demand, supply, combined } = ranges;
-    
+
     const priceMin = Math.min(demand.priceMin, supply.priceMin, combined.priceMin);
     const priceMax = Math.max(demand.priceMax, supply.priceMax, combined.priceMax);
     const quantityMin = Math.min(demand.quantityMin, supply.quantityMin, combined.quantityMin);
     const quantityMax = Math.max(demand.quantityMax, supply.quantityMax, combined.quantityMax);
-    
+
     const priceRange = priceMax - priceMin;
     const quantityRange = quantityMax - quantityMin;
-    
+
     const squareRange = Math.min(priceRange, quantityRange);
-    
+
     return {
-        priceMin: priceMin, 
+        priceMin: priceMin,
         priceMax: priceMin + squareRange,
         quantityMin: quantityMin,
-        quantityMax: quantityMin + squareRange, 
+        quantityMax: quantityMin + squareRange,
     };
 };
 
@@ -55,21 +55,19 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
             const tab = state.tabs.find((t) => t.market.id === id);
             if (!tab) return state;
 
-            const clippedBounds = tab.bounds.clip 
-                ? getClippedBounds(tab.ranges)
-                : tab.ranges.combined;
+            const clippedBounds = tab.bounds.clip ? getClippedBounds(tab.ranges) : tab.ranges.combined;
 
             return {
                 tabs: state.tabs.map((t) =>
-                    t.market.id === id
-                        ? {
-                              ...t,
-                              bounds: {
-                                  ...t.bounds,
-                                  ...clippedBounds,
-                              },
-                          }
-                        : t
+                    t.market.id === id ?
+                        {
+                            ...t,
+                            bounds: {
+                                ...t.bounds,
+                                ...clippedBounds,
+                            },
+                        }
+                    :   t
                 ),
             };
         });
@@ -86,18 +84,18 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
             }
 
             const rows = market.file.rows;
-            
+
             const prices = rows.map((row) => row.price);
             const demandQuantities = rows.map((row) => row.qd);
             const supplyQuantities = rows.map((row) => row.qs);
             const allQuantities = [...demandQuantities, ...supplyQuantities];
-            
+
             const nonZeroDemand = rows.filter((row) => row.qd > 0);
             const nonZeroSupply = rows.filter((row) => row.qs > 0);
 
             const demandPrices = nonZeroDemand.map((row) => row.price);
             const demandQs = nonZeroDemand.map((row) => row.qd);
-            
+
             const supplyPrices = nonZeroSupply.map((row) => row.price);
             const supplyQs = nonZeroSupply.map((row) => row.qs);
 
@@ -202,7 +200,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             result: { ...(t.adjustment.result || {}), ...result },
                         } as MarketTab['adjustment'],
                     }
-                    : t
+                :   t
             ),
         })),
 
@@ -263,14 +261,16 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                                         mode: 'point_elasticity',
                                         type: 'calculation',
                                         quantity:
-                                            activeTab?.computed?.intersect ? activeTab.computed.equilibrium_quantity : 0,
+                                            activeTab?.computed?.intersect ?
+                                                activeTab.computed.equilibrium_quantity
+                                            :   0,
                                     };
                                 default:
                                     return { mode: 'none' };
                             }
                         })(),
                     }
-                    : t
+                :   t
             ),
         })),
 
@@ -280,10 +280,8 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                 if (t.market.id !== id) return t;
 
                 if (b.type === 'auto' && t.bounds.type !== 'auto') {
-                    const boundsToUse = b.clip 
-                        ? getClippedBounds(t.ranges)
-                        : t.ranges.combined;
-                    
+                    const boundsToUse = b.clip ? getClippedBounds(t.ranges) : t.ranges.combined;
+
                     return {
                         ...t,
                         bounds: {
@@ -295,10 +293,8 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                 }
 
                 if (b.clip !== t.bounds.clip) {
-                    const boundsToUse = b.clip 
-                        ? getClippedBounds(t.ranges)
-                        : t.ranges.combined;
-                    
+                    const boundsToUse = b.clip ? getClippedBounds(t.ranges) : t.ranges.combined;
+
                     return {
                         ...t,
                         bounds: {
@@ -328,7 +324,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             [side]: { ...t.curves[side], fit },
                         },
                     }
-                    : t
+                :   t
             ),
         })),
 
@@ -343,7 +339,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             [side]: { ...t.curves[side], color },
                         },
                     }
-                    : t
+                :   t
             ),
         })),
 
@@ -358,7 +354,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                             ...computed,
                         } as MarketData,
                     }
-                    : t
+                :   t
             ),
         })),
 

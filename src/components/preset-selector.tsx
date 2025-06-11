@@ -36,40 +36,36 @@ export const PresetSelector: React.FC<PresetSelectorProps> = ({ onPresetLoad, ch
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {children || (
-                    <Button variant="outline" className="w-full justify-start">
-                        <FolderOpen className="mr-2 h-4 w-4" />
+                    <Button variant='outline' className='w-full justify-start'>
+                        <FolderOpen className='mr-2 h-4 w-4' />
                         Open Preset
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className='sm:max-w-md'>
                 <DialogHeader>
                     <DialogTitle>Open Preset</DialogTitle>
                     <DialogDescription>
                         Choose from the available market presets to get started quickly.
                     </DialogDescription>
                 </DialogHeader>
-                <ScrollArea className="max-h-96" type='always'>
-                    <div className="space-y-2">
+                <ScrollArea className='max-h-96' type='always'>
+                    <div className='space-y-2'>
                         {PRESET_FILES.map((presetName) => (
                             <Button
                                 key={presetName}
-                                variant="ghost"
-                                className="w-full justify-start h-auto p-3 text-left"
+                                variant='ghost'
+                                className='w-full justify-start h-auto p-3 text-left'
                                 onClick={() => handleSelectPreset(presetName)}
                                 disabled={loading === presetName}
                             >
-                                <FileText className="mr-2 h-4 w-4 flex-shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                    <div className="font-medium">
-                                        {presetName.replace('.csv', '')}
-                                    </div>
-                                    <div className="text-xs text-muted-foreground">
-                                        {presetName}
-                                    </div>
+                                <FileText className='mr-2 h-4 w-4 flex-shrink-0' />
+                                <div className='flex-1 min-w-0'>
+                                    <div className='font-medium'>{presetName.replace('.csv', '')}</div>
+                                    <div className='text-xs text-muted-foreground'>{presetName}</div>
                                 </div>
                                 {loading === presetName && (
-                                    <div className="ml-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                                    <div className='ml-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent' />
                                 )}
                             </Button>
                         ))}
