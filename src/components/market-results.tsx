@@ -9,6 +9,7 @@ import {
     Frown,
     Hash,
     HeartHandshake,
+    HelpCircle,
     Landmark,
     MoveRight,
     OctagonAlert,
@@ -24,6 +25,55 @@ import {
 } from 'lucide-react';
 import { groupedAdjustments } from '@/lib/types';
 import type { ReactNode } from 'react';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from './ui/dialog';
+import { Button } from './ui/button';
+
+const BasicAnalysisHelp = () => {
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 ml-2 opacity-85 hover:opacity-100">
+                    <HelpCircle className="h-3 w-3" />
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle>Basic Analysis</DialogTitle>
+                </DialogHeader>
+                <DialogDescription className="text-sm space-y-3">
+                    <div>
+                        <strong>Market Price:</strong> The equilibrium price where supply equals demand. This is where buyers and sellers agree to trade.
+                    </div>
+                    <div>
+                        <strong>Quantity Traded:</strong> The equilibrium quantity of goods bought and sold at the market price.
+                    </div>
+                    <div>
+                        <strong>Consumer Benefit (Consumer Surplus):</strong> The difference between what consumers are willing to pay and what they actually pay. It represents the net benefit consumers receive from participating in the market.
+                    </div>
+                    <div>
+                        <strong>Producer Benefit (Producer Surplus):</strong> The difference between what producers receive and the minimum they're willing to accept. It represents the net benefit producers receive from participating in the market.
+                    </div>
+                    <div>
+                        <strong>Total Benefit (Total Surplus):</strong> The sum of consumer and producer surplus. It represents the total economic welfare created by the market.
+                    </div>
+                    <div>
+                        <strong>Arc PED (Arc Price Elasticity of Demand):</strong> Measures how responsive quantity demanded is to price changes over a range of prices (calculated using +/- 10% of the equilibrium price). Values between 0 and -1 indicate inelastic demand, while values less than -1 indicate elastic demand.
+                    </div>
+                    <div>
+                        <strong>Arc PES (Arc Price Elasticity of Supply):</strong> Measures how responsive quantity supplied is to price changes over a range of prices (calculated using +/- 10% of the equilibrium price). Higher positive values indicate more elastic (responsive) supply.
+                    </div>
+                </DialogDescription>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 interface MarketResultProps {
     icon: ReactNode;
@@ -401,7 +451,10 @@ export const MarketResults = () => {
                             )}
 
                         <div className='flex-1 lg:flex-none'>
-                            <span className='text-lg font-semibold'>Basic Analysis</span>
+                            <div className="flex items-center">
+                                <span className='text-lg font-semibold'>Basic Analysis</span>
+                                <BasicAnalysisHelp />
+                            </div>
                             <div className='flex flex-col w-full space-y-2 lg:space-y-4 mt-2'>
                                 {resultsData.map((item, index) => (
                                     <MarketResult

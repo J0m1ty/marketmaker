@@ -2,7 +2,7 @@ import { useApplication } from '@pixi/react';
 import { useResolvedTheme } from '../theme-provider';
 import { useResize } from './resize-provider';
 import { useCallback, useEffect, useRef } from 'react';
-import { Container } from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import { useMarketTabsStore } from '@/hooks/markets.store';
 import { createAxisContainer } from './axis-container';
 import { createPointsContainer } from './points-container';
@@ -503,6 +503,10 @@ export const Graph = () => {
             }
         }
 
+        const background = new Graphics()
+            .rect(0, 0, width, height)
+            .fill(theme === 'dark' ? 0x0a0a0a : 0xffffff);
+
         const borderMask = createBorderMask({
             view,
             canvasWidth: width,
@@ -510,6 +514,7 @@ export const Graph = () => {
             theme,
         });
 
+        app.stage.addChild(background);
         app.stage.addChild(gridLines);
         app.stage.addChild(areaContainer);
         app.stage.addChild(pointsContainer);
