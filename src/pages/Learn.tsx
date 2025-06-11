@@ -5,7 +5,7 @@ import {
     CollapsibleTrigger 
 } from '@/components/ui/collapsible';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
-import { ChevronDown, ChevronRight, AlertTriangle, ChartSpline, FilePlus2, BookOpenText } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChartSpline, FilePlus2, BookOpenText } from 'lucide-react';
 
 export const Learn = () => {
     const [openSections, setOpenSections] = useState<Record<string, boolean>>({
