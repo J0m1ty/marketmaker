@@ -9,7 +9,8 @@
         "preview": "vite preview",
         "lint": "prettier --check .",
         "format": "prettier --write .",
-        "serve": "serve -s dist -l 3005"
+        "start": "serve -s dist -l 3005",
+        "serve": "pm2 startOrReload ecosystem.config.cjs"
     },
     "dependencies": {
         "@dnd-kit/core": "^6.3.1",
