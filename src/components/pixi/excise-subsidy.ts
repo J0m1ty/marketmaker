@@ -29,6 +29,7 @@ interface ExciseSubsidyParams {
         quantityMax: number;
     };
     theme: 'light' | 'dark';
+    bold: boolean;
     demand: {
         points: { x: number; y: number }[];
         result: Result;
@@ -82,6 +83,7 @@ export const createExciseSubsidy = ({
     bounds,
     range,
     theme,
+    bold,
     demand,
     supply,
     subsidy,
@@ -108,6 +110,7 @@ export const createExciseSubsidy = ({
         bounds,
         range,
         curve: {
+            bold,
             data: shiftedData,
             fit: side === 'supplier' ? supply.fit : demand.fit,
             color: side === 'supplier' ? supply.color : demand.color,
