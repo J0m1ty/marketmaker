@@ -3,7 +3,6 @@ import { parseFileContent } from '@/lib/data-upload';
 import { hashFileContent } from '@/lib/market-upload';
 import { toast } from 'sonner';
 
-// Available preset files
 export const PRESET_FILES = [
     'Basic (Linear).csv',
     'Elastic Supply (Linear).csv',
@@ -15,6 +14,34 @@ export const PRESET_FILES = [
 ] as const;
 
 export type PresetFile = (typeof PRESET_FILES)[number];
+
+export const PRESET_URL_MAP: Record<string, PresetFile> = {
+    'basic-linear': 'Basic (Linear).csv',
+    'elastic-supply-linear': 'Elastic Supply (Linear).csv',
+    'elastic-supply-power': 'Elastic Supply (Power).csv',
+    'inelastic-demand-linear': 'Inelastic Demand (Linear).csv',
+    'inelastic-demand-log': 'Inelastic Demand (Log).csv',
+    'inelastic-supply-linear': 'Inelastic Supply (Linear).csv',
+    'noisy-linear': 'Noisy (Linear).csv',
+} as const;
+
+export type PresetUrlKey = keyof typeof PRESET_URL_MAP;
+
+export const PRESET_FILE_TO_URL_MAP: Record<PresetFile, PresetUrlKey> = Object.fromEntries(
+    Object.entries(PRESET_URL_MAP).map(([key, value]) => [value, key])
+) as Record<PresetFile, PresetUrlKey>;
+
+export const getPresetFileFromUrl = (urlKey: string): PresetFile | null => {
+    return PRESET_URL_MAP[urlKey as PresetUrlKey] || null;
+};
+
+export const getUrlKeyFromPresetFile = (presetFile: PresetFile): PresetUrlKey => {
+    return PRESET_FILE_TO_URL_MAP[presetFile];
+};
+
+export const isValidPresetUrlKey = (urlKey: string): urlKey is PresetUrlKey => {
+    return urlKey in PRESET_URL_MAP;
+};
 
 export const loadPreset = async (presetName: PresetFile): Promise<Market> => {
     try {

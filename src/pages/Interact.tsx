@@ -4,16 +4,29 @@ import { MarketResults } from '@/components/market-results';
 import { TabGroup } from '@/components/tab-group';
 import { useMarketTabsStore } from '@/hooks/markets.store';
 import { handleDropzoneUpload } from '@/lib/market-upload';
-import { lazy, Suspense } from 'react';
+import { getPresetFileFromUrl, handlePresetLoad } from '@/lib/preset-loader';
+import { lazy, Suspense, useEffect } from 'react';
+import { useSearchParams } from 'react-router';
 
 const Simulation = lazy(() => import('@/components/simulation').then((module) => ({ default: module.Simulation })));
 
 export const Interact = () => {
     const { tabs, openTab } = useMarketTabsStore();
+    const [searchParams] = useSearchParams();
 
     const handleDrop = async (file: File) => {
         await handleDropzoneUpload(file, openTab);
     };
+
+    useEffect(() => {
+        const presetParam = searchParams.get('preset');
+        if (presetParam) {
+            const presetFile = getPresetFileFromUrl(presetParam);
+            if (presetFile) {
+                handlePresetLoad(presetFile, openTab);
+            }
+        }
+    }, [searchParams, openTab]);
 
     return (
         <div className='flex flex-col w-full h-full pt-2 overflow-hidden'>

@@ -28,6 +28,14 @@ createRoot(document.getElementById('root')!).render(
                         }
                     />
                     <Route
+                        path='/preset/:presetName'
+                        element={
+                            <Suspense fallback={<LoadingFallback variant='default' />}>
+                                <Interact />
+                            </Suspense>
+                        }
+                    />
+                    <Route
                         path='/create'
                         element={
                             <Suspense fallback={<LoadingFallback variant='table' />}>

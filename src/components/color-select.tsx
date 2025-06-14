@@ -30,7 +30,7 @@ export const ColorSelect = ({ curve, hex, setHex }: ColorSelectProps) => {
             <DialogTrigger asChild>
                 <Button
                     variant={'outline'}
-                    className='font-bold border-2 transition-all duration-200'
+                    className='flex-1 font-bold border-2 transition-all duration-200'
                     style={{
                         borderColor: hex,
                         color: hex,

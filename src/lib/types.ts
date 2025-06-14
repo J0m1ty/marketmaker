@@ -175,6 +175,7 @@ export type MarketTab = {
     ranges: CurveBounds;
     curves: {
         selected: 'demand' | 'supply';
+        bold: boolean;
         demand: { fit: CurveFitType; color: string };
         supply: { fit: CurveFitType; color: string };
     };

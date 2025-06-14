@@ -134,6 +134,7 @@ export const useMarketTabsStore = create<MarketTabsStore>((set, get) => ({
                 ranges,
                 curves: {
                     selected: 'demand',
+                    bold: true,
                     demand: { fit: 'linear', color: '#e91e63' },
                     supply: { fit: 'linear', color: '#3f51b5' },
                 },

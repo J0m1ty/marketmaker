@@ -34,6 +34,7 @@ interface CurveParams {
         quantityMax: number;
     };
     curve: {
+        bold: boolean;
         data: number[][];
         fit: CurveFitType;
         color: string;
@@ -58,7 +59,7 @@ export const createCurve = ({
     view: { left, right, top, bottom },
     bounds,
     range,
-    curve: { data, fit, color },
+    curve: { bold, data, fit, color },
     container,
     render,
     passive,
@@ -140,7 +141,7 @@ export const createCurve = ({
         }
         curveGraphics.stroke({
             color,
-            width: 2,
+            width: bold ? 4 : 2,
             alpha: passive ? 0.5 : 1,
         });
 
