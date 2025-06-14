@@ -328,6 +328,7 @@ export const Graph = () => {
                         bounds,
                         range: activeTab.ranges.combined,
                         theme,
+                        bold,
                         demand: {
                             points: demandPoints,
                             result: demandResult,
@@ -364,6 +365,7 @@ export const Graph = () => {
                         bounds,
                         range: activeTab.ranges.combined,
                         theme,
+                        bold,
                         demand: {
                             points: demandPoints,
                             result: demandResult,
