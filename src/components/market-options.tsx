@@ -12,6 +12,7 @@ import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
+import { Toggle } from './ui/toggle';
 
 const HelpIcon = ({ title, children }: { title: string; children: React.ReactNode }) => {
     return (
@@ -407,23 +408,41 @@ export const MarketOptions = () => {
                                 <TabsTrigger value='supply'>Supply</TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        <Select
-                            value={activeTab.curves[activeTab.curves.selected].fit}
-                            onValueChange={(value) => {
-                                updateCurveFit(activeTab.market.id, activeTab.curves.selected, value as CurveFitType);
-                            }}
-                        >
-                            <SelectTrigger className='w-full'>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {CurveFits.map((fit) => (
-                                    <SelectItem key={fit} value={fit}>
-                                        {fit.charAt(0).toUpperCase() + fit.slice(1)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <div className='flex flex-row items-center gap-2'>
+                            <Select
+                                value={activeTab.curves[activeTab.curves.selected].fit}
+                                onValueChange={(value) => {
+                                    updateCurveFit(
+                                        activeTab.market.id,
+                                        activeTab.curves.selected,
+                                        value as CurveFitType
+                                    );
+                                }}
+                            >
+                                <SelectTrigger className='w-full flex-1'>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {CurveFits.map((fit) => (
+                                        <SelectItem key={fit} value={fit}>
+                                            {fit.charAt(0).toUpperCase() + fit.slice(1)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Toggle
+                                variant='outline'
+                                pressed={activeTab.curves.bold}
+                                onPressedChange={(pressed) => {
+                                    updateCurves(activeTab.market.id, {
+                                        ...activeTab.curves,
+                                        bold: pressed,
+                                    });
+                                }}
+                            >
+                                Bold
+                            </Toggle>
+                        </div>
                         <ColorSelect
                             curve={activeTab.curves.selected}
                             hex={activeTab.curves[activeTab.curves.selected].color}

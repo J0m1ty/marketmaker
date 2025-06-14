@@ -43,6 +43,8 @@ export const Graph = () => {
 
         app.stage.removeChildren();
 
+        const bold = activeTab.curves.bold;
+
         const bounds = {
             priceMin: activeTab.bounds.priceMin,
             priceMax: activeTab.bounds.priceMax,
@@ -94,6 +96,7 @@ export const Graph = () => {
             bounds,
             range: activeTab.ranges.demand,
             curve: {
+                bold,
                 data: demandData,
                 fit: activeTab.curves.demand.fit,
                 color: activeTab.curves.demand.color,
@@ -115,6 +118,7 @@ export const Graph = () => {
             bounds,
             range: activeTab.ranges.supply,
             curve: {
+                bold,
                 data: supplyData,
                 fit: activeTab.curves.supply.fit,
                 color: activeTab.curves.supply.color,
@@ -396,6 +400,7 @@ export const Graph = () => {
                         bounds,
                         range: activeTab.ranges.combined,
                         theme,
+                        bold,
                         demand: {
                             points: demandPoints,
                             result: demandResult,
@@ -431,6 +436,7 @@ export const Graph = () => {
                         bounds,
                         range: activeTab.ranges.combined,
                         theme,
+                        bold,
                         demand: {
                             points: demandPoints,
                             result: demandResult,
@@ -539,6 +545,7 @@ export const Graph = () => {
         activeTab.market,
         activeTab.bounds,
         activeTab.curves,
+        activeTab.curves.bold,
     ]);
 
     useEffect(() => {

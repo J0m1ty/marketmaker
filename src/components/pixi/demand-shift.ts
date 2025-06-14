@@ -28,6 +28,7 @@ interface DemandShiftParams {
         quantityMax: number;
     };
     theme: 'light' | 'dark';
+    bold: boolean;
     demand: {
         points: { x: number; y: number }[];
         result: Result;
@@ -81,6 +82,7 @@ export const createDemandShift = ({
     bounds,
     range,
     theme,
+    bold,
     demand,
     supply,
     shiftAmount,
@@ -101,6 +103,7 @@ export const createDemandShift = ({
         bounds,
         range,
         curve: {
+            bold,
             data: shiftedData,
             fit: demand.fit,
             color: demand.color,
