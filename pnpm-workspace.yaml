@@ -1,4 +1,4 @@
 # pnpm 11+ blocks dependency build scripts unless allowed here.
 allowBuilds:
-  esbuild: true
-  "@tailwindcss/oxide": true
+    esbuild: true
+    '@tailwindcss/oxide': true
