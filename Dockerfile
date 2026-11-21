@@ -1,9 +1,9 @@
 # Built by .github/workflows/docker.yml and pushed to ghcr.io/j0m1ty/market-maker.
 FROM node:24-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54 AS build
-ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# pnpm version comes from packageManager in package.json (Node 25+ has no corepack)
+RUN npm install -g "$(node -p "require('./package.json').packageManager")"
 RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
